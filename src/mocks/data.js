@@ -1,5 +1,91 @@
 export const menuItems = [
   {
+    title: "Dashboard",
+    icon: "ph:house",
+    isHide: true,
+    link: "Dashboard",
+  },
+  {
+    title: "Users",
+    icon: "ph:user-circle",
+    link: "#",
+    isHide: true,
+    child: [
+      {
+        childtitle: "List",
+        childlink: "users",
+      },
+      {
+        childtitle: "Add",
+        childlink: "add-user",
+      },
+    ],
+  },
+  {
+    title: "Customer",
+    icon: "ph:user-switch",
+    link: "#",
+    isHide: true,
+    child: [
+      {
+        childtitle: "List",
+        childlink: "users",
+      },
+      {
+        childtitle: "Add",
+        childlink: "add-user",
+      },
+    ],
+  },
+  {
+    title: "Quote",
+    icon: "ph:chats",
+    link: "#",
+    isHide: true,
+    child: [
+      {
+        childtitle: "List",
+        childlink: "users",
+      },
+      {
+        childtitle: "Add",
+        childlink: "add-user",
+      },
+    ],
+  },
+
+  {
+    title: "Install",
+    isHide: true,
+    icon: "ph:calendar-plus",
+    link: "calendar",
+  },
+
+  {
+    title: "Product",
+    icon: "ph:basket",
+    link: "#",
+    isHide: true,
+    child: [
+      {
+        childtitle: "List",
+        childlink: "users",
+      },
+      {
+        childtitle: "Add",
+        childlink: "add-user",
+      },
+    ],
+  },
+  {
+    title: "Invoice",
+    isHide: true,
+    icon: "ph:invoice",
+    link: "chats",
+  },
+
+  // default menu
+  {
     isHeadr: true,
     title: "menu",
   },
@@ -8,26 +94,26 @@ export const menuItems = [
     title: "Dashboard",
     icon: "ph:house",
     isHide: true,
-    // child: [
-    //   {
-    //     childtitle: "Default",
-    //     childlink: "dashboard",
-    //   },
-    //   {
-    //     childtitle: "Ecommerce Dashboard",
-    //     childlink: "ecommerce",
-    //   },
-    //   {
-    //     childtitle: " CRM Dashbaord",
-    //     childlink: "",
-    //     badge: "soon",
-    //   },
-    //   {
-    //     childtitle: "Social",
-    //     childlink: "",
-    //     badge: "soon",
-    //   },
-    // ],
+    child: [
+      {
+        childtitle: "Default",
+        childlink: "dashboard",
+      },
+      {
+        childtitle: "Ecommerce Dashboard",
+        childlink: "ecommerce",
+      },
+      {
+        childtitle: " CRM Dashbaord",
+        childlink: "",
+        badge: "soon",
+      },
+      {
+        childtitle: "Social",
+        childlink: "",
+        badge: "soon",
+      },
+    ],
   },
 
   {
