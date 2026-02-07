@@ -3,7 +3,7 @@ export const menuItems = [
     title: "Dashboard",
     icon: "ph:house",
     isHide: true,
-    link: "Dashboard",
+    link: "dashboard",
   },
   {
     title: "Users",
@@ -17,7 +17,7 @@ export const menuItems = [
       },
       {
         childtitle: "Add",
-        childlink: "add-user",
+        childlink: "users/add",
       },
     ],
   },
@@ -29,11 +29,11 @@ export const menuItems = [
     child: [
       {
         childtitle: "List",
-        childlink: "users",
+        childlink: "customer",
       },
       {
         childtitle: "Add",
-        childlink: "add-user",
+        childlink: "customer/add",
       },
     ],
   },
@@ -45,11 +45,11 @@ export const menuItems = [
     child: [
       {
         childtitle: "List",
-        childlink: "users",
+        childlink: "quote",
       },
       {
         childtitle: "Add",
-        childlink: "add-user",
+        childlink: "quote/add",
       },
     ],
   },
@@ -58,7 +58,7 @@ export const menuItems = [
     title: "Install",
     isHide: true,
     icon: "ph:calendar-plus",
-    link: "calendar",
+    link: "install",
   },
 
   {
@@ -69,11 +69,11 @@ export const menuItems = [
     child: [
       {
         childtitle: "List",
-        childlink: "users",
+        childlink: "product",
       },
       {
         childtitle: "Add",
-        childlink: "add-user",
+        childlink: "product/add",
       },
     ],
   },
@@ -81,7 +81,7 @@ export const menuItems = [
     title: "Invoice",
     isHide: true,
     icon: "ph:invoice",
-    link: "chats",
+    link: "invoice",
   },
 
   // default menu

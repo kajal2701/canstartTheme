@@ -63,8 +63,8 @@ const TanstackTable = lazy(() => import("./pages/table/react-table"));
 // utility pages
 const InvoicePage = lazy(() => import("./pages/utility/invoice"));
 const InvoiceAddPage = lazy(() => import("./pages/utility/add-invoice"));
-const InvoicePreviewPage = lazy(() =>
-  import("./pages/utility/invoice-preview")
+const InvoicePreviewPage = lazy(
+  () => import("./pages/utility/invoice-preview"),
 );
 const InvoiceEditPage = lazy(() => import("./pages/utility/edit-invoice"));
 const PricingPage = lazy(() => import("./pages/utility/pricing"));
@@ -84,6 +84,17 @@ const BoardsPage = lazy(() => import("./pages/app/boards"));
 import Layout from "./layout/Layout";
 import Loading from "@/components/Loading";
 import AuthLayout from "./layout/AuthLayout";
+import Users from "./pages/users";
+import AddUser from "./pages/users/AddUser";
+import Customer from "./pages/customer/Index";
+import AddCustomer from "./pages/customer/AddCustomer";
+import Quote from "./pages/quote/Index";
+import AddQuote from "./pages/quote/AddQuote";
+import Install from "./pages/install/Index";
+import Product from "./pages/product/Index";
+import AddProduct from "./pages/product/AddProduct";
+import Invoice from "./pages/invoice/Index";
+
 function App() {
   return (
     <main className="App  relative">
@@ -99,6 +110,31 @@ function App() {
 
         <Route path="/*" element={<Layout />}>
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="users">
+            <Route index element={<Users />} />
+            <Route path="add" element={<AddUser />} />
+          </Route>
+
+          <Route path="customer">
+            <Route index element={<Customer />} />
+            <Route path="add" element={<AddCustomer />} />
+          </Route>
+
+          <Route path="quote">
+            <Route index element={<Quote />} />
+            <Route path="add" element={<AddQuote />} />
+          </Route>
+
+          <Route path="install" element={<Install />} />
+
+          <Route path="product">
+            <Route index element={<Product />} />
+            <Route path="add" element={<AddProduct />} />
+          </Route>
+
+          <Route path="invoice" element={<Invoice />} />
+
+          {/* <Route path="users" element={<Users />} /> */}
           <Route path="ecommerce" element={<Ecommerce />} />
           <Route path="crm" element={<CrmPage />} />
 
