@@ -16,7 +16,6 @@ import {
   useGlobalFilter,
   usePagination,
 } from "react-table";
-// import GlobalFilter from "./GlobalFilter";
 import { UserTable } from "../../mocks/table-data";
 import GlobalFilter from "../table/react-tables/GlobalFilter";
 
@@ -53,7 +52,7 @@ const IndeterminateCheckbox = React.forwardRef(
 const Users = () => {
   const COLUMNS = [
     {
-      Header: "#",
+      Header: "No.",
       accessor: "id",
       Cell: (row) => {
         return <span>{row?.cell?.value}</span>;
@@ -81,20 +80,20 @@ const Users = () => {
       },
     },
 
-    {
-      Header: "age",
-      accessor: "age",
-      Cell: (row) => {
-        return <span>{row?.cell?.value}</span>;
-      },
-    },
-    {
-      Header: "phone",
-      accessor: "phone",
-      Cell: (row) => {
-        return <span>{row?.cell?.value}</span>;
-      },
-    },
+    // {
+    //   Header: "age",
+    //   accessor: "age",
+    //   Cell: (row) => {
+    //     return <span>{row?.cell?.value}</span>;
+    //   },
+    // },
+    // {
+    //   Header: "phone",
+    //   accessor: "phone",
+    //   Cell: (row) => {
+    //     return <span>{row?.cell?.value}</span>;
+    //   },
+    // },
 
     {
       Header: "role",
@@ -116,24 +115,24 @@ const Users = () => {
         );
       },
     },
-    {
-      Header: "status",
-      accessor: "status",
-      Cell: (row) => {
-        const [checked, setChecked] = useState(row?.cell?.value);
+    // {
+    //   Header: "status",
+    //   accessor: "status",
+    //   Cell: (row) => {
+    //     const [checked, setChecked] = useState(row?.cell?.value);
 
-        const handleCheckboxChange = () => {
-          const updatedData = [...UserTable];
-          updatedData[row.cell.row.index].value = !checked;
-          setChecked(!checked);
-        };
-        return (
-          <span>
-            <Switch value={checked} onChange={handleCheckboxChange} />
-          </span>
-        );
-      },
-    },
+    //     const handleCheckboxChange = () => {
+    //       const updatedData = [...UserTable];
+    //       updatedData[row.cell.row.index].value = !checked;
+    //       setChecked(!checked);
+    //     };
+    //     return (
+    //       <span>
+    //         <Switch value={checked} onChange={handleCheckboxChange} />
+    //       </span>
+    //     );
+    //   },
+    // },
     {
       Header: "action",
       accessor: "action",
@@ -217,7 +216,7 @@ const Users = () => {
     <>
       <Card noborder>
         <div className="md:flex justify-between items-center mb-6">
-          <h4 className="card-title">User Table</h4>
+          <h4 className="card-title">Users List</h4>
           <div>
             <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           </div>
