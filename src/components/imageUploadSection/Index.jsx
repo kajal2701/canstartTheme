@@ -1,4 +1,5 @@
 import Switch from "@/components/ui/Switch";
+import Button from "@/components/ui/Button";
 const ImageUploadSection = ({
   title,
   enabled,
@@ -51,12 +52,9 @@ const ImageUploadSection = ({
             </div>
           ))}
 
-          <button
-            onClick={addFile}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm"
-          >
+          <Button onClick={addFile} className="btn-primary">
             Add Image +
-          </button>
+          </Button>
         </div>
       )}
     </div>

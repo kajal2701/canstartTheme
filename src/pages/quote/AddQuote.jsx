@@ -6,6 +6,8 @@ import Button from "@/components/ui/Button";
 import Select from "react-select";
 
 import ImageUploadSection from "../../components/imageUploadSection/Index";
+import AnnotationImagePreview from "../../components/annotationImagePreview";
+import ImageAnnotation from "../../components/imageAnnotation";
 
 /* Dummy Data */
 const customers = [
@@ -187,6 +189,14 @@ const AddQuote = () => {
             className="btn-primary btn-sm"
             onClick={addCustomProduct}
           />
+        </div>
+
+        {/* Annotation Image */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-6">Annotation Image</h2>
+
+          <AnnotationImagePreview />
+          {/* <ImageAnnotation /> */}
         </div>
 
         {/* NOTES */}
