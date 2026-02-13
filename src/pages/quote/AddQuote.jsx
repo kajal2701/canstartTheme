@@ -7,7 +7,6 @@ import Select from "react-select";
 
 import ImageUploadSection from "../../components/imageUploadSection/Index";
 import AnnotationImagePreview from "../../components/annotationImagePreview";
-import ImageAnnotation from "../../components/imageAnnotation";
 
 /* Dummy Data */
 const customers = [
@@ -20,10 +19,6 @@ const products = [
   { value: "p2", label: "Product Two" },
 ];
 
-const inventory = [
-  { value: "in", label: "In Stock" },
-  { value: "out", label: "Out of Stock" },
-];
 const mandatoryOptions = [
   { value: "mandatory", label: "Mandatory" },
   { value: "optional", label: "Optional" },
@@ -36,7 +31,21 @@ const AddQuote = () => {
   const [easyPlugFiles, setEasyPlugFiles] = useState([{ id: Date.now() }]);
   const [controllerFiles, setControllerFiles] = useState([{ id: Date.now() }]);
   const [customProducts, setCustomProducts] = useState([]);
+  const [sections, setSections] = useState([{ id: Date.now() }]);
 
+  // Add new section
+  const handleAddSection = () => {
+    setSections([...sections, { id: Date.now() }]);
+  };
+
+  // Remove specific section
+  const handleRemoveSection = (id) => {
+    if (sections.length > 1) {
+      setSections(sections.filter((section) => section.id !== id));
+    } else {
+      alert("At least one section must remain");
+    }
+  };
   // Remove custom product
   const removeCustomProduct = (id) => {
     setCustomProducts(customProducts.filter((item) => item.id !== id));
@@ -192,38 +201,112 @@ const AddQuote = () => {
         </div>
 
         {/* Annotation Image */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-6">Annotation Image</h2>
+        <div className="space-y-4">
+          {/* Render all sections */}
+          {sections.map((section) => (
+            <div
+              key={section.id}
+              className="bg-indigo-500/10 p-6 rounded-lg shadow"
+            >
+              <h2 className="text-lg font-semibold">Annotation Image</h2>
+              <AnnotationImagePreview
+                sectionId={section.id}
+                onRemoveSection={handleRemoveSection}
+              />
+            </div>
+          ))}
 
-          <AnnotationImagePreview />
-          {/* <ImageAnnotation /> */}
-        </div>
-
-        {/* NOTES */}
-        <div className="grid md:grid-cols-2 gap-5">
-          <Textarea label="Customer Notes" rows="3" />
-          <Textarea label="Admin Notes" rows="3" />
-        </div>
-
-        {/* SUMMARY */}
-        <div className="border-t pt-5 space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span>Subtotal</span>
-            <span>$0.00</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Discount</span>
-            <span>$0.00</span>
-          </div>
-          <div className="flex justify-between font-medium">
-            <span>Total</span>
-            <span>$0.00</span>
+          {/* Add New Section Button */}
+          <div>
+            <Button
+              text="Add New File Section +"
+              className="btn-primary btn-sm"
+              onClick={handleAddSection}
+            />
           </div>
         </div>
 
-        {/* SUBMIT */}
-        <div className="text-right">
-          <Button text="Submit Order" className="btn-primary" />
+        {/* Customer Notes & Admin Notes */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Customer Notes
+            </label>
+            <Textarea
+              placeholder="Enter customer notes..."
+              rows={5}
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Admin Notes
+            </label>
+            <Textarea
+              placeholder="Enter admin notes..."
+              rows={5}
+              className="w-full"
+            />
+          </div>
+        </div>
+
+        {/* Discount Input */}
+        <div className="flex justify-end">
+          <div className="w-full md:w-64">
+            <label className="block text-sm font-medium mb-2 text-right">
+              Enter Discount (%):
+            </label>
+            <Textinput
+              type="text"
+              placeholder="0"
+              className="text-right"
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9.]/g, "");
+                e.target.value = value;
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Submit Button and Price Summary */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          {/* Submit Button */}
+          <Button
+            text="Submit"
+            icon="heroicons-outline:paper-airplane"
+            className="btn-outline-primary"
+          />
+
+          {/* Price Summary */}
+          <div className="w-full md:w-auto space-y-2 text-right">
+            <div className="flex justify-between md:justify-end gap-8 text-gray-700">
+              <span>Total Controller price :</span>
+              <span className="font-medium">$ 0</span>
+            </div>
+
+            <div className="flex justify-between md:justify-end gap-8 text-gray-700">
+              <span>Total Linear Feet Price :</span>
+              <span className="font-medium">$ 0</span>
+            </div>
+
+            <div className="border-t pt-2 mt-2">
+              <div className="flex justify-between md:justify-end gap-8 text-gray-700">
+                <span>Discount (0%) :</span>
+                <span className="font-medium">- $ 0.00</span>
+              </div>
+
+              <div className="flex justify-between md:justify-end gap-8 text-gray-700">
+                <span>GST (0%) :</span>
+                <span className="font-medium">$ 0.00</span>
+              </div>
+
+              <div className="flex justify-between md:justify-end gap-8 text-lg font-bold text-gray-900 mt-2">
+                <span>Main Total :</span>
+                <span>$ 0</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </Card>

@@ -2,140 +2,147 @@ import { useState, useRef } from "react";
 import Button from "@/components/ui/Button";
 
 export default function ImageAnnotationTextBox({ image }) {
-  const [lines, setLines] = useState([]);
-  const [drawing, setDrawing] = useState(false);
-  const [currentLine, setCurrentLine] = useState(null);
-  const [color, setColor] = useState("#ff0000");
-  const [strokeWidth, setStrokeWidth] = useState(2);
+  const [boxes, setBoxes] = useState([]);
+  const [removed, setRemoved] = useState([]);
+  const [inputValue, setInputValue] = useState("");
   const [scale, setScale] = useState(1);
-  const [removedLines, setRemovedLines] = useState([]);
+
   const containerRef = useRef();
+  const dragId = useRef(null);
 
-  const getCoordinates = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    return {
-      x: (e.clientX - rect.left) / scale,
-      y: (e.clientY - rect.top) / scale,
+  // ================= ADD BOX ON  CLICK =================
+  const handleAddText = () => {
+    if (!inputValue) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+
+    const x = rect.width / (15 * scale);
+    const y = rect.height / (15 * scale);
+
+    console.log(x, "x");
+    console.log(y, "y");
+
+    const newBox = {
+      id: Date.now(),
+      value: inputValue,
+      x,
+      y,
     };
+
+    setBoxes((prev) => [...prev, newBox]);
+    setRemoved([]);
+    setInputValue("");
   };
 
-  const handleMouseDown = (e) => {
-    const { x, y } = getCoordinates(e);
-    setDrawing(true);
-    setCurrentLine({
-      x1: x,
-      y1: y,
-      x2: x,
-      y2: y,
-      color,
-      strokeWidth,
-    });
+  // ================= DRAG START =================
+  const handleMouseDown = (e, id) => {
+    e.stopPropagation();
+    dragId.current = id;
   };
 
+  // ================= DRAG MOVE =================
   const handleMouseMove = (e) => {
-    if (!drawing) return;
-    const { x, y } = getCoordinates(e);
-    setCurrentLine((prev) => ({
-      ...prev,
-      x2: x,
-      y2: y,
-    }));
+    if (!dragId.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
+
+    setBoxes((prev) =>
+      prev.map((box) => (box.id === dragId.current ? { ...box, x, y } : box)),
+    );
   };
 
   const handleMouseUp = () => {
-    setDrawing(false);
-    if (currentLine) {
-      setLines((prev) => [...prev, currentLine]);
-      setCurrentLine(null);
-    }
+    dragId.current = null;
   };
 
-  // ✅ Undo
+  // ================= REMOVE =================
+  const handleRemove = (id) => {
+    const boxToRemove = boxes.find((b) => b.id === id);
+    setBoxes((prev) => prev.filter((b) => b.id !== id));
+    setRemoved((prev) => [...prev, boxToRemove]);
+  };
+
+  // ================= UNDO =================
   const handleUndo = () => {
-    setLines((prev) => {
-      if (prev.length === 0) return prev;
+    if (boxes.length === 0) return;
 
-      const updated = [...prev];
-      const removed = updated.pop(); // remove last line
+    const updated = [...boxes];
+    const removedBox = updated.pop();
 
-      setRemovedLines((prevRemoved) => [...prevRemoved, removed]);
-
-      return updated;
-    });
+    setBoxes(updated);
+    setRemoved((prev) => [...prev, removedBox]);
   };
 
+  // ================= REDO =================
   const handleReverse = () => {
-    setRemovedLines((prev) => {
-      if (prev.length === 0) return prev;
+    if (removed.length === 0) return;
 
-      const updated = [...prev];
-      const restored = updated.pop();
+    const updated = [...removed];
+    const restored = updated.pop();
 
-      setLines((prevLines) => [...prevLines, restored]);
-
-      return updated;
-    });
+    setBoxes((prev) => [...prev, restored]);
+    setRemoved(updated);
   };
 
-  // ✅ Zoom
+  // ================= ZOOM =================
   const zoomIn = () => setScale((prev) => prev + 0.1);
   const zoomOut = () => setScale((prev) => Math.max(0.5, prev - 0.1));
 
-  // ✅ Save as image
+  // ================= SAVE =================
   const handleSave = () => {
     const svg = containerRef.current.querySelector("svg");
     const serializer = new XMLSerializer();
     const source = serializer.serializeToString(svg);
 
-    const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([source], {
+      type: "image/svg+xml;charset=utf-8",
+    });
 
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.download = "annotation.svg";
     link.click();
   };
 
-  console.log(image, "imageUrl");
   return (
     <div>
-      {/* ================= HEADER TOOLBAR ================= */}
+      {/* ================= TOOLBAR ================= */}
       <div
         style={{
           display: "flex",
-          gap: "15px",
+          gap: "12px",
           alignItems: "center",
           padding: "10px",
           background: "#f3f4f6",
           marginBottom: "10px",
         }}
       >
-        {/* Color Picker */}
-        <div>
-          <label>Choose line color: </label>
-          <br />
-          <input
-            type="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-          />
-        </div>
+        {/* INPUT FIELD */}
+        <input
+          type="text"
+          placeholder="Enter number"
+          value={inputValue}
+          onChange={(e) => {
+            const value = e.target.value.replace(/[^0-9.-]/g, "");
+            setInputValue(value);
+          }}
+          style={{
+            padding: "6px 10px",
+            borderRadius: "6px",
+            border: "1px solid #ccc",
+            width: "120px",
+          }}
+        />
 
-        {/* Line Weight */}
-        <div>
-          <label>Line weight: </label>
-          <br />
-          <input
-            type="range"
-            min="1"
-            max="10"
-            value={strokeWidth}
-            onChange={(e) => setStrokeWidth(Number(e.target.value))}
-          />
-        </div>
-
-        {/* Buttons */}
-
+        <Button
+          text="Add Text"
+          className="btn-secondary"
+          onClick={handleAddText}
+        />
         <Button
           onClick={handleUndo}
           icon="ph:arrow-clockwise"
@@ -144,22 +151,22 @@ export default function ImageAnnotationTextBox({ image }) {
         <Button
           onClick={handleReverse}
           icon="ph:arrow-counter-clockwise"
-          className="btn-warning h-9 w-9 rounded-full p-0 "
+          className="btn-warning h-9 w-9 rounded-full p-0"
         />
         <Button
           onClick={zoomOut}
           icon="ph:magnifying-glass-minus"
-          className="btn-danger h-9 w-9  p-0"
+          className="btn-danger h-9 w-9 p-0"
         />
         <Button
           onClick={zoomIn}
           icon="ph:magnifying-glass-plus"
-          className="btn-danger h-9 w-9  p-0"
+          className="btn-danger h-9 w-9 p-0"
         />
-        <Button text="Save" className="btn-secondary " onClick={handleSave} />
+        <Button text="Save" className="btn-secondary" onClick={handleSave} />
       </div>
 
-      {/* ================= IMAGE + SVG ================= */}
+      {/* ================= IMAGE CONTAINER ================= */}
       <div
         ref={containerRef}
         style={{
@@ -167,8 +174,8 @@ export default function ImageAnnotationTextBox({ image }) {
           display: "inline-block",
           transform: `scale(${scale})`,
           transformOrigin: "top left",
+          cursor: "crosshair",
         }}
-        onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       >
@@ -187,28 +194,60 @@ export default function ImageAnnotationTextBox({ image }) {
             height: "100%",
           }}
         >
-          {lines.map((line, index) => (
-            <line
-              key={index}
-              x1={line.x1}
-              y1={line.y1}
-              x2={line.x2}
-              y2={line.y2}
-              stroke={line.color}
-              strokeWidth={line.strokeWidth}
-            />
-          ))}
+          {boxes.map((box) => (
+            <foreignObject
+              key={box.id}
+              x={box.x}
+              y={box.y}
+              width="1"
+              height="1"
+              style={{ overflow: "visible" }}
+            >
+              <div
+                onMouseDown={(e) => handleMouseDown(e, box.id)}
+                style={{
+                  position: "relative",
+                  background: "#f3f4f6",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  padding: "6px 10px",
+                  fontWeight: "bold",
+                  cursor: "move",
+                  textAlign: "center",
+                  whiteSpace: "nowrap",
+                  display: "inline-block", // Important: shrink to content
+                  minWidth: "30px",
+                }}
+              >
+                {box.value}
 
-          {currentLine && (
-            <line
-              x1={currentLine.x1}
-              y1={currentLine.y1}
-              x2={currentLine.x2}
-              y2={currentLine.y2}
-              stroke={currentLine.color}
-              strokeWidth={currentLine.strokeWidth}
-            />
-          )}
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemove(box.id);
+                  }}
+                  style={{
+                    position: "absolute",
+                    top: "-8px",
+                    right: "-8px",
+                    background: "white",
+                    border: "1px solid red",
+                    color: "red",
+                    borderRadius: "50%",
+                    width: "18px",
+                    height: "18px",
+                    fontSize: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                  }}
+                >
+                  ×
+                </span>
+              </div>
+            </foreignObject>
+          ))}
         </svg>
       </div>
     </div>
