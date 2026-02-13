@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import Button from "@/components/ui/Button";
 
-export default function ImageAnnotation({ image }) {
+export default function ImageLineAnnotationEditor({ image }) {
   const [lines, setLines] = useState([]);
   const [drawing, setDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState(null);

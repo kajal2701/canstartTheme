@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import Button from "@/components/ui/Button";
 
-export default function ImageAnnotationTextBox({ image }) {
+export default function ImageTextBoxAnnotationEditor({ image }) {
   const [boxes, setBoxes] = useState([]);
   const [removed, setRemoved] = useState([]);
   const [inputValue, setInputValue] = useState("");

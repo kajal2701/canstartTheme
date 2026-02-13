@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
-import ImageAnnotation from "../imageAnnotation";
-import ImageAnnotationTextBox from "../imageAnnotationTextBox";
+import Button from "../../ui/Button";
+import ImageLineAnnotationEditor from "../imageLineAnnotationEditor";
+import ImageTextBoxAnnotationEditor from "../imageTextBoxAnnotationEditor";
 
 const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
   const [files, setFiles] = useState([{ file: null, preview: "" }]);
@@ -63,32 +64,41 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
       <div className="space-y-3">
         {files.map((item, index) => (
           <div key={index} className="flex gap-3 items-center w-full">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleChange(e, index)}
-              className="w-full border border-gray-300 rounded-lg p-2"
-            />
+            <label className="flex-1 cursor-pointer">
+              <div className="border border-gray-300 rounded-lg p-3 flex items-center gap-3 bg-white hover:border-indigo-400 transition-colors">
+                <span className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                  Choose File
+                </span>
+                <span className="text-gray-400 text-sm">
+                  {files[index]?.file?.name || "No file chosen"}
+                </span>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleChange(e, index)}
+                className="hidden"
+              />
+            </label>
 
             {index !== 0 && (
-              <button
+              <Button
+                text="Remove"
+                className="btn-danger"
                 onClick={() => handleRemove(index)}
-                className="bg-red-400 text-white px-4 py-2 rounded-lg"
-              >
-                Remove
-              </button>
+              />
             )}
           </div>
         ))}
       </div>
 
       {/* Add Image Button */}
-      <button
+
+      <Button
+        text="+ Add Image"
+        className="btn-primary mt-3"
         onClick={handleAdd}
-        className="mt-4 bg-indigo-500 text-white px-4 py-2 rounded-lg"
-      >
-        + Add Image
-      </button>
+      />
 
       {/* Image Preview Grid for line edit */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
@@ -307,6 +317,7 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
         <div className="flex justify-end mt-4">
           <button
             onClick={() => onRemoveSection(sectionId)}
+            type="button"
             className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition"
           >
             Remove Section
@@ -321,7 +332,7 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
         onClose={() => setModal3(false)}
         className="w-full max-w-[95%] sm:max-w-xl md:max-w-3xl lg:max-w-5xl"
       >
-        {selectedImage && <ImageAnnotation image={selectedImage} />}
+        {selectedImage && <ImageLineAnnotationEditor image={selectedImage} />}
       </Modal>
 
       {/* MODAL Text Box */}
@@ -331,7 +342,9 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
         onClose={() => setTextBoxModel(false)}
         className="w-full max-w-[95%] sm:max-w-xl md:max-w-3xl lg:max-w-5xl"
       >
-        {selectedImage && <ImageAnnotationTextBox image={selectedImage} />}
+        {selectedImage && (
+          <ImageTextBoxAnnotationEditor image={selectedImage} />
+        )}
       </Modal>
     </div>
   );
