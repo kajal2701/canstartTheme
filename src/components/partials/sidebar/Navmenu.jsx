@@ -12,6 +12,8 @@ import SingleMenu from "./single-menu";
 const Navmenu = ({ menus }) => {
   const [activeSubmenu, setActiveSubmenu] = useState(null);
 
+  console.log(activeSubmenu, "activeSubmenu");
+
   const toggleSubmenu = (i) => {
     if (activeSubmenu === i) {
       setActiveSubmenu(null);
@@ -33,7 +35,7 @@ const Navmenu = ({ menus }) => {
         submenuIndex = null;
       } else {
         const ciIndex = item.child.findIndex(
-          (ci) => ci.childlink === locationName
+          (ci) => ci.childlink === locationName,
         );
         if (ciIndex !== -1) {
           submenuIndex = i;
