@@ -36,7 +36,7 @@ const Header = ({ className = "custom-class", title }) => {
     <header
       className={clsx(
         className,
-        "transition-all  duration-300 has-sticky-header "
+        "transition-all  duration-300 has-sticky-header ",
       )}
     >
       <div
@@ -50,7 +50,7 @@ const Header = ({ className = "custom-class", title }) => {
             "vertical_menu ": menuType === "vertical",
             "pt-6": menuType === "vertical" && !sticky,
             "py-3": menuType === "vertical" && sticky,
-          }
+          },
         )}
       >
         <div className="flex justify-between items-center h-full relative">
@@ -86,9 +86,9 @@ const Header = ({ className = "custom-class", title }) => {
           ) : null}
           {/* Nav Tools  */}
           <div className="nav-tools flex items-center lg:space-x-6 space-x-3 rtl:space-x-reverse">
-            <Language />
+            {/* <Language /> */}
             <SwitchDark />
-            <Settings />
+            {/* <Settings /> */}
             <Message />
             <Notification />
             <Profile sticky={sticky} />
