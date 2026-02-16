@@ -6,9 +6,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 const Dashboard = lazy(() => import("./pages/dashboard"));
 
 const Login = lazy(() => import("./pages/auth/login"));
-const Login2 = lazy(() => import("./pages/auth/login2"));
-const Register = lazy(() => import("./pages/auth/register"));
-const Register2 = lazy(() => import("./pages/auth/register2"));
+
 const ForgotPass = lazy(() => import("./pages/auth/forgot-password"));
 const ForgotPass2 = lazy(() => import("./pages/auth/forgot-password2"));
 const Error = lazy(() => import("./pages/404"));
@@ -33,9 +31,6 @@ function App() {
       <Routes>
         <Route path="/" element={<AuthLayout />}>
           <Route path="/" element={<Login />} />
-          <Route path="/login2" element={<Login2 />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/register2" element={<Register2 />} />
           <Route path="/forgot-password" element={<ForgotPass />} />
           <Route path="/forgot-password2" element={<ForgotPass2 />} />
         </Route>
