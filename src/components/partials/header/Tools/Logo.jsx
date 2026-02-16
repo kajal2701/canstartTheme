@@ -1,12 +1,9 @@
 import React from "react";
-import useDarkMode from "@/hooks/useDarkMode";
 import { Link } from "react-router-dom";
 import useWidth from "@/hooks/useWidth";
+import useDarkMode from "@/hooks/useDarkMode";
+import CanstarLogo from "@/assets/images/logo/canstar-logo.svg";
 
-import MainLogo from "@/assets/images/logo/logo.svg";
-import LogoWhite from "@/assets/images/logo/logo-white.svg";
-import MobileLogo from "@/assets/images/logo/logo-c.svg";
-import MobileLogoWhite from "@/assets/images/logo/logo-c-white.svg";
 const Logo = () => {
   const [isDark] = useDarkMode();
   const { width, breakpoints } = useWidth();
@@ -15,9 +12,27 @@ const Logo = () => {
     <div>
       <Link to="/dashboard">
         {width >= breakpoints.xl ? (
-          <img src={isDark ? LogoWhite : MainLogo} alt="logo-1" />
+          // Desktop: Full logo
+          <div
+            className={`${!isDark ? "bg-gradient-to-br from-[#0F2027] via-[#1a3038] to-[#2C5364] rounded-lg p-2" : ""}`}
+          >
+            <img
+              src={CanstarLogo}
+              alt="Canstar Lights"
+              className="h-10 w-auto object-contain"
+            />
+          </div>
         ) : (
-          <img src={isDark ? MobileLogoWhite : MobileLogo} alt="logo-2" />
+          // Mobile: Smaller logo with background in light mode
+          <div
+            className={`${!isDark ? "bg-gradient-to-br from-[#0F2027] via-[#1a3038] to-[#2C5364] rounded-lg p-1.5" : ""}`}
+          >
+            <img
+              src={CanstarLogo}
+              alt="Canstar Lights"
+              className="h-8 w-auto object-contain"
+            />
+          </div>
         )}
       </Link>
     </div>

@@ -32,6 +32,8 @@ const Header = ({ className = "custom-class", title }) => {
     setMobileMenu(!mobileMenu);
   };
 
+  console.log("header");
+
   return (
     <header
       className={clsx(
@@ -59,9 +61,6 @@ const Header = ({ className = "custom-class", title }) => {
           {menuType === "vertical" && (
             <div className="flex items-center md:space-x-4 space-x-2 rtl:space-x-reverse">
               {width < breakpoints.xl && <Logo />}
-              <div>
-                <SearchBox />
-              </div>
             </div>
           )}
 

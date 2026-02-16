@@ -1,6 +1,6 @@
 const themeConfig = {
   app: {
-    name: "DashSpace React",
+    name: "CanStar System",
   },
   // layout
   layout: {

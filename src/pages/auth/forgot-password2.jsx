@@ -35,7 +35,7 @@ const ForgotPass2 = () => {
               Forgot Your Password?
             </div>
             <div className=" text-gray-500 dark:text-gray-400 text-sm mb-6">
-              Reset Password with Admin DashSpace.
+              Reset Password with Admin CanStar.
             </div>
             {/* logo wrapper end */}
             <ForgotPass />

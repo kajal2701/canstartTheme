@@ -25,7 +25,7 @@ const InvoicePreviewPage = () => {
               <div className=" text-sm ">
                 <strong>Hello Charles Hall</strong>, <br />
                 This is the receipt for a payment of $268.00 (USD) you made to
-                DashSpace - Admin Dashboard Demo.
+                CanStar - Admin Dashboard Demo.
               </div>
             </div>
             <div className="flex-none flex items-center space-x-3 rtl:space-x-reverse">

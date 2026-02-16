@@ -63,7 +63,7 @@ const BasicWidget = () => {
         >
           <div className="max-w-[180px]">
             <h4 className="text-xl font-medium text-white mb-2">
-              Upgrade your DashSpace
+              Upgrade your CanStar
             </h4>
             <p className="text-sm text-white text-opacity-80">
               Pro plan for better results
@@ -82,7 +82,7 @@ const BasicWidget = () => {
         >
           <div className="max-w-[180px]">
             <div className="text-xl font-medium text-gray-900 mb-2">
-              Upgrade your DashSpace
+              Upgrade your CanStar
             </div>
             <p className="text-sm text-gray-800">Pro plan for better results</p>
           </div>
@@ -99,7 +99,7 @@ const BasicWidget = () => {
         >
           <div className="max-w-[180px]">
             <div className="text-xl font-medium text-gray-900 mb-2">
-              Upgrade your DashSpace
+              Upgrade your CanStar
             </div>
             <p className="text-sm text-gray-800">Pro plan for better results</p>
           </div>
@@ -119,9 +119,7 @@ const BasicWidget = () => {
               <span className="block font-normal">Good evening,</span>
               <span className="block">Mr. Dianne Russell</span>
             </h4>
-            <p className="text-sm text-white font-normal">
-              Welcome to DashSpace
-            </p>
+            <p className="text-sm text-white font-normal">Welcome to CanStar</p>
           </div>
         </div>
         {/* ?? end Single ?? */}
@@ -138,7 +136,7 @@ const BasicWidget = () => {
                 <span className="block">Mr. Dianne Russell</span>
               </div>
               <p className="text-sm text-gray-900 font-normal">
-                Welcome to DashSpace
+                Welcome to CanStar
               </p>
             </div>
           </div>
@@ -160,7 +158,7 @@ const BasicWidget = () => {
                 <span className="block">Mr. Dianne Russell</span>
               </div>
               <p className="text-sm text-wgite text-white dark:text-gray-800 font-normal">
-                Welcome to DashSpace
+                Welcome to CanStar
               </p>
             </div>
           </div>

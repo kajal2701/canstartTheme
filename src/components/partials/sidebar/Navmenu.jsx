@@ -42,7 +42,7 @@ const Navmenu = ({ menus }) => {
         }
       }
     });
-    document.title = `DashSpace  | ${locationName}`;
+    document.title = `CanStar System  | ${locationName}`;
 
     setActiveSubmenu(submenuIndex);
     if (mobileMenu) {

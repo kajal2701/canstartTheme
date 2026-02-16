@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from "react";
-
 import Navmenu from "./Navmenu";
 import { menuItems } from "@/mocks/data";
 import SimpleBar from "simplebar-react";
@@ -9,13 +8,13 @@ import { Link } from "react-router-dom";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import Icon from "@/components/ui/Icon";
 
-// import images
-import MobileLogo from "@/assets/images/logo/logo-c.svg";
-import MobileLogoWhite from "@/assets/images/logo/logo-c-white.svg";
-import svgRabitImage from "@/assets/images/svg/rabit.svg";
+// import Canstar logo
+import CanstarLogo from "@/assets/images/logo/canstar-logo.svg";
+
 const MobileMenu = ({ className = "custom-class" }) => {
   const scrollableNodeRef = useRef();
   const [scroll, setScroll] = useState(false);
+
   useEffect(() => {
     const handleScroll = () => {
       if (scrollableNodeRef.current.scrollTop > 0) {
@@ -30,44 +29,51 @@ const MobileMenu = ({ className = "custom-class" }) => {
   const [isSemiDark] = useSemiDark();
   const [isDark] = useDarkMode();
   const [mobileMenu, setMobileMenu] = useMobileMenu();
+
   return (
     <div className={isSemiDark ? "dark" : ""}>
       <div
-        className={`${className} fixed  top-0 bg-white dark:bg-gray-800 shadow-lg  h-full   w-[280px]`}
+        className={`${className} fixed top-0 bg-white dark:bg-gray-800 shadow-lg h-full w-[280px]`}
       >
-        <div className="logo-segment flex justify-between items-center bg-white dark:bg-gray-800 z-[9] h-[85px]  px-4 ">
+        {/* Logo Section */}
+        <div className="logo-segment flex justify-between items-center bg-white dark:bg-gray-800 z-[9] h-[85px] px-4">
           <Link to="/dashboard">
-            <div className="flex items-center space-x-4">
-              <div className="logo-icon">
-                {!isDark && !isSemiDark ? (
-                  <img src={MobileLogo} alt="" />
-                ) : (
-                  <img src={MobileLogoWhite} alt="" />
-                )}
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  DashSpace
-                </h1>
-              </div>
+            {/* Logo Icon with conditional background */}
+            <div
+              className={`inline-flex items-center justify-center ${
+                !isDark && !isSemiDark
+                  ? "bg-gradient-to-br from-[#0F2027] via-[#1a3038] to-[#2C5364] rounded-lg p-2"
+                  : ""
+              }`}
+            >
+              <img
+                src={CanstarLogo}
+                alt="Canstar Lights"
+                className="h-10 w-auto object-contain"
+              />
             </div>
           </Link>
+
+          {/* Close Button */}
           <button
             type="button"
             onClick={() => setMobileMenu(!mobileMenu)}
-            className="cursor-pointer text-gray-900 dark:text-white text-2xl"
+            className="cursor-pointer text-gray-900 dark:text-white text-2xl hover:text-red-500 transition-colors"
           >
             <Icon icon="heroicons:x-mark" />
           </button>
         </div>
 
+        {/* Scroll Shadow */}
         <div
-          className={`h-[60px]  absolute top-[80px] nav-shadow z-[1] w-full transition-all duration-200 pointer-events-none ${
-            scroll ? " opacity-100" : " opacity-0"
+          className={`h-[60px] absolute top-[80px] nav-shadow z-[1] w-full transition-all duration-200 pointer-events-none ${
+            scroll ? "opacity-100" : "opacity-0"
           }`}
         ></div>
+
+        {/* Menu Items */}
         <SimpleBar
-          className="sidebar-menu  h-[calc(100%-80px)]"
+          className="sidebar-menu h-[calc(100%-80px)]"
           scrollableNodeProps={{ ref: scrollableNodeRef }}
         >
           <Navmenu menus={menuItems} />
