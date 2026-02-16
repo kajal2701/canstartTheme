@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import Navmenu from "./Navmenu";
+import Button from "@/components/ui/Button";
 import { menuItems } from "@/mocks/data";
 import SimpleBar from "simplebar-react";
 import useSemiDark from "@/hooks/useSemiDark";
@@ -7,11 +8,14 @@ import useDarkMode from "@/hooks/useDarkMode";
 import { Link } from "react-router-dom";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import Icon from "@/components/ui/Icon";
+import { useDispatch } from "react-redux";
+import { logOut } from "@/store/api/auth/authSlice";
 
 // import Canstar logo
 import CanstarLogo from "@/assets/images/logo/canstar-logo.svg";
 
 const MobileMenu = ({ className = "custom-class" }) => {
+  const dispatch = useDispatch();
   const scrollableNodeRef = useRef();
   const [scroll, setScroll] = useState(false);
 
@@ -29,6 +33,11 @@ const MobileMenu = ({ className = "custom-class" }) => {
   const [isSemiDark] = useSemiDark();
   const [isDark] = useDarkMode();
   const [mobileMenu, setMobileMenu] = useMobileMenu();
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    dispatch(logOut());
+  };
 
   return (
     <div className={isSemiDark ? "dark" : ""}>
@@ -71,13 +80,23 @@ const MobileMenu = ({ className = "custom-class" }) => {
           }`}
         ></div>
 
-        {/* Menu Items */}
+        {/* Menu Items - Adjusted height to make room for logout */}
         <SimpleBar
-          className="sidebar-menu h-[calc(100%-80px)]"
+          className="sidebar-menu h-[calc(100%-165px)]"
           scrollableNodeProps={{ ref: scrollableNodeRef }}
         >
           <Navmenu menus={menuItems} />
         </SimpleBar>
+
+        {/* Logout Button - Fixed at Bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+          <Button
+            icon="ph:sign-out"
+            text="Logout"
+            className="btn-outline-danger block w-full hover:bg-red-500 hover:text-white transition-all duration-300"
+            onClick={handleLogout}
+          />
+        </div>
       </div>
     </div>
   );

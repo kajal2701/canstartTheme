@@ -4,10 +4,6 @@ import Icon from "@/components/ui/Icon";
 import useDarkMode from "@/hooks/useDarkMode";
 import useSidebar from "@/hooks/useSidebar";
 import useSemiDark from "@/hooks/useSemiDark";
-
-// import images
-import MobileLogo from "@/assets/images/logo/logo-c.svg";
-import MobileLogoWhite from "@/assets/images/logo/logo-c-white.svg";
 import canStarLogo from "@/assets/images/logo/canstar-logo.svg";
 
 const SidebarLogo = ({ menuHover }) => {
@@ -19,7 +15,7 @@ const SidebarLogo = ({ menuHover }) => {
     <div
       className={`logo-segment flex justify-between items-center z-[9] py-6 px-4  
       ${menuHover ? "logo-hovered" : ""}
-      ${!isDark ? " bg-gradient-to-br from-[#0F2027] via-[#203A43] to-[#2C5364]" : ""}
+      ${!isDark ? "bg-gradient-to-br from-[#0F2027] via-[#203A43] to-[#2C5364]" : ""}
       `}
     >
       <Link to="/dashboard">
@@ -39,11 +35,17 @@ const SidebarLogo = ({ menuHover }) => {
       {(!collapsed || menuHover) && (
         <div
           onClick={() => setMenuCollapsed(!collapsed)}
-          className={`h-4 w-4 border-[1px] border-gray-400 rounded-full transition-all duration-150 cursor-pointer
+          className={`h-4 w-4 rounded-full transition-all duration-150 cursor-pointer
           ${
-            collapsed
-              ? ""
-              : "ring-1 ring-inset ring-offset-[4px] ring-gray-400 bg-gray-400 ring-offset-gray-800"
+            !isDark
+              ? // Light mode (gradient background) - Use white/light colors
+                collapsed
+                ? "border-[1px] border-white/60 hover:border-white"
+                : "ring-1 ring-inset ring-offset-[4px] ring-white bg-white ring-offset-[#2C5364]"
+              : // Dark mode - Use gray colors
+                collapsed
+                ? "border-[1px] border-gray-400 hover:border-gray-300"
+                : "ring-1 ring-inset ring-offset-[4px] ring-gray-400 bg-gray-400 ring-offset-gray-800"
           }
           `}
         ></div>
