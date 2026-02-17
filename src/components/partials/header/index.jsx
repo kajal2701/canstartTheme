@@ -32,8 +32,6 @@ const Header = ({ className = "custom-class", title }) => {
     setMobileMenu(!mobileMenu);
   };
 
-  console.log("header");
-
   return (
     <header
       className={clsx(

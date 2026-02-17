@@ -64,14 +64,6 @@ export default function ImageLineAnnotationEditor({ image }) {
     });
   };
 
-  // ✅ Clear All
-  //  const handleClear = () => {
-  //   setRemovedLines([...lines].reverse()); // store lines reversed
-  //   setLines([]); // clear canvas
-  // };
-
-  console.log("lines", lines);
-  console.log(removedLines, "removedLines");
   const handleReverse = () => {
     setRemovedLines((prev) => {
       if (prev.length === 0) return prev;
@@ -104,7 +96,6 @@ export default function ImageLineAnnotationEditor({ image }) {
     link.click();
   };
 
-  console.log(image, "imageUrl");
   return (
     <div>
       {/* ================= HEADER TOOLBAR ================= */}

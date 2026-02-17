@@ -12,8 +12,6 @@ import SingleMenu from "./single-menu";
 const Navmenu = ({ menus }) => {
   const [activeSubmenu, setActiveSubmenu] = useState(null);
 
-  console.log(activeSubmenu, "activeSubmenu");
-
   const toggleSubmenu = (i) => {
     if (activeSubmenu === i) {
       setActiveSubmenu(null);

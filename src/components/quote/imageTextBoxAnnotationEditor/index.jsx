@@ -19,9 +19,6 @@ export default function ImageTextBoxAnnotationEditor({ image }) {
     const x = rect.width / (15 * scale);
     const y = rect.height / (15 * scale);
 
-    console.log(x, "x");
-    console.log(y, "y");
-
     const newBox = {
       id: Date.now(),
       value: inputValue,
