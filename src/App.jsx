@@ -24,6 +24,7 @@ import Install from "./pages/install/Index";
 import Product from "./pages/product/Index";
 import AddProduct from "./pages/product/AddProduct";
 import Invoice from "./pages/invoice/Index";
+import ViewQuoteAdmin from "./pages/quote/ViewQuoteAdmin";
 
 function App() {
   return (
@@ -50,6 +51,11 @@ function App() {
           <Route path="quote">
             <Route index element={<Quote />} />
             <Route path="add" element={<AddQuote />} />
+            <Route
+              path="view_quote_admin/:id"
+              element={<ViewQuoteAdmin />}
+            />{" "}
+            {/* ← ADD */}
           </Route>
 
           <Route path="install" element={<Install />} />
