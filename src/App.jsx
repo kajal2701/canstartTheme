@@ -26,7 +26,10 @@ import AddProduct from "./pages/product/AddProduct";
 import Invoice from "./pages/invoice/Index";
 import ViewQuoteAdmin from "./pages/quote/ViewQuoteAdmin";
 
+const Profile = lazy(() => import("./pages/utility/profile"));
+
 function App() {
+  console.log("object");
   return (
     <main className="App  relative">
       <Routes>
@@ -66,7 +69,7 @@ function App() {
           </Route>
 
           <Route path="invoice" element={<Invoice />} />
-
+          <Route path="profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/404" />} />
         </Route>
         <Route

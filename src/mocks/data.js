@@ -62,7 +62,7 @@ export const menuItems = [
   },
 
   {
-    title: "Product",
+    title: "Product ",
     icon: "ph:basket",
     link: "#",
     isHide: true,
