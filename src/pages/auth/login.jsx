@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import LoginForm from "./common/login-form";
 import useDarkMode from "@/hooks/useDarkMode";
@@ -8,6 +8,16 @@ import Logo from "@/assets/images/logo/canstar-logo.svg";
 
 const login = () => {
   const [isDark] = useDarkMode();
+  console.log("login form");
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const res = await fetch("http://localhost:3000/users");
+      const data = await res.json();
+      console.log("data", data);
+    };
+    fetchUsers();
+  }, []);
   return (
     <>
       {/* Background with subtle gradient */}

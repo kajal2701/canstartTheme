@@ -9,7 +9,7 @@ import useSemiDark from "@/hooks/useSemiDark";
 import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { logOut } from "@/store/api/auth/authSlice";
+import { logOut } from "@/store/auth/authSlice";
 
 const Sidebar = () => {
   const navigate = useNavigate();

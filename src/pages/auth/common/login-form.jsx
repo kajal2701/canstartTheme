@@ -10,8 +10,7 @@ import Checkbox from "@/components/ui/Checkbox";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { useLoginMutation } from "@/store/api/auth/authApiSlice";
-import { setUser } from "@/store/api/auth/authSlice";
+import { setUser } from "@/store/auth/authSlice";
 
 const schema = yup
   .object({
@@ -21,7 +20,7 @@ const schema = yup
   .required();
 
 const LoginForm = () => {
-  const [login, { isLoading }] = useLoginMutation();
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const {
     register,
@@ -35,26 +34,21 @@ const LoginForm = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await login(data);
-
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
-
-      if (response.data.error) {
-        throw new Error(response.data.error);
-      }
-
-      if (!response.data.token) {
+      setIsLoading(true);
+      const { email, password } = data;
+      if (!email || !password) {
         throw new Error("Invalid credentials");
       }
-
-      dispatch(setUser(data));
+      const token = "local-token";
+      const user = { email };
+      dispatch(setUser(user));
+      localStorage.setItem("user", JSON.stringify(user));
       navigate("/dashboard");
-      localStorage.setItem("user", JSON.stringify(response.data.user));
       toast.success("Login Successful");
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 

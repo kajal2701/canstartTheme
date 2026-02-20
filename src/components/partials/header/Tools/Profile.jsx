@@ -5,7 +5,7 @@ import Button from "@/components/ui/Button";
 import { Menu, Transition } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logOut } from "@/store/api/auth/authSlice";
+import { logOut } from "@/store/auth/authSlice";
 import clsx from "clsx";
 import UserAvatar from "@/assets/images/avatar/avatar.jpg";
 
