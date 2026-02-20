@@ -1,50 +1,68 @@
 import React, { useState } from "react";
-import InputGroup from "@/components/ui/InputGroup";
-import Button from "@/components/ui/Button";
-import Icon from "@/components/ui/Icon";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
-import Checkbox from "@/components/ui/Checkbox";
-import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { setUser } from "@/store/auth/authSlice";
 
-const schema = yup
-  .object({
-    email: yup.string().email("Invalid email").required("Email is Required"),
-    password: yup.string().required("Password is Required"),
-  })
-  .required();
+const schema = yup.object({
+  email: yup
+    .string()
+    .trim()
+    .lowercase()
+    .email("Please enter a valid email address")
+    .required("Email address is required"),
+
+  password: yup
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(32, "Password must not exceed 32 characters")
+    .required("Password is required"),
+});
 
 const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const {
     register,
-    formState: { errors },
     handleSubmit,
+    formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
     mode: "all",
   });
-  const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     try {
       setIsLoading(true);
       const { email, password } = data;
-      if (!email || !password) {
-        throw new Error("Invalid credentials");
+
+      // Step 1 - call backend API
+      const res = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await res.json();
+
+      // Step 2 - if error from backend
+      if (!res.ok) {
+        throw new Error(result.message || "Login failed");
       }
-      const token = "local-token";
-      const user = { email };
-      dispatch(setUser(user));
-      localStorage.setItem("user", JSON.stringify(user));
-      navigate("/dashboard");
+
+      // Step 3 - save user in redux + localStorage
+      dispatch(setUser(result.user));
+
+      console.log("login");
+      // Step 4 - redirect to dashboard
       toast.success("Login Successful");
+      navigate("/dashboard");
+      console.log("navigate");
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -52,65 +70,50 @@ const LoginForm = () => {
     }
   };
 
-  const [checked, setChecked] = useState(false);
-
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      {/* Email Input */}
+      {/* Email */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           Email
         </label>
-        <InputGroup
-          name="email"
+        <input
+          {...register("email")}
           type="email"
-          placeholder="DashSpace@gmail.com"
-          prepend="@"
-          defaultValue="DashSpace@gmail.com"
-          register={register}
-          error={errors.email}
-          merged
-          disabled={isLoading}
-          className="focus:ring-2 focus:ring-[#2C5364] focus:border-[#2C5364]"
+          placeholder="admin@example.com"
+          className={`w-full border rounded-lg px-4 py-2 text-sm outline-none
+            ${errors.email ? "border-red-500" : "border-gray-300"}`}
         />
+        {errors.email && (
+          <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+        )}
       </div>
 
-      {/* Password Input */}
+      {/* Password */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           Password
         </label>
-        <InputGroup
-          name="password"
+        <input
+          {...register("password")}
           type="password"
           placeholder="••••••••"
-          prepend={<Icon icon="ph:lock-simple" />}
-          defaultValue="DashSpace"
-          register={register}
-          error={errors.password}
-          merged
-          disabled={isLoading}
-          className="focus:ring-2 focus:ring-[#2C5364] focus:border-[#2C5364]"
+          className={`w-full border rounded-lg px-4 py-2 text-sm outline-none
+            ${errors.password ? "border-red-500" : "border-gray-300"}`}
         />
+        {errors.password && (
+          <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+        )}
       </div>
 
-      {/* Remember Me & Forgot Password */}
-      <div className="flex items-center justify-between">
-        <Checkbox
-          value={checked}
-          onChange={() => setChecked(!checked)}
-          label="Remember me"
-          className="text-sm"
-        />
-      </div>
-
-      {/* Sign In Button */}
-      <Button
+      {/* Submit */}
+      <button
         type="submit"
-        text="Sign in"
+        disabled={isLoading}
         className="btn block w-full text-center bg-gradient-to-r from-[#0F2027] via-[#203A43] to-[#2C5364] hover:opacity-90 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-300"
-        isLoading={isLoading}
-      />
+      >
+        {isLoading ? "Signing in..." : "Sign In"}
+      </button>
     </form>
   );
 };

@@ -1,25 +1,32 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { v4 as uuidv4 } from "uuid";
 
-const storedUser = JSON.parse(localStorage.getItem("user"));
+const getUserFromStorage = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user")) || null;
+  } catch {
+    return null;
+  }
+};
 
-export const authSlice = createSlice({
+const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: storedUser || null,
-    isAuth: !!storedUser,
+    user: getUserFromStorage(),
+    isAuth: !!getUserFromStorage(),
   },
   reducers: {
     setUser: (state, action) => {
       state.user = action.payload;
       state.isAuth = true;
+      localStorage.setItem("user", JSON.stringify(action.payload));
     },
-    logOut: (state, action) => {
+    logout: (state) => {
       state.user = null;
       state.isAuth = false;
+      localStorage.removeItem("user");
     },
   },
 });
 
-export const { setUser, logOut } = authSlice.actions;
+export const { setUser, logout } = authSlice.actions;
 export default authSlice.reducer;

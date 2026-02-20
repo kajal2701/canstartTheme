@@ -11,7 +11,6 @@ import Footer from "@/components/partials/footer";
 import MobileMenu from "../components/partials/sidebar/MobileMenu";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import MobileFooter from "@/components/partials/footer/MobileFooter";
-import { ToastContainer } from "react-toastify";
 import { useSelector } from "react-redux";
 import Loading from "@/components/Loading";
 import { motion, AnimatePresence } from "framer-motion";
@@ -46,7 +45,6 @@ const Layout = () => {
 
   return (
     <>
-      <ToastContainer />
       <Header className={width > breakpoints.xl ? switchHeaderClass() : ""} />
       {menuType === "vertical" && width > breakpoints.xl && !menuHidden && (
         <Sidebar />

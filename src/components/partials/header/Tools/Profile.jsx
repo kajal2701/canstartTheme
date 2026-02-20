@@ -5,7 +5,7 @@ import Button from "@/components/ui/Button";
 import { Menu, Transition } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logOut } from "@/store/auth/authSlice";
+import { logout } from "@/store/auth/authSlice";
 import clsx from "clsx";
 import UserAvatar from "@/assets/images/avatar/avatar.jpg";
 
@@ -68,7 +68,7 @@ const Profile = ({ sticky }) => {
   const handleLogout = () => {
     // Clear user data from local storage
     localStorage.removeItem("user");
-    dispatch(logOut());
+    dispatch(logout());
   };
   return (
     <Dropdown

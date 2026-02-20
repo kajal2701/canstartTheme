@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import Icon from "@/components/ui/Icon";
 import { useDispatch } from "react-redux";
-import { logOut } from "@/store/auth/authSlice";
+import { logout } from "@/store/auth/authSlice";
 
 // import Canstar logo
 import CanstarLogo from "@/assets/images/logo/canstar-logo.svg";
@@ -36,7 +36,7 @@ const MobileMenu = ({ className = "custom-class" }) => {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-    dispatch(logOut());
+    dispatch(logout());
   };
 
   return (
