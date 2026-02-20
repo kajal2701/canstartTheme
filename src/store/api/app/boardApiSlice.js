@@ -4,58 +4,50 @@ export const boardApi = apiSlice.injectEndpoints({
   tagTypes: ["boards"],
   endpoints: (builder) => ({
     getBoards: builder.query({
-      query: () => ({
-        url: `boards`,
-        method: "GET",
-      }),
-      // keepUnusedDataFor: 1,
+      queryFn: async () => {
+        const boards = [
+          { id: "b1", title: "Backlog", tasks: [{ id: "t1", title: "Sample task" }] },
+          { id: "b2", title: "In Progress", tasks: [{ id: "t2", title: "Implement UI" }] },
+          { id: "b3", title: "Done", tasks: [{ id: "t3", title: "Set up project" }] },
+        ];
+        return { data: boards };
+      },
       providesTags: ["boards"],
     }),
     createBoard: builder.mutation({
-      query: (board) => ({
-        url: "/boards",
-        method: "POST",
-        body: board,
-      }),
-
+      queryFn: async (board) => {
+        return { data: { success: true, board: { id: Date.now().toString(), ...board } } };
+      },
       invalidatesTags: ["boards"],
     }),
     editBoard: builder.mutation({
-      query: ({ boardId, board }) => ({
-        url: `/boards/${boardId}`,
-        method: "PUT",
-        body: { boardId, ...board },
-      }),
+      queryFn: async ({ boardId, board }) => {
+        return { data: { success: true, boardId, board } };
+      },
       invalidatesTags: ["boards"],
     }),
     createTask: builder.mutation({
-      query: ({ boardId, ...task }) => ({
-        url: `/boards/${boardId}/tasks`,
-        method: "POST",
-        body: task,
-      }),
+      queryFn: async ({ boardId, ...task }) => {
+        return { data: { success: true, boardId, task: { id: Date.now().toString(), ...task } } };
+      },
       invalidatesTags: ["boards"],
     }),
     editTask: builder.mutation({
-      query: ({ boardId, taskId, task }) => ({
-        url: `/boards/${boardId}/tasks/${taskId}`,
-        method: "PUT",
-        body: { taskId, ...task },
-      }),
+      queryFn: async ({ boardId, taskId, task }) => {
+        return { data: { success: true, boardId, taskId, task } };
+      },
       invalidatesTags: ["boards"],
     }),
     deleteBoard: builder.mutation({
-      query: (id) => ({
-        url: `/boards/${id}`,
-        method: "DELETE",
-      }),
+      queryFn: async (id) => {
+        return { data: { success: true, id } };
+      },
       invalidatesTags: ["boards"],
     }),
     deleteTask: builder.mutation({
-      query: ({ boardId, taskId }) => ({
-        url: `/boards/${boardId}/tasks/${taskId}`,
-        method: "DELETE",
-      }),
+      queryFn: async ({ boardId, taskId }) => {
+        return { data: { success: true, boardId, taskId } };
+      },
       invalidatesTags: ["boards"],
     }),
   }),

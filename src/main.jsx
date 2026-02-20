@@ -9,7 +9,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { Provider } from "react-redux";
 import store from "./store";
 import "react-toastify/dist/ReactToastify.css";
-import "./server";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <>
@@ -18,5 +17,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <App />
       </Provider>
     </BrowserRouter>
-  </>
+  </>,
 );

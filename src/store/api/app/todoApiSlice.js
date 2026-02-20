@@ -4,34 +4,33 @@ export const todoApi = apiSlice.injectEndpoints({
   tagTypes: ["todos"],
   endpoints: (builder) => ({
     getTodos: builder.query({
-      query: (params) => ({
-        url: `todos?${new URLSearchParams(params).toString()}`,
-        method: "GET",
-      }),
+      queryFn: async (params = {}) => {
+        const sample = [
+          { id: "1", title: "Sample task", completed: false, favorite: false },
+          { id: "2", title: "Design review", completed: true, favorite: true },
+        ];
+        return { data: sample };
+      },
       providesTags: ["todos"],
     }),
     addTodo: builder.mutation({
-      query: (todo) => ({
-        url: "/todos",
-        method: "POST",
-        body: todo,
-      }),
-
+      queryFn: async (todo) => {
+        return {
+          data: { success: true, todo: { id: Date.now().toString(), ...todo } },
+        };
+      },
       invalidatesTags: ["todos"],
     }),
     editTodo: builder.mutation({
-      query: ({ id, todo }) => ({
-        url: `/todos/${id}`,
-        method: "PUT",
-        body: { id, ...todo },
-      }),
+      queryFn: async ({ id, todo }) => {
+        return { data: { success: true, id, todo } };
+      },
       invalidatesTags: ["todos"],
     }),
     deleteTodo: builder.mutation({
-      query: (id) => ({
-        url: `/todos/${id}`,
-        method: "DELETE",
-      }),
+      queryFn: async (id) => {
+        return { data: { success: true, id } };
+      },
       invalidatesTags: ["todos"],
     }),
   }),

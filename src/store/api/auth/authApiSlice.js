@@ -3,18 +3,26 @@ import { apiSlice } from "../apiSlice";
 export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     registerUser: builder.mutation({
-      query: (user) => ({
-        url: "register",
-        method: "POST",
-        body: user,
-      }),
+      queryFn: async (user) => {
+        const token = "local-token";
+        const safeUser = {
+          email: user?.email || "",
+          firstName: user?.firstName || "",
+          lastName: user?.lastName || "",
+        };
+        return { data: { token, user: safeUser } };
+      },
     }),
     login: builder.mutation({
-      query: (data) => ({
-        url: "",
-        method: "POST",
-        body: data,
-      }),
+      queryFn: async (data) => {
+        const { email, password } = data || {};
+        if (!email || !password) {
+          return { error: { status: 400, message: "Invalid credentials" } };
+        }
+        const token = "local-token";
+        const user = { email };
+        return { data: { token, user } };
+      },
     }),
   }),
 });
