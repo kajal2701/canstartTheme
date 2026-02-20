@@ -10,7 +10,9 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
   const [modal3, setModal3] = useState(false);
   const [textBoxModel, setTextBoxModel] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null); // ← track which image is being edited
 
+  console.log(files, "files");
   // Form fields state
   const [formData, setFormData] = useState({
     color: "",
@@ -55,6 +57,39 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  // Handle line annotation save
+  const handleLineSave = (savedImageUrl) => {
+    const updatedFiles = [...files];
+    updatedFiles[selectedIndex] = {
+      ...updatedFiles[selectedIndex],
+      lineSaved: savedImageUrl, // store annotated version
+    };
+    setFiles(updatedFiles);
+    setModal3(false); // close modal
+  };
+
+  // Handle text box annotation save
+  const handleTextSave = (savedImageUrl, sum) => {
+    const updatedFiles = [...files];
+    updatedFiles[selectedIndex] = {
+      ...updatedFiles[selectedIndex],
+      textSaved: savedImageUrl,
+    };
+    setFiles(updatedFiles);
+    setTextBoxModel(false);
+
+    // Update sqft calculation like the jQuery logic
+    const newSftCount = (parseFloat(formData.sftCount) || 0) + sum;
+    const divideValue = parseFloat(formData.sqftSize) || 1;
+    const total = Math.ceil((newSftCount * divideValue) / 12);
+    setFormData((prev) => ({
+      ...prev,
+      sftCount: newSftCount,
+      total: total,
+      amount: (total * parseFloat(prev.unitPrice || 0)).toFixed(2),
     }));
   };
 
@@ -110,16 +145,16 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
               className="relative group w-full h-32 rounded-lg overflow-hidden border"
             >
               <img
-                src={item.preview}
+                src={item.lineSaved || item.preview} // ← show saved annotation if available
                 alt="preview"
                 className="w-full h-full object-cover"
               />
-
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedImage(item.preview);
+                    setSelectedImage(item.lineSaved || item.preview);
+                    setSelectedIndex(index); // ← track index
                     setModal3(true);
                   }}
                   className="bg-white p-3 rounded-full shadow-lg hover:scale-110 transition"
@@ -144,16 +179,16 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
               className="relative group w-full h-32 rounded-lg overflow-hidden border"
             >
               <img
-                src={item.preview}
+                src={item.textSaved || item.preview} // ← show saved annotation if available
                 alt="preview"
                 className="w-full h-full object-cover"
               />
-
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedImage(item.preview);
+                    setSelectedImage(item.textSaved || item.preview);
+                    setSelectedIndex(index); // ← track index
                     setTextBoxModel(true);
                   }}
                   className="bg-white p-3 rounded-full shadow-lg hover:scale-110 transition"
@@ -330,20 +365,25 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
         title="Edit Image – Lines Only"
         activeModal={modal3}
         onClose={() => setModal3(false)}
-        className="w-full max-w-[95%] sm:max-w-xl md:max-w-3xl lg:max-w-5xl"
       >
-        {selectedImage && <ImageLineAnnotationEditor image={selectedImage} />}
+        {selectedImage && (
+          <ImageLineAnnotationEditor
+            image={selectedImage}
+            onSave={handleLineSave}
+          />
+        )}
       </Modal>
-
       {/* MODAL Text Box */}
       <Modal
         title="Edit Image – Text Boxes Only"
         activeModal={textBoxModel}
         onClose={() => setTextBoxModel(false)}
-        className="w-full max-w-[95%] sm:max-w-xl md:max-w-3xl lg:max-w-5xl"
       >
         {selectedImage && (
-          <ImageTextBoxAnnotationEditor image={selectedImage} />
+          <ImageTextBoxAnnotationEditor
+            image={selectedImage}
+            onSave={handleTextSave} // ← wire up
+          />
         )}
       </Modal>
     </div>

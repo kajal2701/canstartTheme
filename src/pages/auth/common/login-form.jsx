@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { setUser } from "@/store/auth/authSlice";
-
+import { loginApi } from "../../../services/authService";
+import Checkbox from "@/components/ui/Checkbox";
 const schema = yup.object({
   email: yup
     .string()
@@ -26,6 +27,7 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [checked, setChecked] = useState(false);
 
   const {
     register,
@@ -41,28 +43,12 @@ const LoginForm = () => {
       setIsLoading(true);
       const { email, password } = data;
 
-      // Step 1 - call backend API
-      const res = await fetch("http://localhost:3000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      // ✅ just one line instead of all fetch code
+      const result = await loginApi(email, password);
 
-      const result = await res.json();
-
-      // Step 2 - if error from backend
-      if (!res.ok) {
-        throw new Error(result.message || "Login failed");
-      }
-
-      // Step 3 - save user in redux + localStorage
       dispatch(setUser(result.user));
-
-      console.log("login");
-      // Step 4 - redirect to dashboard
       toast.success("Login Successful");
       navigate("/dashboard");
-      console.log("navigate");
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -106,6 +92,14 @@ const LoginForm = () => {
         )}
       </div>
 
+      <div className="flex items-center justify-between">
+        <Checkbox
+          value={checked}
+          onChange={() => setChecked(!checked)}
+          label="Remember me"
+          className="text-sm"
+        />
+      </div>
       {/* Submit */}
       <button
         type="submit"

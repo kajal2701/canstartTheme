@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import Button from "@/components/ui/Button";
 
-export default function ImageTextBoxAnnotationEditor({ image }) {
+export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
   const [boxes, setBoxes] = useState([]);
   const [removed, setRemoved] = useState([]);
   const [inputValue, setInputValue] = useState("");
@@ -90,19 +90,54 @@ export default function ImageTextBoxAnnotationEditor({ image }) {
 
   // ================= SAVE =================
   const handleSave = () => {
-    const svg = containerRef.current.querySelector("svg");
-    const serializer = new XMLSerializer();
-    const source = serializer.serializeToString(svg);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
 
-    const blob = new Blob([source], {
-      type: "image/svg+xml;charset=utf-8",
-    });
+      ctx.drawImage(img, 0, 0);
 
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "annotation.svg";
-    link.click();
+      const renderedWidth = containerRef.current.offsetWidth;
+      const renderedHeight = containerRef.current.offsetHeight;
+      const scaleX = img.naturalWidth / renderedWidth;
+      const scaleY = img.naturalHeight / renderedHeight;
+
+      let sum = 0;
+
+      boxes.forEach((box) => {
+        const x = box.x * scaleX;
+        const y = box.y * scaleY;
+        const boxWidth = 60 * scaleX;
+        const boxHeight = 30 * scaleY;
+
+        // Draw background
+        ctx.fillStyle = "rgba(243, 244, 246, 1)";
+        ctx.fillRect(x, y, boxWidth, boxHeight);
+
+        // Draw border
+        ctx.strokeStyle = "#ccc";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, boxWidth, boxHeight);
+
+        // Draw text
+        ctx.fillStyle = "#000";
+        ctx.font = `bold ${14 * scaleX}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(box.value, x + boxWidth / 2, y + boxHeight / 2);
+
+        sum += parseInt(box.value) || 0;
+      });
+
+      const finalImageUrl = canvas.toDataURL("image/png");
+
+      // Send image + sum back to parent
+      if (onSave) onSave(finalImageUrl, sum);
+    };
+    img.src = image;
   };
 
   return (

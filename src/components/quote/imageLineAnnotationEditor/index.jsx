@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import Button from "@/components/ui/Button";
 
-export default function ImageLineAnnotationEditor({ image }) {
+export default function ImageLineAnnotationEditor({ image, onSave }) {
   const [lines, setLines] = useState([]);
   const [drawing, setDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState(null);
@@ -81,19 +81,39 @@ export default function ImageLineAnnotationEditor({ image }) {
   const zoomIn = () => setScale((prev) => prev + 0.1);
   const zoomOut = () => setScale((prev) => Math.max(0.5, prev - 0.1));
 
-  // ✅ Save as image
   const handleSave = () => {
-    const svg = containerRef.current.querySelector("svg");
-    const serializer = new XMLSerializer();
-    const source = serializer.serializeToString(svg);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      // Create a canvas, draw original image + SVG lines on top
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
 
-    const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
+      // Draw original image
+      ctx.drawImage(img, 0, 0);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "annotation.svg";
-    link.click();
+      // Draw each line scaled to natural image dimensions
+      const renderedWidth = containerRef.current.offsetWidth;
+      const scaleX = img.naturalWidth / renderedWidth;
+      const scaleY = img.naturalHeight / containerRef.current.offsetHeight;
+
+      lines.forEach((line) => {
+        ctx.beginPath();
+        ctx.moveTo(line.x1 * scaleX, line.y1 * scaleY);
+        ctx.lineTo(line.x2 * scaleX, line.y2 * scaleY);
+        ctx.strokeStyle = line.color;
+        ctx.lineWidth = line.strokeWidth * scaleX;
+        ctx.stroke();
+      });
+
+      const finalImageUrl = canvas.toDataURL("image/png");
+
+      // Send back to parent
+      if (onSave) onSave(finalImageUrl);
+    };
+    img.src = image;
   };
 
   return (
