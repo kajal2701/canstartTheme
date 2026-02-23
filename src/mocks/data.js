@@ -96,17 +96,7 @@ export const topMenu = [
         childlink: "dashboard",
         childicon: "ph:chart-line-up",
       },
-      {
-        childtitle: "Ecommerce Dashboard",
-        childlink: "ecommerce",
-        childicon: "ph:shopping-cart",
-      },
-      {
-        childtitle: "CRM Dashbaord",
-        childlink: "",
-        childicon: "ph:database",
-        badge: "coming",
-      },
+
       {
         childtitle: "Social",
         childlink: "crm",
