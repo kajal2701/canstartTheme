@@ -8,8 +8,8 @@ const Checkbox = ({
   value,
   name,
   onChange,
-  activeClass = "bg-indigo-500 dark:bg-gray-700 border-indigo-500 ",
-  className = "checkbox-className group-hover:border-indigo-500 ",
+  activeClass = "bg-[var(--primary)] dark:bg-gray-700 border-[var(--primary)] ",
+  className = "checkbox-className group-hover:border-[var(--primary)] ",
   indeterminate,
 }) => {
   return (
