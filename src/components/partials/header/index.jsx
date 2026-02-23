@@ -83,11 +83,6 @@ const Header = ({ className = "custom-class", title }) => {
           ) : null}
           {/* Nav Tools  */}
           <div className="nav-tools flex items-center lg:space-x-6 space-x-3 rtl:space-x-reverse">
-            {/* <Language /> */}
-            <SwitchDark />
-            {/* <Settings /> */}
-            {/* <Message /> */}
-            {/* <Notification /> */}
             <Profile sticky={sticky} />
 
             <div

@@ -105,7 +105,7 @@ const AddCustomer = () => {
           </div>
 
           <div className="ltr:text-right rtl:text-left space-x-3 rtl:space-x-reverse">
-            <Button text="Save" className="btn-primary light" />
+            <Button text="Save" className="btn-primary btn-sm" />
           </div>
         </div>
       </Card>

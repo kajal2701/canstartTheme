@@ -80,21 +80,6 @@ const Users = () => {
       },
     },
 
-    // {
-    //   Header: "age",
-    //   accessor: "age",
-    //   Cell: (row) => {
-    //     return <span>{row?.cell?.value}</span>;
-    //   },
-    // },
-    // {
-    //   Header: "phone",
-    //   accessor: "phone",
-    //   Cell: (row) => {
-    //     return <span>{row?.cell?.value}</span>;
-    //   },
-    // },
-
     {
       Header: "role",
       accessor: "role",
@@ -115,24 +100,7 @@ const Users = () => {
         );
       },
     },
-    // {
-    //   Header: "status",
-    //   accessor: "status",
-    //   Cell: (row) => {
-    //     const [checked, setChecked] = useState(row?.cell?.value);
 
-    //     const handleCheckboxChange = () => {
-    //       const updatedData = [...UserTable];
-    //       updatedData[row.cell.row.index].value = !checked;
-    //       setChecked(!checked);
-    //     };
-    //     return (
-    //       <span>
-    //         <Switch value={checked} onChange={handleCheckboxChange} />
-    //       </span>
-    //     );
-    //   },
-    // },
     {
       Header: "action",
       accessor: "action",

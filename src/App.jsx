@@ -29,7 +29,6 @@ import ViewQuoteAdmin from "./pages/quote/ViewQuoteAdmin";
 const Profile = lazy(() => import("./pages/utility/profile"));
 
 function App() {
-  console.log("object");
   return (
     <main className="App  relative">
       <Routes>
@@ -58,7 +57,6 @@ function App() {
               path="view_quote_admin/:id"
               element={<ViewQuoteAdmin />}
             />{" "}
-            {/* ← ADD */}
           </Route>
 
           <Route path="install" element={<Install />} />

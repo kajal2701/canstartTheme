@@ -72,7 +72,7 @@ const Sidebar = () => {
           <Button
             icon="ph:sign-out"
             text={!collapsed || menuHover ? "Logout" : ""}
-            className="btn-outline-danger block w-full hover:bg-red-500 hover:text-white transition-all duration-300"
+            className="btn-outline-primary block w-full hover:bg-primary hover:text-white transition-all duration-300"
             onClick={handleLogout}
           />
         </div>

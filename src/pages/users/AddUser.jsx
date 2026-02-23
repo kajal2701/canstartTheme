@@ -139,7 +139,7 @@ const AddUser = () => {
                 <Button
                   text="Save"
                   type="submit"
-                  className="btn-primary light"
+                  className="btn-primary btn-sm"
                 />
               </div>
             </div>

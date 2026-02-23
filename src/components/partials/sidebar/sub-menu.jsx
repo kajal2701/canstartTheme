@@ -93,16 +93,12 @@ const Submenu = ({ activeSubmenu, item, i }) => {
                   <div>
                     <div
                       className={`${
-                        isActive
-                          ? " text-indigo-500 dark:text-white "
-                          : "text-gray-600 dark:text-gray-300"
+                        isActive ? " text-[var(--primary)] " : "text-gray-600"
                       } text-sm flex space-x-3 items-center transition-all duration-150`}
                     >
                       <span
                         className={`${
-                          isActive
-                            ? " bg-indigo-500 dark:bg-gray-300   "
-                            : " bg-gray-600 dark:bg-white"
+                          isActive ? " bg-[var(--primary)]   " : " bg-gray-600"
                         } h-2 w-2 rounded-full border inline-block flex-none`}
                       ></span>
                       <span className="flex-1">
