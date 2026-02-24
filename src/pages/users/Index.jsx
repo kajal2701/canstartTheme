@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 import clsx from "clsx";
 import DataTable from "@/components/ui/DataTable";
 import { getUsers } from "@/services/usersService";
 import { toast } from "react-toastify";
+import { mapUserRole } from "@/utils/mappers";
 
 const Users = () => {
   const COLUMNS = [
@@ -55,7 +57,30 @@ const Users = () => {
       },
     },
 
-    // Actions are hidden for now; enable when endpoints exist
+    {
+      Header: "Action",
+      accessor: "action",
+      Cell: () => {
+        return (
+          <div className="flex space-x-2 rtl:space-x-reverse justify-center">
+            <button
+              className="icon-btn hover:bg-blue-50"
+              type="button"
+              title="Edit"
+            >
+              <Icon icon="ph:pencil-line" />
+            </button>
+            <button
+              className="icon-btn hover:bg-red-50"
+              type="button"
+              title="Delete"
+            >
+              <Icon icon="ph:trash" />
+            </button>
+          </div>
+        );
+      },
+    },
   ];
   const columns = useMemo(() => COLUMNS, []);
   const [data, setData] = useState([]);
@@ -69,29 +94,16 @@ const Users = () => {
         setLoading(true);
         const list = await getUsers();
         if (!mounted) return;
-        const roleLabel = (val) => {
-          const v = val != null ? String(val) : "";
-          if (v === "1") return "Admin";
-          if (v === "2") return "Installer";
-          if (v === "3") return "Operations";
-          if (v === "4") return "Sales";
-          return "User";
-        };
         const mapped = Array.isArray(list)
           ? list.map((u, idx) => ({
               id: idx + 1,
               user: {
                 avatar: u.avatar ?? "",
                 name:
-                  [u.fname, u.lname].filter(Boolean).join(" ").trim() ||
-                  u.name ||
-                  u.fullName ||
-                  u.username ||
-                  u.email ||
-                  "User",
+                  [u.fname, u.lname].filter(Boolean).join(" ").trim() || "User",
               },
               email: u.email ?? "",
-              role: roleLabel(u.role),
+              role: mapUserRole(u.role),
             }))
           : [];
         setData(mapped);

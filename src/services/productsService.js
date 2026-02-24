@@ -1,8 +1,8 @@
 const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
 
-export const getCustomers = async () => {
+export const getProducts = async () => {
   try {
-    const res = await fetch(`${BASE_URL}/customer/manage_customer`, {
+    const res = await fetch(`${BASE_URL}/products/manage_products`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });

@@ -8,16 +8,6 @@ const Footer = ({ className = "custom-class" }) => {
           <div className="text-center ltr:md:text-start rtl:md:text-right text-sm">
             COPYRIGHT &copy; 2022 CanStar System, All rights Reserved
           </div>
-          <div className="ltr:md:text-right rtl:md:text-end text-center text-sm">
-            Hand-crafted & Made by{" "}
-            <a
-              href="https://themeforest.net/user/freekytheme"
-              target="_blank"
-              className="text-indigo-700 font-semibold"
-            >
-              freekytheme
-            </a>
-          </div>
         </div>
       </div>
     </footer>

@@ -3,6 +3,7 @@ import Icon from "@/components/ui/Icon";
 import DataTable from "@/components/ui/DataTable";
 import { getCustomers } from "@/services/customersService";
 import { toast } from "react-toastify";
+import { buildAddressParts } from "@/utils/mappers";
 
 const Customer = () => {
   const COLUMNS = [
@@ -98,32 +99,18 @@ const Customer = () => {
       try {
         setLoading(true);
         const list = await getCustomers();
-        console.log("customer list", list);
         if (!mounted) return;
         const mapped = Array.isArray(list)
           ? list.map((c, idx) => {
-              const street =
-                c.address ||
-                [c.address1, c.address2].filter(Boolean).join(", ");
-              const address = [street, c.city, c.state, c.country]
-                .filter(Boolean)
-                .join(", ");
+              const parts = buildAddressParts(c);
               return {
-                id: c.cust_id ?? c.customer_id ?? c.id ?? idx + 1,
+                id: c.cust_id ?? idx + 1,
                 name:
-                  c.name ||
-                  c.customer_name ||
                   [c.fname, c.lname].filter(Boolean).join(" ").trim() ||
-                  c.email ||
                   "Customer",
                 email: c.email ?? "",
-                phone: c.phone ?? c.mobile ?? c.contact ?? "",
-                address,
-                addressLine: street,
-                city: c.city ?? "",
-                state: c.state ?? "",
-                country: c.country ?? "",
-                post_code: c.post_code ?? "",
+                phone: c.phone ?? "",
+                ...parts,
               };
             })
           : [];
