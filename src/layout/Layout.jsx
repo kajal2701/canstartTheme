@@ -24,7 +24,7 @@ const Layout = () => {
     if (!isAuth || !user) {
       navigate("/");
     }
-  }, [isAuth, navigate]);
+  }, [isAuth, user, navigate]);
   const switchHeaderClass = () => {
     if (menuType === "horizontal" || menuHidden) {
       return "ltr:ml-0 rtl:mr-0";
