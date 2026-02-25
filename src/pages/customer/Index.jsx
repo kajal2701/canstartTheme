@@ -4,6 +4,7 @@ import DataTable from "@/components/ui/DataTable";
 import { getCustomers } from "@/services/customersService";
 import { toast } from "react-toastify";
 import { buildAddressParts } from "@/utils/mappers";
+import LoadingIcon from "@/components/LoadingIcon";
 
 const Customer = () => {
   const COLUMNS = [
@@ -59,12 +60,14 @@ const Customer = () => {
         const line1 = o.addressLine || o.address || "-";
         const line2 = [o.city, o.state, o.country].filter(Boolean).join(", ");
         return (
-          <div className="max-w-[220px]">
-            <div className="text-xs text-gray-700 dark:text-gray-300">
+          <div className="max-w-[220px] break-words overflow-hidden">
+            <div className="text-xs text-gray-700 dark:text-gray-300 break-words whitespace-normal">
               {line1}
             </div>
             {(o.city || o.state || o.country) && (
-              <div className="text-xs text-gray-500">{line2}</div>
+              <div className="text-xs text-gray-500 break-words whitespace-normal">
+                {line2}
+              </div>
             )}
           </div>
         );
@@ -130,13 +133,19 @@ const Customer = () => {
 
   return (
     <>
-      <DataTable
-        title="Customer List"
-        columns={columns}
-        data={data}
-        loading={loading}
-        initialPageSize={10}
-      />
+      {loading ? (
+        <div className="flex justify-center items-center min-h-[200px]">
+          <LoadingIcon className="h-12 w-12 text-indigo-500" />
+        </div>
+      ) : (
+        <DataTable
+          title="Customer List"
+          columns={columns}
+          data={data}
+          loading={loading}
+          initialPageSize={10}
+        />
+      )}
     </>
   );
 };

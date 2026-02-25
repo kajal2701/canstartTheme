@@ -1,4 +1,5 @@
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
 import {
   useTable,
   useSortBy,
@@ -15,6 +16,7 @@ const DataTable = ({
   initialPageSize = 10,
   loading = false,
   skeletonRows = 6,
+  rightHeaderContent,
 }) => {
   const tableInstance = useTable(
     {
@@ -51,8 +53,9 @@ const DataTable = ({
     <Card noborder>
       <div className="md:flex justify-between items-center mb-6">
         <h4 className="card-title">{title}</h4>
-        <div>
+        <div className="flex items-center gap-3">
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
+          {rightHeaderContent}
         </div>
       </div>
       <div className="card">
@@ -74,14 +77,30 @@ const DataTable = ({
                           scope="col"
                           className=" table-th last:text-center "
                         >
-                          {column.render("Header")}
-                          <span>
-                            {column.isSorted
-                              ? column.isSortedDesc
-                                ? " 🔽"
-                                : " 🔼"
-                              : ""}
-                          </span>
+                          <div className="flex items-center gap-1">
+                            {column.render("Header")}
+                            {column.isSorted ? (
+                              column.isSortedDesc ? (
+                                <Icon
+                                  icon="heroicons:chevron-down"
+                                  className="text-gray-600 dark:text-gray-400"
+                                  width={16}
+                                />
+                              ) : (
+                                <Icon
+                                  icon="heroicons:chevron-up"
+                                  className="text-gray-600 dark:text-gray-400"
+                                  width={16}
+                                />
+                              )
+                            ) : (
+                              <Icon
+                                icon="heroicons:chevron-up-down"
+                                className="text-gray-400 dark:text-gray-500 opacity-50"
+                                width={16}
+                              />
+                            )}
+                          </div>
                         </th>
                       ))}
                     </tr>

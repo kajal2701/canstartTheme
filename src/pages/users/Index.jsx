@@ -6,6 +6,7 @@ import DataTable from "@/components/ui/DataTable";
 import { getUsers } from "@/services/usersService";
 import { toast } from "react-toastify";
 import { mapUserRole } from "@/utils/mappers";
+import LoadingIcon from "@/components/LoadingIcon";
 
 const Users = () => {
   const COLUMNS = [
@@ -122,13 +123,19 @@ const Users = () => {
 
   return (
     <>
-      <DataTable
-        title="Users List"
-        columns={columns}
-        data={data}
-        loading={loading}
-        initialPageSize={10}
-      />
+      {loading ? (
+        <div className="flex justify-center items-center min-h-[200px]">
+          <LoadingIcon className="h-12 w-12 text-indigo-500" />
+        </div>
+      ) : (
+        <DataTable
+          title="Users List"
+          columns={columns}
+          data={data}
+          loading={loading}
+          initialPageSize={10}
+        />
+      )}
     </>
   );
 };
