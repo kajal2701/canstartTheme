@@ -30,3 +30,21 @@ export const buildAddressParts = (obj) => {
     post_code: obj.post_code ?? "",
   };
 };
+
+export const AddressCell = ({ row }) => {
+  const o = row.original || {};
+  const line1 = o.address || "-";
+  const line2 = [o.city, o.state, o.country].filter(Boolean).join(", ");
+  return (
+    <div className="max-w-[220px] break-words overflow-hidden">
+      <div className="text-xs text-gray-700 dark:text-gray-300 break-words whitespace-normal">
+        {line1}
+      </div>
+      {(o.city || o.state || o.country) && (
+        <div className="text-xs text-gray-500 break-words whitespace-normal">
+          {line2}
+        </div>
+      )}
+    </div>
+  );
+};

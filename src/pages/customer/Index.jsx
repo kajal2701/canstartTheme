@@ -3,7 +3,7 @@ import Icon from "@/components/ui/Icon";
 import DataTable from "@/components/ui/DataTable";
 import { getCustomers } from "@/services/customersService";
 import { toast } from "react-toastify";
-import { buildAddressParts } from "@/utils/mappers";
+import { buildAddressParts, AddressCell } from "@/utils/mappers.jsx";
 import LoadingIcon from "@/components/LoadingIcon";
 
 const Customer = () => {
@@ -55,23 +55,7 @@ const Customer = () => {
     {
       Header: "Address",
       accessor: "address",
-      Cell: ({ row }) => {
-        const o = row.original || {};
-        const line1 = o.addressLine || o.address || "-";
-        const line2 = [o.city, o.state, o.country].filter(Boolean).join(", ");
-        return (
-          <div className="max-w-[220px] break-words overflow-hidden">
-            <div className="text-xs text-gray-700 dark:text-gray-300 break-words whitespace-normal">
-              {line1}
-            </div>
-            {(o.city || o.state || o.country) && (
-              <div className="text-xs text-gray-500 break-words whitespace-normal">
-                {line2}
-              </div>
-            )}
-          </div>
-        );
-      },
+      Cell: AddressCell,
     },
     {
       Header: "Actions",
