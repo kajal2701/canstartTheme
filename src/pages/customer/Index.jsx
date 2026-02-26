@@ -4,7 +4,6 @@ import DataTable from "@/components/ui/DataTable";
 import { getCustomers } from "@/services/customersService";
 import { toast } from "react-toastify";
 import { buildAddressParts, AddressCell } from "@/utils/mappers.jsx";
-import LoadingIcon from "@/components/LoadingIcon";
 
 const Customer = () => {
   const COLUMNS = [
@@ -116,21 +115,13 @@ const Customer = () => {
   }, []);
 
   return (
-    <>
-      {loading ? (
-        <div className="flex justify-center items-center min-h-[200px]">
-          <LoadingIcon className="h-12 w-12 text-indigo-500" />
-        </div>
-      ) : (
-        <DataTable
-          title="Customer List"
-          columns={columns}
-          data={data}
-          loading={loading}
-          initialPageSize={10}
-        />
-      )}
-    </>
+    <DataTable
+      title="Customer List"
+      columns={columns}
+      data={data}
+      loading={loading}
+      initialPageSize={10}
+    />
   );
 };
 

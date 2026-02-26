@@ -70,7 +70,7 @@ const LoginForm = () => {
     try {
       setIsLoading(true);
       const result = await loginApi(email, password);
-      dispatch(setUser(result.user));
+      dispatch(setUser(result.data));
       toast.success("Login Successful");
       navigate("/dashboard");
     } catch (error) {

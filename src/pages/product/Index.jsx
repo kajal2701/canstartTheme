@@ -6,7 +6,6 @@ import DataTable from "@/components/ui/DataTable";
 import { mapInventoryType } from "@/utils/mappers";
 import { getProducts } from "@/services/productsService";
 import { formatCurrency } from "@/utils/formatters";
-import LoadingIcon from "@/components/LoadingIcon";
 
 const Product = () => {
   const COLUMNS = [
@@ -139,21 +138,13 @@ const Product = () => {
   }, []);
 
   return (
-    <>
-      {loading ? (
-        <div className="flex justify-center items-center min-h-[200px]">
-          <LoadingIcon className="h-12 w-12 text-indigo-500" />
-        </div>
-      ) : (
-        <DataTable
-          title="Products List"
-          columns={columns}
-          data={data}
-          loading={loading}
-          initialPageSize={10}
-        />
-      )}
-    </>
+    <DataTable
+      title="Products List"
+      columns={columns}
+      data={data}
+      loading={loading}
+      initialPageSize={10}
+    />
   );
 };
 
