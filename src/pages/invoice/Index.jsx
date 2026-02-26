@@ -54,7 +54,11 @@ const Invoice = () => {
       accessor: "actions",
       Cell: () => (
         <div className="flex justify-center">
-          <button className="icon-btn" type="button" title="Print">
+          <button
+            className="icon-btn hover:bg-blue-50"
+            type="button"
+            title="Print"
+          >
             <Icon icon="ph:printer" />
           </button>
         </div>

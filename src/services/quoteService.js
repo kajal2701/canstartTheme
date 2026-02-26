@@ -16,3 +16,21 @@ export const getQuotes = async (userId, role) => {
     } catch (e) { }
     return [];
 };
+
+export const getQuote = async (quoteId) => {
+    if (!quoteId) return null;
+    try {
+        const res = await fetch(`${BASE_URL}/quote/view_quote/${quoteId}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+        const result = await res.json();
+        if (res.ok && result?.success) {
+            return result.data || null;
+        }
+        throw new Error(result.message || "Failed to fetch quote");
+    } catch (e) {
+        console.error("getQuote error", e);
+        throw e;
+    }
+};

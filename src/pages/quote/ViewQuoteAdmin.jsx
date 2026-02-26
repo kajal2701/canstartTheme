@@ -1,73 +1,93 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
-import { QUOTES_DUMMY_DATA } from "./quoteData";
+import LoadingIcon from "@/components/LoadingIcon";
+import { getQuote } from "../../services/quoteService";
+import { toast } from "react-toastify";
+import {
+  RichDescription,
+  SectionHeader,
+  StatusBadge,
+} from "../../utils/helperFunctions";
 
-// ─── Helper: render **bold** markdown in descriptions ───────────────────────
-const RichDescription = ({ text }) => {
-  const parts = text.split(/\*\*(.*?)\*\*/g);
-  return (
-    <span>
-      {parts.map((part, i) =>
-        i % 2 === 1 ? (
-          <strong
-            key={i}
-            className="font-semibold text-slate-900 dark:text-white"
-          >
-            {part}
-          </strong>
-        ) : (
-          part
-        ),
-      )}
-    </span>
-  );
-};
-
-// ─── Status Badge ────────────────────────────────────────────────────────────
-const StatusBadge = ({ status }) => {
-  const map = {
-    approved:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
-    sent: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
-    pending:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
-    draft: "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300",
-  };
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${map[status] || map.draft}`}
-    >
-      <span className="w-1.5 h-1.5 rounded-full bg-current" />
-      {status}
-    </span>
-  );
-};
-
-// ─── Section Header ──────────────────────────────────────────────────────────
-const SectionHeader = ({ icon, title }) => (
-  <div className="flex items-center gap-2 mb-5">
-    <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-      <Icon
-        icon={icon}
-        className="text-blue-600 dark:text-blue-400 text-base"
-      />
-    </div>
-    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-      {title}
-    </h3>
-  </div>
-);
-
-// ─── Main Component ──────────────────────────────────────────────────────────
 const ViewQuoteAdmin = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const quote = QUOTES_DUMMY_DATA[parseInt(id, 10)];
+  const [quote, setQuote] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [editingPayment, setEditingPayment] = useState(false);
+  const [error, setError] = useState(null);
 
-  if (!quote) {
+  React.useEffect(() => {
+    let mounted = true;
+
+    const fetch = async () => {
+      if (!id) return;
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getQuote(id);
+
+        if (mounted) {
+          console.log(data, "data");
+          setQuote(data);
+        }
+      } catch (e) {
+        if (mounted) {
+          const errorMsg = e.message || "Quote not found";
+          setError(errorMsg);
+          toast.error(errorMsg);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetch();
+
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
+
+  const formattedItems = React.useMemo(() => {
+    if (!quote) return [];
+
+    return [
+      ...(quote.annotation_image || []).map((item, index) => ({
+        id: index + 1,
+        description: `Canstar Puck Lights with a customized data line system, paired with a ${item.color} aluminum track package, designed for the ${item.identify_image_name} of the house/property.`,
+        images: item.images || [],
+        quantity: item.total_numerical_box,
+        unitCost: Number(item.unit_price),
+        total: Number(item.total_amount),
+      })),
+
+      ...(quote.products || []).map((product, index) => ({
+        id: (quote.annotation_image?.length || 0) + index + 1,
+        description: product.product_description,
+        images: [],
+        quantity: Number(product.qty),
+        unitCost: Number(product.price),
+        total: Number(product.amount),
+      })),
+    ];
+  }, [quote]);
+  
+  // Show loading
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <LoadingIcon className="h-12 w-12 text-indigo-500" />
+      </div>
+    );
+  }
+
+  // Show error
+  if (error || !quote) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
@@ -86,6 +106,7 @@ const ViewQuoteAdmin = () => {
     );
   }
 
+  // Show content
   return (
     <div className="space-y-5">
       {/* ── Page Title Bar ── */}
@@ -99,16 +120,15 @@ const ViewQuoteAdmin = () => {
           </button>
           <div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight font-inter">
-              {quote.quoteNumber}
+              {quote?.quoteNumber || quote?.quote_no}
             </h2>
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
               Quote Details &amp; Summary
             </p>
           </div>
         </div>
-        <StatusBadge status={quote.status} />
+        <StatusBadge status={quote?.status} />
       </div>
-
       {/* ── Header Card: From / Logo / To ── */}
       <Card bodyClass="p-0 overflow-hidden">
         {/* Top accent bar */}
@@ -122,16 +142,16 @@ const ViewQuoteAdmin = () => {
                 From
               </p>
               <p className="text-base font-bold text-slate-900 dark:text-white">
-                {quote.from.company}
+                CanStar
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                {quote.from.address}
+                3227 18 St NW
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                {quote.from.city}
+                Edmonton
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                {quote.from.province}
+                AB T6T 0H2
               </p>
             </div>
 
@@ -155,28 +175,28 @@ const ViewQuoteAdmin = () => {
                 To
               </p>
               <p className="text-base font-bold text-slate-900 dark:text-white">
-                {quote.to.company}
+                {quote.fname} {quote.lname}
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                {quote.to.address}
+                {quote.address}
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                {quote.to.city}
+                {quote.city}
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                {quote.to.province}
+                {quote.state} - {quote.post_code}
               </p>
               <div className="pt-2 space-y-1">
                 <div className="flex items-center gap-2 md:justify-end">
                   <Icon icon="ph:envelope" className="text-blue-400 text-sm" />
                   <span className="text-sm text-slate-600 dark:text-slate-300">
-                    {quote.to.email}
+                    Email ID : {quote.email}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 md:justify-end">
                   <Icon icon="ph:phone" className="text-blue-400 text-sm" />
                   <span className="text-sm text-slate-600 dark:text-slate-300">
-                    {quote.to.phone}
+                    Phone No : {quote.phone}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 md:justify-end pt-1">
@@ -185,7 +205,7 @@ const ViewQuoteAdmin = () => {
                     className="text-slate-400 text-sm"
                   />
                   <span className="text-xs text-slate-400 dark:text-slate-500">
-                    {quote.quoteDate}
+                    Quote Date : {quote.created_at}
                   </span>
                 </div>
               </div>
@@ -223,7 +243,7 @@ const ViewQuoteAdmin = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
-              {quote.items.map((item) => (
+              {formattedItems.map((item) => (
                 <tr
                   key={item.id}
                   className="hover:bg-blue-50/40 dark:hover:bg-blue-900/10 transition-colors"
@@ -297,7 +317,7 @@ const ViewQuoteAdmin = () => {
                 Customer Notes
               </label>
               <div className="min-h-[64px] p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm text-slate-500 dark:text-slate-400">
-                {quote.customerNotes || (
+                {quote.notes || (
                   <span className="italic text-slate-300 dark:text-slate-600">
                     No notes added
                   </span>
@@ -309,7 +329,7 @@ const ViewQuoteAdmin = () => {
                 Admin Notes
               </label>
               <div className="min-h-[64px] p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm text-slate-500 dark:text-slate-400">
-                {quote.adminNotes || (
+                {quote.adminnotes || (
                   <span className="italic text-slate-300 dark:text-slate-600">
                     No notes added
                   </span>
@@ -326,20 +346,30 @@ const ViewQuoteAdmin = () => {
             {[
               {
                 label: "Total Linear Feet",
-                value: `$${quote.totals.linearFeet.toFixed(2)}`,
+                value: `$${quote.total_feet_price}`,
               },
               {
                 label: "Total Controller",
-                value: `$${quote.totals.controller.toFixed(2)}`,
+                value: `$${quote.total_controller_price}`,
               },
               {
-                label: `Discount (${quote.totals.discountPercent}%)`,
-                value: `-$${quote.totals.discount.toFixed(2)}`,
+                label: `Discount (${quote.discount_percentage}%)`,
+                value: `-$${(
+                  ((Number(quote.total_feet_price || 0) +
+                    Number(quote.total_controller_price || 0)) *
+                    Number(quote.discount_percentage || 0)) /
+                  100
+                ).toFixed(2)}`,
                 red: true,
               },
+              // {
+              //   label: `Total Extra Work`,
+              //   value: `-$${quote.total_extra_work ?? 0.0}`,
+              //   red: true,
+              // },
               {
-                label: `GST (${quote.totals.gstPercent}%)`,
-                value: `$${quote.totals.gst.toFixed(2)}`,
+                label: `GST (${quote.gst_percentage}%)`,
+                value: `$${quote.gst}`,
               },
             ].map(({ label, value, red }) => (
               <div
@@ -364,14 +394,13 @@ const ViewQuoteAdmin = () => {
                   Main Total
                 </span>
                 <span className="text-2xl font-bold text-white">
-                  ${quote.totals.mainTotal.toFixed(2)}
+                  ${quote.main_total}
                 </span>
               </div>
             </div>
           </div>
         </Card>
       </div>
-
       {/* ── Actions Card ── */}
       <Card>
         <SectionHeader icon="ph:gear-six" title="Actions" />
@@ -390,7 +419,7 @@ const ViewQuoteAdmin = () => {
           <div className="flex flex-wrap gap-3">
             <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition-colors shadow-sm capitalize">
               <Icon icon="ph:check-circle" className="text-base" />
-              {quote.status}
+              Approved
             </button>
             <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition-colors shadow-sm">
               <Icon icon="ph:printer" className="text-base" />
@@ -409,7 +438,7 @@ const ViewQuoteAdmin = () => {
                 Payment Option
               </p>
               <p className="text-sm font-bold text-slate-800 dark:text-white">
-                {quote.payment.option}
+                Deposit Payment
               </p>
             </div>
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
@@ -417,7 +446,7 @@ const ViewQuoteAdmin = () => {
                 Amount Due
               </p>
               <p className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                ${quote.payment.amount.toFixed(2)}
+                ${quote.payment_details.part_payment_amount}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
@@ -425,7 +454,7 @@ const ViewQuoteAdmin = () => {
                 Payment Methods
               </p>
               <p className="text-sm font-bold text-slate-800 dark:text-white capitalize">
-                {quote.payment.methods}
+                {quote.payment_details.select_payment_methods}
               </p>
             </div>
           </div>

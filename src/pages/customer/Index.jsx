@@ -57,15 +57,23 @@ const Customer = () => {
       Cell: AddressCell,
     },
     {
-      Header: "Actions",
+      Header: "Action",
       accessor: "action",
       Cell: () => {
         return (
           <div className="flex space-x-2 rtl:space-x-reverse justify-center">
-            <button className="icon-btn" type="button">
+            <button
+              className="icon-btn hover:bg-blue-50"
+              type="button"
+              title="Edit"
+            >
               <Icon icon="ph:pencil-line" />
             </button>
-            <button className="icon-btn" type="button">
+            <button
+              className="icon-btn hover:bg-red-50"
+              type="button"
+              title="Delete"
+            >
               <Icon icon="ph:trash" />
             </button>
           </div>

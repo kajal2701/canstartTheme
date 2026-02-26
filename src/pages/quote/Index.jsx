@@ -139,7 +139,11 @@ const Quote = () => {
     {
       Header: "Address",
       accessor: "address",
-      Cell: AddressCell,
+      Cell: ({ row }) => (
+        <div className="min-w-[200px]">
+          <AddressCell row={row} />
+        </div>
+      ),
     },
     {
       Header: "Linear Feet",

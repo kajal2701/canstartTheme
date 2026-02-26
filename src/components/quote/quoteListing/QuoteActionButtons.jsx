@@ -1,6 +1,10 @@
 import Icon from "@/components/ui/Icon";
 
 const QuoteActionButtons = ({ id, navigate }) => {
+  const handleView = () => {
+    navigate(`/quote/view_quote_admin/${id}`);
+  };
+
   return (
     <div className="flex space-x-2 rtl:space-x-reverse justify-center">
       <button
@@ -15,7 +19,7 @@ const QuoteActionButtons = ({ id, navigate }) => {
         className="icon-btn hover:bg-blue-50 dark:hover:bg-blue-900"
         type="button"
         title="View"
-        onClick={() => navigate(`/quote/view_quote_admin/${id}`)}
+        onClick={handleView}
       >
         <Icon icon="ph:eye" />
       </button>

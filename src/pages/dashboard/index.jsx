@@ -2,8 +2,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
-import History from "@/components/partials/widget/chart/history";
-import RadarChart from "@/components/partials/widget/chart/radar-chart";
 import { getDashboard } from "@/services/dashboardService";
 import DataTable from "@/components/ui/DataTable";
 import { AddressCell } from "@/utils/mappers";
@@ -42,7 +40,11 @@ const COLUMNS = [
   {
     Header: "Address",
     accessor: "address",
-    Cell: AddressCell,
+    Cell: ({ row }) => (
+      <div className="min-w-[200px]">
+        <AddressCell row={row} />
+      </div>
+    ),
   },
   {
     Header: "Total",
