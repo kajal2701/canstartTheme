@@ -2,8 +2,8 @@ import React from "react";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
 import { RichDescription, SectionHeader } from "../../../utils/helperFunctions";
-import QuoteButton from "../shared/QuoteButton";
-import { BUTTON_ICONS } from "../shared/constants";
+import QuoteButton from "./QuoteButton";
+import { BUTTON_ICONS } from "./constants";
 
 const LineItemsTable = ({ formattedItems }) => {
   return (

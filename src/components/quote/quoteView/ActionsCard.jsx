@@ -2,9 +2,9 @@ import React from "react";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
 import { SectionHeader } from "../../../utils/helperFunctions";
-import QuoteButton from "../shared/QuoteButton";
-import PaymentInfo from "../shared/PaymentInfo";
-import { BUTTON_ICONS } from "../shared/constants";
+import QuoteButton from "./QuoteButton";
+import PaymentInfo from "./PaymentInfo";
+import { BUTTON_ICONS } from "./constants";
 
 const ActionsCard = ({ quote, editingPayment, onEditPayment }) => {
   return (

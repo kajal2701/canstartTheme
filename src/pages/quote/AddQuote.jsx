@@ -1,10 +1,10 @@
 // pages/quotes/AddQuote.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
-import Select from "react-select";
+import Select from "@/components/ui/Select";
 
 import { useQuoteForm } from "@/hooks/useQuoteForm";
 import ProductRow from "@/components/quote/ProductRow";
@@ -12,14 +12,14 @@ import CustomProductRow from "@/components/quote/CustomProductRow";
 import AnnotationImagePreview from "@/components/quote/AnnotationImagePreview";
 import PriceSummary from "@/components/quote/PriceSummary";
 import ImageUploadWithToggle from "../../components/quote/imageUploadWithToggle/Index";
-
-/* Dummy Data */
-const customerOptions = [
-  { value: "1", label: "Customer A" },
-  { value: "2", label: "Customer B" },
-];
+import { getCustomers } from "../../services/customersService";
+import { getProducts } from "../../services/productsService";
 
 const AddQuote = () => {
+  const [customers, setCustomers] = useState([]);
+  const [customersLoading, setCustomersLoading] = useState(true);
+  const [apiProducts, setApiProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const {
     // Customer
     selectedCustomer,
@@ -50,6 +50,7 @@ const AddQuote = () => {
     // Annotation
     annotationSections,
     setAnnotationSections,
+    updateAnnotationSection,
 
     // Notes
     customerNotes,
@@ -141,7 +142,24 @@ const AddQuote = () => {
 
   // ==================== ANNOTATION HANDLERS ====================
   const handleAddAnnotationSection = () => {
-    setAnnotationSections([...annotationSections, { id: Date.now() }]);
+    setAnnotationSections([
+      ...annotationSections,
+      {
+        id: Date.now(),
+        files: [{ file: null, preview: "", lineSaved: "", textSaved: "" }],
+        formData: {
+          color: "",
+          peaksCount: "",
+          jumpersCount: "",
+          sftCount: "",
+          sqftSize: "",
+          total: "",
+          unitPrice: "",
+          amount: "",
+          action: "Mandatory",
+        },
+      },
+    ]);
   };
 
   const handleRemoveAnnotationSection = (id) => {
@@ -187,6 +205,70 @@ const AddQuote = () => {
     // TODO: Submit to API
   };
 
+  // Fetch customers on component mount
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setCustomersLoading(true);
+        const customerData = await getCustomers();
+        setCustomers(customerData);
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      } finally {
+        setCustomersLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, []);
+
+  console.log(apiProducts, "apiProducts");
+  // Fetch products on component mount
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setProductsLoading(true);
+        const productData = await getProducts();
+
+        const formatted = productData.map((product) => ({
+          id: product.product_id,
+          name: product.product_title,
+          quantity: "",
+          amount: "0.00",
+          option: "mandatory",
+          price: product.price,
+        }));
+
+        setProducts(formatted);
+        setApiProducts(productData);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Format customers for react-select
+  const customerOptions = customers
+    .filter((customer) => customer && customer.cust_id)
+    .map((customer) => ({
+      value: customer.cust_id,
+      label: `${customer.fname || ""} ${customer.lname || ""} (${customer.email || "No email"})`,
+    }));
+
+  const handleCustomerChange = (e) => {
+    const customerId = e.target.value;
+
+    const selected = customers.find(
+      (cust) => cust.cust_id.toString() === customerId,
+    );
+
+    setSelectedCustomer(selected || null);
+  };
+
   return (
     <Card title="Add Quote">
       <form>
@@ -198,9 +280,12 @@ const AddQuote = () => {
               className="react-select"
               classNamePrefix="select"
               options={customerOptions}
-              value={selectedCustomer}
-              onChange={setSelectedCustomer}
-              placeholder="Select Customer"
+              value={selectedCustomer?.cust_id || ""}
+              onChange={handleCustomerChange}
+              placeholder={
+                customersLoading ? "Loading customers..." : "Select Customer"
+              }
+              disabled={customersLoading}
             />
           </div>
 
@@ -237,41 +322,63 @@ const AddQuote = () => {
           <div className="space-y-6">
             <h2 className="text-lg font-semibold">Products</h2>
 
-            {/* Header */}
-            <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-600">
-              <div>Product</div>
-              <div>Quantity</div>
-              <div>Amount</div>
-              <div>Option</div>
-            </div>
+            {/* Loading state */}
+            {productsLoading && (
+              <div className="text-center py-4">
+                <span className="text-gray-500">Loading products...</span>
+              </div>
+            )}
 
-            {/* Standard Products */}
-            {products.map((product, index) => (
-              <ProductRow
-                key={product.id}
-                product={product}
-                onChange={(updated) => handleProductChange(index, updated)}
-              />
-            ))}
+            {/* Products list */}
+            {!productsLoading && (
+              <>
+                {/* Header */}
+                <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-600">
+                  <div>Product</div>
+                  <div>Quantity</div>
+                  <div>Amount</div>
+                  <div>Option</div>
+                </div>
 
-            {/* Custom Products */}
-            {customProducts.map((product, index) => (
-              <CustomProductRow
-                key={product.id}
-                product={product}
-                onChange={(updated) =>
-                  handleCustomProductChange(index, updated)
-                }
-                onRemove={() => handleRemoveCustomProduct(index)}
-              />
-            ))}
+                {/* API Products */}
+                {products.map((product, index) => (
+                  <ProductRow
+                    key={product.id}
+                    product={product}
+                    onChange={(updated) => handleProductChange(index, updated)}
+                  />
+                ))}
 
-            {/* Add Custom Product Button */}
-            <Button
-              text="Custom product +"
-              className="btn-primary btn-sm"
-              onClick={handleAddCustomProduct}
-            />
+                {customProducts.length > 0 && (
+                  <div className="grid grid-cols-12 gap-4 mt-6 text-sm font-medium text-gray-600">
+                    <div className="col-span-3">Product Description</div>
+                    <div className="col-span-2">Quantity</div>
+                    <div className="col-span-2">Unit Price</div>
+                    <div className="col-span-2">Amount</div>
+                    <div className="col-span-3">Actions</div>
+                  </div>
+                )}
+
+                {/* Custom Products */}
+                {customProducts.map((product, index) => (
+                  <CustomProductRow
+                    key={product.id}
+                    product={product}
+                    onChange={(updated) =>
+                      handleCustomProductChange(index, updated)
+                    }
+                    onRemove={() => handleRemoveCustomProduct(index)}
+                  />
+                ))}
+
+                {/* Add Custom Product Button */}
+                <Button
+                  text="Custom product +"
+                  className="btn-primary btn-sm"
+                  onClick={handleAddCustomProduct}
+                />
+              </>
+            )}
           </div>
 
           {/* ==================== ANNOTATION SECTIONS ==================== */}
@@ -287,6 +394,16 @@ const AddQuote = () => {
                 <AnnotationImagePreview
                   sectionId={section.id}
                   onRemoveSection={handleRemoveAnnotationSection}
+                  files={section.files} // ← must pass this
+                  formData={section.formData} // ← must pass this
+                  onFilesChange={(updatedFiles) =>
+                    updateAnnotationSection(section.id, { files: updatedFiles })
+                  }
+                  onFormDataChange={(updatedFormData) =>
+                    updateAnnotationSection(section.id, {
+                      formData: updatedFormData,
+                    })
+                  }
                 />
               </div>
             ))}
@@ -362,6 +479,7 @@ const AddQuote = () => {
               discountPercent={discountPercent}
               discountAmount={calculateDiscount()}
               gstAmount={calculateGST()}
+              gstRate={selectedCustomer?.gst || 0}
               mainTotal={calculateMainTotal()}
             />
           </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import Card from "@/components/ui/Card";
 import { SectionHeader } from "../../../utils/helperFunctions";
-import PriceRow from "../shared/PriceRow";
+import PriceRow from "./PriceRow";
 
 const SummarySection = ({ quote, summaryCalculations }) => {
   return (

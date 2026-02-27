@@ -20,6 +20,7 @@ const PriceSummary = ({
   discountPercent,
   discountAmount,
   gstAmount,
+  gstRate,
   mainTotal,
 }) => {
   const formatCurrency = (value) => {
@@ -56,7 +57,7 @@ const PriceSummary = ({
 
         {/* GST */}
         <div className="flex justify-between md:justify-end gap-8 text-gray-700">
-          <span>GST (0%) :</span>
+          <span>GST ({gstRate}%):</span>
           <span className="font-medium">{formatCurrency(gstAmount)}</span>
         </div>
 

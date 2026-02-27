@@ -7,19 +7,29 @@ const mandatoryOptions = [
   { value: "mandatory", label: "Mandatory" },
   { value: "optional", label: "Optional" },
 ];
-
-/**
- * ProductRow Component
- *
- * Displays a single product row with quantity, amount, and option
- *
+/*
  * Props:
  * @param {object} product - Product data
  * @param {function} onChange - Callback when product data changes
  */
 const ProductRow = ({ product, onChange }) => {
   const handleChange = (field, value) => {
-    onChange({ ...product, [field]: value });
+    if (field === "quantity") {
+      console.log("data");
+
+      // Calculate amount when quantity changes
+      const quantity = parseInt(value) || 0;
+      const price = parseFloat(product.price) || 0;
+      const calculatedAmount = (quantity * price).toFixed(2);
+
+      onChange({
+        ...product,
+        [field]: value,
+        amount: calculatedAmount,
+      });
+    } else {
+      onChange({ ...product, [field]: value });
+    }
   };
 
   return (
@@ -41,6 +51,7 @@ const ProductRow = ({ product, onChange }) => {
           handleChange("quantity", value);
         }}
         placeholder="0"
+        required
       />
 
       {/* Amount */}
@@ -52,6 +63,7 @@ const ProductRow = ({ product, onChange }) => {
           handleChange("amount", value);
         }}
         placeholder="0.00"
+        disabled
       />
 
       {/* Option */}

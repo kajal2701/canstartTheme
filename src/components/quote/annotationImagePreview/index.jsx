@@ -5,30 +5,30 @@ import Button from "../../ui/Button";
 import ImageLineAnnotationEditor from "../imageLineAnnotationEditor";
 import ImageTextBoxAnnotationEditor from "../imageTextBoxAnnotationEditor";
 
-const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
-  const [files, setFiles] = useState([{ file: null, preview: "" }]);
+const AnnotationImagePreview = ({
+  sectionId,
+  onRemoveSection,
+  files, // ← from hook (NO local useState)
+  formData, // ← from hook (NO local useState)
+  onFilesChange, // ← emits to hook
+  onFormDataChange, // ← emits to hook
+}) => {
+  // ✅ ONLY UI state kept local
   const [modal3, setModal3] = useState(false);
   const [textBoxModel, setTextBoxModel] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedIndex, setSelectedIndex] = useState(null); // ← track which image is being edited
+  const [selectedIndex, setSelectedIndex] = useState(null);
 
-  console.log(files, "files");
-  // Form fields state
-  const [formData, setFormData] = useState({
-    color: "",
-    peaksCount: "",
-    jumpersCount: "",
-    sftCount: "",
-    sqftSize: "",
-    total: "",
-    unitPrice: "",
-    amount: "",
-    action: "Mandatory",
-  });
+  // ❌ REMOVE THESE - they were overriding props with local state
+  // const [files, setFiles] = useState([{ file: null, preview: "" }]);
+  // const [formData, setFormData] = useState({...});
 
   // Add new empty input row
   const handleAdd = () => {
-    setFiles([...files, { file: null, preview: "" }]);
+    onFilesChange([
+      ...files,
+      { file: null, preview: "", lineSaved: "", textSaved: "" },
+    ]);
   };
 
   // Handle file select
@@ -38,26 +38,23 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
 
     const updatedFiles = [...files];
     updatedFiles[index] = {
+      ...updatedFiles[index],
       file: selectedFile,
       preview: URL.createObjectURL(selectedFile),
     };
-
-    setFiles(updatedFiles);
+    onFilesChange(updatedFiles); // ← push to hook
   };
 
   // Remove input row
   const handleRemove = (index) => {
     const updatedFiles = [...files];
     updatedFiles.splice(index, 1);
-    setFiles(updatedFiles);
+    onFilesChange(updatedFiles); // ← push to hook
   };
 
   // Handle form field changes
   const handleFieldChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    onFormDataChange({ ...formData, [field]: value }); // ← push to hook
   };
 
   // Handle line annotation save
@@ -65,10 +62,10 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
     const updatedFiles = [...files];
     updatedFiles[selectedIndex] = {
       ...updatedFiles[selectedIndex],
-      lineSaved: savedImageUrl, // store annotated version
+      lineSaved: savedImageUrl,
     };
-    setFiles(updatedFiles);
-    setModal3(false); // close modal
+    onFilesChange(updatedFiles); // ← push to hook
+    setModal3(false);
   };
 
   // Handle text box annotation save
@@ -78,19 +75,18 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
       ...updatedFiles[selectedIndex],
       textSaved: savedImageUrl,
     };
-    setFiles(updatedFiles);
-    setTextBoxModel(false);
+    onFilesChange(updatedFiles); // ← push to hook
 
-    // Update sqft calculation like the jQuery logic
     const newSftCount = (parseFloat(formData.sftCount) || 0) + sum;
     const divideValue = parseFloat(formData.sqftSize) || 1;
     const total = Math.ceil((newSftCount * divideValue) / 12);
-    setFormData((prev) => ({
-      ...prev,
+    onFormDataChange({
+      ...formData,
       sftCount: newSftCount,
       total: total,
-      amount: (total * parseFloat(prev.unitPrice || 0)).toFixed(2),
-    }));
+      amount: (total * parseFloat(formData.unitPrice || 0)).toFixed(2),
+    }); // ← push to hook
+    setTextBoxModel(false);
   };
 
   return (
@@ -127,87 +123,90 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
         ))}
       </div>
 
-      {/* Add Image Button */}
-
       <Button
         text="+ Add Image"
         className="btn-primary mt-3"
         onClick={handleAdd}
       />
 
-      {/* Image Preview Grid for line edit */}
+      {/* Image Preview Grid for LINE edit */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
         {files
           .filter((item) => item.preview)
-          .map((item, index) => (
-            <div
-              key={index}
-              className="relative group w-full h-32 rounded-lg overflow-hidden border"
-            >
-              <img
-                src={item.lineSaved || item.preview} // ← show saved annotation if available
-                alt="preview"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedImage(item.lineSaved || item.preview);
-                    setSelectedIndex(index); // ← track index
-                    setModal3(true);
-                  }}
-                  className="bg-white p-3 rounded-full shadow-lg hover:scale-110 transition"
-                >
-                  <Icon
-                    icon="ph:pencil-simple"
-                    className="text-xl text-gray-700"
-                  />
-                </button>
+          .map((item) => {
+            const realIndex = files.findIndex((f) => f === item); // ← real index
+            return (
+              <div
+                key={realIndex}
+                className="relative group w-full h-32 rounded-lg overflow-hidden border"
+              >
+                <img
+                  src={item.lineSaved || item.preview}
+                  alt="preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedImage(item.lineSaved || item.preview);
+                      setSelectedIndex(realIndex); // ← real index
+                      setModal3(true);
+                    }}
+                    className="bg-white p-3 rounded-full shadow-lg hover:scale-110 transition"
+                  >
+                    <Icon
+                      icon="ph:pencil-simple"
+                      className="text-xl text-gray-700"
+                    />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
       </div>
 
-      {/* Image Preview Grid for box edit */}
+      {/* Image Preview Grid for TEXT BOX edit */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
         {files
           .filter((item) => item.preview)
-          .map((item, index) => (
-            <div
-              key={index}
-              className="relative group w-full h-32 rounded-lg overflow-hidden border"
-            >
-              <img
-                src={item.textSaved || item.preview} // ← show saved annotation if available
-                alt="preview"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedImage(item.textSaved || item.preview);
-                    setSelectedIndex(index); // ← track index
-                    setTextBoxModel(true);
-                  }}
-                  className="bg-white p-3 rounded-full shadow-lg hover:scale-110 transition"
-                >
-                  <Icon
-                    icon="ph:pencil-simple"
-                    className="text-xl text-gray-700"
-                  />
-                </button>
+          .map((item) => {
+            const realIndex = files.findIndex((f) => f === item); // ← real index
+            return (
+              <div
+                key={realIndex}
+                className="relative group w-full h-32 rounded-lg overflow-hidden border"
+              >
+                <img
+                  src={item.textSaved || item.preview}
+                  alt="preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedImage(item.textSaved || item.preview);
+                      setSelectedIndex(realIndex); // ← real index
+                      setTextBoxModel(true);
+                    }}
+                    className="bg-white p-3 rounded-full shadow-lg hover:scale-110 transition"
+                  >
+                    <Icon
+                      icon="ph:pencil-simple"
+                      className="text-xl text-gray-700"
+                    />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
       </div>
 
       {/* Form Fields Section */}
       <div className="mt-8 border-t pt-6">
         <h3 className="text-lg font-semibold mb-4">Identify the Photos</h3>
 
-        {/* First Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium mb-2">Color</label>
@@ -233,10 +232,12 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
             <input
               type="text"
               value={formData.peaksCount}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, "");
-                handleFieldChange("peaksCount", value);
-              }}
+              onChange={(e) =>
+                handleFieldChange(
+                  "peaksCount",
+                  e.target.value.replace(/[^0-9]/g, ""),
+                )
+              }
               className="w-full border border-gray-300 rounded-lg p-2"
               placeholder="Enter number"
             />
@@ -249,27 +250,30 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
             <input
               type="text"
               value={formData.jumpersCount}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, "");
-                handleFieldChange("jumpersCount", value);
-              }}
+              onChange={(e) =>
+                handleFieldChange(
+                  "jumpersCount",
+                  e.target.value.replace(/[^0-9]/g, ""),
+                )
+              }
               className="w-full border border-gray-300 rounded-lg p-2"
               placeholder="Enter number"
             />
           </div>
         </div>
 
-        {/* Second Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium mb-2">SFT Count</label>
             <input
               type="text"
               value={formData.sftCount}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, "");
-                handleFieldChange("sftCount", value);
-              }}
+              onChange={(e) =>
+                handleFieldChange(
+                  "sftCount",
+                  e.target.value.replace(/[^0-9]/g, ""),
+                )
+              }
               className="w-full border border-gray-300 rounded-lg p-2"
               placeholder="Enter number"
             />
@@ -280,10 +284,12 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
             <input
               type="text"
               value={formData.sqftSize}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, "");
-                handleFieldChange("sqftSize", value);
-              }}
+              onChange={(e) =>
+                handleFieldChange(
+                  "sqftSize",
+                  e.target.value.replace(/[^0-9]/g, ""),
+                )
+              }
               className="w-full border border-gray-300 rounded-lg p-2"
               placeholder="Enter number"
             />
@@ -294,27 +300,30 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
             <input
               type="text"
               value={formData.total}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9.]/g, "");
-                handleFieldChange("total", value);
-              }}
+              onChange={(e) =>
+                handleFieldChange(
+                  "total",
+                  e.target.value.replace(/[^0-9.]/g, ""),
+                )
+              }
               className="w-full border border-gray-300 rounded-lg p-2"
               placeholder="Enter amount"
             />
           </div>
         </div>
 
-        {/* Third Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium mb-2">Unit Price</label>
             <input
               type="text"
               value={formData.unitPrice}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9.]/g, "");
-                handleFieldChange("unitPrice", value);
-              }}
+              onChange={(e) =>
+                handleFieldChange(
+                  "unitPrice",
+                  e.target.value.replace(/[^0-9.]/g, ""),
+                )
+              }
               className="w-full border border-gray-300 rounded-lg p-2"
               placeholder="Enter price"
             />
@@ -325,10 +334,12 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
             <input
               type="text"
               value={formData.amount}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9.]/g, "");
-                handleFieldChange("amount", value);
-              }}
+              onChange={(e) =>
+                handleFieldChange(
+                  "amount",
+                  e.target.value.replace(/[^0-9.]/g, ""),
+                )
+              }
               className="w-full border border-gray-300 rounded-lg p-2"
               placeholder="Enter amount"
             />
@@ -348,7 +359,6 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
           </div>
         </div>
 
-        {/* Remove Section Button */}
         <div className="flex justify-end mt-4">
           <button
             onClick={() => onRemoveSection(sectionId)}
@@ -373,6 +383,7 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
           />
         )}
       </Modal>
+
       {/* MODAL Text Box */}
       <Modal
         title="Edit Image – Text Boxes Only"
@@ -382,7 +393,7 @@ const AnnotationImagePreview = ({ sectionId, onRemoveSection }) => {
         {selectedImage && (
           <ImageTextBoxAnnotationEditor
             image={selectedImage}
-            onSave={handleTextSave} // ← wire up
+            onSave={handleTextSave}
           />
         )}
       </Modal>

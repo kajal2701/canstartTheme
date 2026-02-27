@@ -60,6 +60,7 @@ const CustomProductRow = ({ product, onChange, onRemove }) => {
             handleChange("quantity", value);
           }}
           className="h-[42px]"
+          required
         />
       </div>
 
@@ -74,6 +75,7 @@ const CustomProductRow = ({ product, onChange, onRemove }) => {
             handleChange("unitPrice", value);
           }}
           className="h-[42px]"
+          required
         />
       </div>
 

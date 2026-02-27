@@ -1,6 +1,6 @@
 import React from "react";
 import Icon from "@/components/ui/Icon";
-import { COMPANY_INFO } from "../shared/constants";
+import { COMPANY_INFO } from "./constants";
 
 const CompanyInfo = ({ quote }) => {
   return (

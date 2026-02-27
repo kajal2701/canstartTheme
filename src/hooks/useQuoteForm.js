@@ -1,12 +1,12 @@
 // hooks/useQuoteForm.js
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const useQuoteForm = () => {
   // Customer selection
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState("");
 
   // Image details - Easy Plug
-  const [isEasyPlugEnabled, setIsEasyPlugEnabled] = useState(false);
+  const [isEasyPlugEnabled, setIsEasyPlugEnabled] = useState(true);
   const [easyPlugFiles, setEasyPlugFiles] = useState([{ id: Date.now() }]);
   const [easyPlugNotes, setEasyPlugNotes] = useState("");
 
@@ -38,7 +38,21 @@ export const useQuoteForm = () => {
 
   // Annotation Sections
   const [annotationSections, setAnnotationSections] = useState([
-    { id: Date.now() },
+    {
+      id: Date.now(),
+      files: [{ file: null, preview: "", lineSaved: "", textSaved: "" }],
+      formData: {
+        color: "",
+        peaksCount: "",
+        jumpersCount: "",
+        sftCount: "",
+        sqftSize: "",
+        total: "",
+        unitPrice: "",
+        amount: "",
+        action: "Mandatory",
+      },
+    },
   ]);
 
   // Notes
@@ -47,8 +61,39 @@ export const useQuoteForm = () => {
 
   // Pricing
   const [discountPercent, setDiscountPercent] = useState(0);
-  const [totalControllerPrice, setTotalControllerPrice] = useState(0);
-  const [totalLinearFeetPrice, setTotalLinearFeetPrice] = useState(0);
+  // const [totalLinearFeetPrice, setTotalLinearFeetPrice] = useState(0);
+
+  console.log(annotationSections, "annotationSections")
+
+  // calculate the controller price
+  const totalControllerPrice = useMemo(() => {
+    const allProducts = [...products, ...customProducts];
+
+    return allProducts.reduce((sum, item) => {
+      return sum + (parseFloat(item.amount) || 0);
+    }, 0);
+  }, [products, customProducts]);
+
+  // calculate linear feet price
+  const totalLinearFeetPrice = useMemo(() => {
+    return annotationSections.reduce((sum, item) => {
+      return sum + (parseFloat(item.formData.amount) || 0);
+    }, 0);
+  }, [annotationSections])
+
+
+  // Add a handler to update a specific section's data
+  const updateAnnotationSection = (sectionId, updatedData) => {
+    console.log(updatedData, "updatdata")
+    setAnnotationSections((prev) =>
+      prev.map((section) =>
+        section.id === sectionId
+          ? { ...section, ...updatedData }
+          : section
+      )
+    )
+  };
+
 
   // Calculated values
   const calculateDiscount = () => {
@@ -59,7 +104,11 @@ export const useQuoteForm = () => {
   const calculateGST = () => {
     const subtotal = totalControllerPrice + totalLinearFeetPrice;
     const afterDiscount = subtotal - calculateDiscount();
-    return afterDiscount * 0.0; // Assuming 0% GST, change as needed
+
+    // ✅ Use GST from selected customer, fallback to 0 if not available
+    const gstRate = parseFloat(selectedCustomer?.gst) || 0;
+
+    return (afterDiscount * gstRate) / 100;
   };
 
   const calculateMainTotal = () => {
@@ -99,6 +148,7 @@ export const useQuoteForm = () => {
     // Annotation
     annotationSections,
     setAnnotationSections,
+    updateAnnotationSection,
 
     // Notes
     customerNotes,
@@ -110,9 +160,8 @@ export const useQuoteForm = () => {
     discountPercent,
     setDiscountPercent,
     totalControllerPrice,
-    setTotalControllerPrice,
     totalLinearFeetPrice,
-    setTotalLinearFeetPrice,
+    // setTotalLinearFeetPrice,
     calculateDiscount,
     calculateGST,
     calculateMainTotal,
