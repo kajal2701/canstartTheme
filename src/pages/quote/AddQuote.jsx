@@ -1,4 +1,3 @@
-// pages/quotes/AddQuote.jsx
 import React, { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Textinput from "@/components/ui/Textinput";
@@ -13,12 +12,11 @@ import AnnotationImagePreview from "@/components/quote/AnnotationImagePreview";
 import PriceSummary from "@/components/quote/PriceSummary";
 import ImageUploadWithToggle from "../../components/quote/imageUploadWithToggle/Index";
 import { getCustomers } from "../../services/customersService";
-import { getProducts } from "../../services/productsService";
+import { getProductsData } from "../../services/quoteService";
 
 const AddQuote = () => {
   const [customers, setCustomers] = useState([]);
   const [customersLoading, setCustomersLoading] = useState(true);
-  const [apiProducts, setApiProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const {
     // Customer
@@ -67,45 +65,6 @@ const AddQuote = () => {
     calculateGST,
     calculateMainTotal,
   } = useQuoteForm();
-  const printFormData = () => {
-    const formData = {
-      customer: selectedCustomer,
-      easyPlug: {
-        enabled: isEasyPlugEnabled,
-        files: easyPlugFiles,
-        notes: easyPlugNotes,
-      },
-      controller: {
-        enabled: isControllerEnabled,
-        files: controllerFiles,
-        notes: controllerNotes,
-      },
-      products: {
-        standard: products,
-        custom: customProducts,
-      },
-      annotation: annotationSections,
-      notes: {
-        customer: customerNotes,
-        admin: adminNotes,
-      },
-      pricing: {
-        discountPercent,
-        totalControllerPrice,
-        totalLinearFeetPrice,
-        discount: calculateDiscount(),
-        gst: calculateGST(),
-        mainTotal: calculateMainTotal(),
-      },
-    };
-
-    console.log("Form Data:", formData);
-    // Or use this for better formatting:
-    // console.log("Form Data:", JSON.stringify(formData, null, 2));
-  };
-
-  // Call it whenever you need:
-  printFormData();
 
   // ==================== PRODUCT HANDLERS ====================
   const handleProductChange = (index, updatedProduct) => {
@@ -222,14 +181,12 @@ const AddQuote = () => {
     fetchCustomers();
   }, []);
 
-  console.log(apiProducts, "apiProducts");
   // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setProductsLoading(true);
-        const productData = await getProducts();
-
+        const productData = await getProductsData();
         const formatted = productData.map((product) => ({
           id: product.product_id,
           name: product.product_title,
@@ -240,7 +197,6 @@ const AddQuote = () => {
         }));
 
         setProducts(formatted);
-        setApiProducts(productData);
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -333,7 +289,7 @@ const AddQuote = () => {
             {!productsLoading && (
               <>
                 {/* Header */}
-                <div className="grid grid-cols-4 gap-4 text-sm font-medium text-gray-600">
+                <div className="hidden md:grid md:grid-cols-4 gap-4 text-sm font-medium text-gray-600">
                   <div>Product</div>
                   <div>Quantity</div>
                   <div>Amount</div>
@@ -350,7 +306,7 @@ const AddQuote = () => {
                 ))}
 
                 {customProducts.length > 0 && (
-                  <div className="grid grid-cols-12 gap-4 mt-6 text-sm font-medium text-gray-600">
+                  <div className="hidden md:grid md:grid-cols-12 gap-4 mt-6 text-sm font-medium text-gray-600">
                     <div className="col-span-3">Product Description</div>
                     <div className="col-span-2">Quantity</div>
                     <div className="col-span-2">Unit Price</div>

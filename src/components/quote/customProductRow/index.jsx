@@ -37,9 +37,9 @@ const CustomProductRow = ({ product, onChange, onRemove }) => {
   };
 
   return (
-    <div className="grid grid-cols-12 gap-4 items-center">
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
       {/* Product Description */}
-      <div className="col-span-3">
+      <div className="md:col-span-3">
         <Textarea
           placeholder="Product description"
           rows={1}
@@ -50,7 +50,7 @@ const CustomProductRow = ({ product, onChange, onRemove }) => {
       </div>
 
       {/* Quantity */}
-      <div className="col-span-2">
+      <div className="md:col-span-2">
         <Textinput
           type="text"
           placeholder="0"
@@ -65,7 +65,7 @@ const CustomProductRow = ({ product, onChange, onRemove }) => {
       </div>
 
       {/* Unit Price */}
-      <div className="col-span-2">
+      <div className="md:col-span-2">
         <Textinput
           type="text"
           placeholder="0.00"
@@ -80,7 +80,7 @@ const CustomProductRow = ({ product, onChange, onRemove }) => {
       </div>
 
       {/* Amount (calculated, read-only) */}
-      <div className="col-span-2">
+      <div className="md:col-span-2">
         <Textinput
           type="text"
           placeholder="0.00"
@@ -91,7 +91,7 @@ const CustomProductRow = ({ product, onChange, onRemove }) => {
       </div>
 
       {/* Actions: Option select + Remove button */}
-      <div className="col-span-3 flex items-center gap-2">
+      <div className="md:col-span-3 flex items-center gap-2">
         <Select
           className="react-select w-full"
           classNamePrefix="select"

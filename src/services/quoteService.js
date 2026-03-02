@@ -34,3 +34,41 @@ export const getQuote = async (quoteId) => {
         throw e;
     }
 };
+
+
+
+export const getProductsData = async () => {
+    try {
+        const res = await fetch(`${BASE_URL}/quote/get_product_data
+`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+        const result = await res.json();
+        if (res.ok && result?.success) {
+            return result.data || [];
+        }
+    } catch (e) {
+        console.error("getQuote error", e);
+        throw e;
+    }
+};
+
+
+export const getColors = async () => {
+    try {
+        const res = await fetch(`${BASE_URL}/quote/get_colors
+
+`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+        const result = await res.json();
+        if (res.ok && result?.success) {
+            return result.data || [];
+        }
+    } catch (e) {
+        console.error("getQuote error", e);
+        throw e;
+    }
+}

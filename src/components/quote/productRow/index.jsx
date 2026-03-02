@@ -33,7 +33,7 @@ const ProductRow = ({ product, onChange }) => {
   };
 
   return (
-    <div className="grid grid-cols-4 gap-4 items-center">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center">
       {/* Product Name */}
       <Textinput
         value={product.name}
@@ -68,7 +68,7 @@ const ProductRow = ({ product, onChange }) => {
 
       {/* Option */}
       <Select
-        className="react-select"
+        className="react-select w-full"
         classNamePrefix="select"
         options={mandatoryOptions}
         value={mandatoryOptions.find((opt) => opt.value === product.option)}

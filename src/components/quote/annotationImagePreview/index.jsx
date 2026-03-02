@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
 import Button from "../../ui/Button";
 import ImageLineAnnotationEditor from "../imageLineAnnotationEditor";
 import ImageTextBoxAnnotationEditor from "../imageTextBoxAnnotationEditor";
+import { getColors } from "../../../services/quoteService";
 
 const AnnotationImagePreview = ({
   sectionId,
@@ -18,16 +19,25 @@ const AnnotationImagePreview = ({
   const [textBoxModel, setTextBoxModel] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [colors, setColors] = useState([]);
 
-  // ❌ REMOVE THESE - they were overriding props with local state
-  // const [files, setFiles] = useState([{ file: null, preview: "" }]);
-  // const [formData, setFormData] = useState({...});
-
+  useEffect(() => {
+    const fetchColors = async () => {
+      try {
+        const data = await getColors();
+        setColors(data);
+        console.log(data, "colors");
+      } catch (error) {
+        console.error("Error fetching colors:", error);
+      }
+    };
+    fetchColors();
+  }, []);
   // Add new empty input row
   const handleAdd = () => {
     onFilesChange([
       ...files,
-      { file: null, preview: "", lineSaved: "", textSaved: "" },
+      { file: null, preview: "", lineSaved: "", textSaved: "", textSum: 0 },
     ]);
   };
 
@@ -49,12 +59,44 @@ const AnnotationImagePreview = ({
   const handleRemove = (index) => {
     const updatedFiles = [...files];
     updatedFiles.splice(index, 1);
-    onFilesChange(updatedFiles); // ← push to hook
+    onFilesChange(updatedFiles);
+    const newSftCount = updatedFiles.reduce(
+      (acc, f) => acc + (parseFloat(f.textSum) || 0),
+      0,
+    );
+    const total = Math.ceil(newSftCount / 12);
+    const amount = (total * (parseFloat(formData.unitPrice) || 0)).toFixed(2);
+    onFormDataChange({
+      ...formData,
+      sftCount: newSftCount,
+      total,
+      amount,
+    });
   };
 
-  // Handle form field changes
   const handleFieldChange = (field, value) => {
-    onFormDataChange({ ...formData, [field]: value }); // ← push to hook
+    const next = { ...formData, [field]: value };
+    let recalcAmount = false;
+    if (field === "sftCount") {
+      const sft = parseFloat(value) || 0;
+      next.total = Math.ceil(sft / 12);
+      recalcAmount = true;
+    } else if (field === "sqftSize") {
+      const sft = parseFloat(next.sftCount) || 0;
+      const sqft = parseFloat(value) || 0;
+      next.total = Math.ceil((sft * sqft) / 12);
+      recalcAmount = true;
+    } else if (field === "total") {
+      recalcAmount = true;
+    } else if (field === "unitPrice") {
+      recalcAmount = true;
+    }
+    if (recalcAmount) {
+      const total = parseFloat(next.total) || 0;
+      const unitPrice = parseFloat(next.unitPrice) || 0;
+      next.amount = (total * unitPrice).toFixed(2);
+    }
+    onFormDataChange(next);
   };
 
   // Handle line annotation save
@@ -74,18 +116,21 @@ const AnnotationImagePreview = ({
     updatedFiles[selectedIndex] = {
       ...updatedFiles[selectedIndex],
       textSaved: savedImageUrl,
+      textSum: sum,
     };
-    onFilesChange(updatedFiles); // ← push to hook
+    onFilesChange(updatedFiles);
 
-    const newSftCount = (parseFloat(formData.sftCount) || 0) + sum;
-    const divideValue = parseFloat(formData.sqftSize) || 1;
-    const total = Math.ceil((newSftCount * divideValue) / 12);
+    const newSftCount = updatedFiles.reduce(
+      (acc, f) => acc + (parseFloat(f.textSum) || 0),
+      0,
+    );
+    const total = Math.ceil(newSftCount / 12);
     onFormDataChange({
       ...formData,
       sftCount: newSftCount,
-      total: total,
+      total,
       amount: (total * parseFloat(formData.unitPrice || 0)).toFixed(2),
-    }); // ← push to hook
+    });
     setTextBoxModel(false);
   };
 
@@ -216,12 +261,13 @@ const AnnotationImagePreview = ({
               className="w-full border border-gray-300 rounded-lg p-2 bg-white"
             >
               <option value="">-- Select color --</option>
-              <option value="red">Red</option>
-              <option value="blue">Blue</option>
-              <option value="green">Green</option>
-              <option value="yellow">Yellow</option>
-              <option value="black">Black</option>
-              <option value="white">White</option>
+              {colors.map((color) => (
+                <option key={color.color_id} value={color.color_id}>
+                  {color.color_name
+                    .toLowerCase()
+                    .replace(/\b\w/g, (c) => c.toUpperCase())}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -334,14 +380,9 @@ const AnnotationImagePreview = ({
             <input
               type="text"
               value={formData.amount}
-              onChange={(e) =>
-                handleFieldChange(
-                  "amount",
-                  e.target.value.replace(/[^0-9.]/g, ""),
-                )
-              }
-              className="w-full border border-gray-300 rounded-lg p-2"
-              placeholder="Enter amount"
+              disabled
+              className="w-full border border-gray-300 rounded-lg p-2 bg-gray-50"
+              placeholder="0.00"
             />
           </div>
 
@@ -354,7 +395,6 @@ const AnnotationImagePreview = ({
             >
               <option value="Mandatory">Mandatory</option>
               <option value="Optional">Optional</option>
-              <option value="Review">Review</option>
             </select>
           </div>
         </div>
