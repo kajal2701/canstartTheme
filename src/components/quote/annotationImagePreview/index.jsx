@@ -9,10 +9,12 @@ import { getColors } from "../../../services/quoteService";
 const AnnotationImagePreview = ({
   sectionId,
   onRemoveSection,
-  files, // ← from hook (NO local useState)
-  formData, // ← from hook (NO local useState)
-  onFilesChange, // ← emits to hook
-  onFormDataChange, // ← emits to hook
+  files,
+  formData,
+  onFilesChange,
+  onFormDataChange,
+  errors = {},
+  onErrorChange,
 }) => {
   // ✅ ONLY UI state kept local
   const [modal3, setModal3] = useState(false);
@@ -26,13 +28,13 @@ const AnnotationImagePreview = ({
       try {
         const data = await getColors();
         setColors(data);
-        console.log(data, "colors");
       } catch (error) {
         console.error("Error fetching colors:", error);
       }
     };
     fetchColors();
   }, []);
+
   // Add new empty input row
   const handleAdd = () => {
     onFilesChange([
@@ -52,7 +54,7 @@ const AnnotationImagePreview = ({
       file: selectedFile,
       preview: URL.createObjectURL(selectedFile),
     };
-    onFilesChange(updatedFiles); // ← push to hook
+    onFilesChange(updatedFiles);
   };
 
   // Remove input row
@@ -60,6 +62,7 @@ const AnnotationImagePreview = ({
     const updatedFiles = [...files];
     updatedFiles.splice(index, 1);
     onFilesChange(updatedFiles);
+
     const newSftCount = updatedFiles.reduce(
       (acc, f) => acc + (parseFloat(f.textSum) || 0),
       0,
@@ -75,8 +78,13 @@ const AnnotationImagePreview = ({
   };
 
   const handleFieldChange = (field, value) => {
+    // ✅ Clear error for this field immediately
+    if (onErrorChange && errors[field]) {
+      onErrorChange(field, "");
+    }
     const next = { ...formData, [field]: value };
     let recalcAmount = false;
+
     if (field === "sftCount") {
       const sft = parseFloat(value) || 0;
       next.total = Math.ceil(sft / 12);
@@ -91,11 +99,13 @@ const AnnotationImagePreview = ({
     } else if (field === "unitPrice") {
       recalcAmount = true;
     }
+
     if (recalcAmount) {
       const total = parseFloat(next.total) || 0;
       const unitPrice = parseFloat(next.unitPrice) || 0;
       next.amount = (total * unitPrice).toFixed(2);
     }
+
     onFormDataChange(next);
   };
 
@@ -106,7 +116,7 @@ const AnnotationImagePreview = ({
       ...updatedFiles[selectedIndex],
       lineSaved: savedImageUrl,
     };
-    onFilesChange(updatedFiles); // ← push to hook
+    onFilesChange(updatedFiles);
     setModal3(false);
   };
 
@@ -136,7 +146,7 @@ const AnnotationImagePreview = ({
 
   return (
     <div className="p-4">
-      {/* File Inputs */}
+      {/* ── File Inputs ─────────────────────────────────────────── */}
       <div className="space-y-3">
         {files.map((item, index) => (
           <div key={index} className="flex gap-3 items-center w-full">
@@ -162,6 +172,7 @@ const AnnotationImagePreview = ({
                 text="Remove"
                 className="btn-danger"
                 onClick={() => handleRemove(index)}
+                type="button"
               />
             )}
           </div>
@@ -172,14 +183,15 @@ const AnnotationImagePreview = ({
         text="+ Add Image"
         className="btn-primary mt-3"
         onClick={handleAdd}
+        type="button"
       />
 
-      {/* Image Preview Grid for LINE edit */}
+      {/* ── Image Preview Grid — LINE edit ──────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
         {files
           .filter((item) => item.preview)
           .map((item) => {
-            const realIndex = files.findIndex((f) => f === item); // ← real index
+            const realIndex = files.findIndex((f) => f === item);
             return (
               <div
                 key={realIndex}
@@ -195,7 +207,7 @@ const AnnotationImagePreview = ({
                     type="button"
                     onClick={() => {
                       setSelectedImage(item.lineSaved || item.preview);
-                      setSelectedIndex(realIndex); // ← real index
+                      setSelectedIndex(realIndex);
                       setModal3(true);
                     }}
                     className="bg-white p-3 rounded-full shadow-lg hover:scale-110 transition"
@@ -211,12 +223,12 @@ const AnnotationImagePreview = ({
           })}
       </div>
 
-      {/* Image Preview Grid for TEXT BOX edit */}
+      {/* ── Image Preview Grid — TEXT BOX edit ──────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
         {files
           .filter((item) => item.preview)
           .map((item) => {
-            const realIndex = files.findIndex((f) => f === item); // ← real index
+            const realIndex = files.findIndex((f) => f === item);
             return (
               <div
                 key={realIndex}
@@ -232,7 +244,7 @@ const AnnotationImagePreview = ({
                     type="button"
                     onClick={() => {
                       setSelectedImage(item.textSaved || item.preview);
-                      setSelectedIndex(realIndex); // ← real index
+                      setSelectedIndex(realIndex);
                       setTextBoxModel(true);
                     }}
                     className="bg-white p-3 rounded-full shadow-lg hover:scale-110 transition"
@@ -248,11 +260,13 @@ const AnnotationImagePreview = ({
           })}
       </div>
 
-      {/* Form Fields Section */}
+      {/* ── Form Fields ──────────────────────────────────────────── */}
       <div className="mt-8 border-t pt-6">
         <h3 className="text-lg font-semibold mb-4">Identify the Photos</h3>
 
+        {/* Row 1: Color, Peaks, Jumpers */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* Color + Error below */}
           <div>
             <label className="block text-sm font-medium mb-2">Color</label>
             <select
@@ -269,8 +283,12 @@ const AnnotationImagePreview = ({
                 </option>
               ))}
             </select>
+            {errors?.color && (
+              <p className="text-red-500 text-xs mt-1">{errors.color}</p>
+            )}
           </div>
 
+          {/* Peaks */}
           <div>
             <label className="block text-sm font-medium mb-2">
               Number of Peaks
@@ -289,6 +307,7 @@ const AnnotationImagePreview = ({
             />
           </div>
 
+          {/* Jumpers */}
           <div>
             <label className="block text-sm font-medium mb-2">
               Number of Jumpers
@@ -308,7 +327,9 @@ const AnnotationImagePreview = ({
           </div>
         </div>
 
+        {/* Row 2: SFT Count, Sqft Size, Total */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* SFT Count */}
           <div>
             <label className="block text-sm font-medium mb-2">SFT Count</label>
             <input
@@ -325,6 +346,7 @@ const AnnotationImagePreview = ({
             />
           </div>
 
+          {/* Sqft Size */}
           <div>
             <label className="block text-sm font-medium mb-2">Sqft size</label>
             <input
@@ -341,6 +363,7 @@ const AnnotationImagePreview = ({
             />
           </div>
 
+          {/* Total */}
           <div>
             <label className="block text-sm font-medium mb-2">Total</label>
             <input
@@ -358,7 +381,9 @@ const AnnotationImagePreview = ({
           </div>
         </div>
 
+        {/* Row 3: Unit Price, Amount, Action */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* Unit Price + Error below */}
           <div>
             <label className="block text-sm font-medium mb-2">Unit Price</label>
             <input
@@ -373,8 +398,12 @@ const AnnotationImagePreview = ({
               className="w-full border border-gray-300 rounded-lg p-2"
               placeholder="Enter price"
             />
+            {errors?.unitPrice && (
+              <p className="text-red-500 text-xs mt-1">{errors.unitPrice}</p>
+            )}
           </div>
 
+          {/* Amount — auto calculated, no error needed */}
           <div>
             <label className="block text-sm font-medium mb-2">Amount</label>
             <input
@@ -384,8 +413,10 @@ const AnnotationImagePreview = ({
               className="w-full border border-gray-300 rounded-lg p-2 bg-gray-50"
               placeholder="0.00"
             />
+            {/* ✅ removed errors.amount — amount is auto-calculated */}
           </div>
 
+          {/* Action + Error below */}
           <div>
             <label className="block text-sm font-medium mb-2">Action</label>
             <select
@@ -396,9 +427,14 @@ const AnnotationImagePreview = ({
               <option value="Mandatory">Mandatory</option>
               <option value="Optional">Optional</option>
             </select>
+            {/* ✅ moved inside its own div — was outside before */}
+            {errors?.action && (
+              <p className="text-red-500 text-xs mt-1">{errors.action}</p>
+            )}
           </div>
         </div>
 
+        {/* Remove Section Button */}
         <div className="flex justify-end mt-4">
           <button
             onClick={() => onRemoveSection(sectionId)}
@@ -410,7 +446,7 @@ const AnnotationImagePreview = ({
         </div>
       </div>
 
-      {/* MODAL Line */}
+      {/* ── MODAL Line ───────────────────────────────────────────── */}
       <Modal
         title="Edit Image – Lines Only"
         activeModal={modal3}
@@ -424,7 +460,7 @@ const AnnotationImagePreview = ({
         )}
       </Modal>
 
-      {/* MODAL Text Box */}
+      {/* ── MODAL Text Box ───────────────────────────────────────── */}
       <Modal
         title="Edit Image – Text Boxes Only"
         activeModal={textBoxModel}

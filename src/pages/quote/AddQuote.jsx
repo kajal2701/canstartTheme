@@ -18,6 +18,7 @@ const AddQuote = () => {
   const [customers, setCustomers] = useState([]);
   const [customersLoading, setCustomersLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
+
   const {
     // Customer
     selectedCustomer,
@@ -66,17 +67,89 @@ const AddQuote = () => {
     calculateMainTotal,
   } = useQuoteForm();
 
+  const [errors, setErrors] = useState({
+    customer: "",
+    products: [],
+    customProducts: [],
+    annotations: {},
+  });
+
+  // ==================== FETCH DATA ====================
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setCustomersLoading(true);
+        const customerData = await getCustomers();
+        setCustomers(customerData);
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      } finally {
+        setCustomersLoading(false);
+      }
+    };
+    fetchCustomers();
+  }, []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setProductsLoading(true);
+        const productData = await getProductsData();
+        const formatted = productData.map((product) => ({
+          id: product.product_id,
+          name: product.product_title,
+          quantity: "",
+          amount: "0.00",
+          option: "mandatory",
+          price: product.price,
+        }));
+        setProducts(formatted);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // ==================== CUSTOMER HANDLER ====================
+  const handleCustomerChange = (e) => {
+    const customerId = e.target.value;
+    const selected = customers.find(
+      (cust) => cust.cust_id.toString() === customerId,
+    );
+    setSelectedCustomer(selected || null);
+
+    // Clear customer error on change
+    setErrors((prev) => ({ ...prev, customer: "" }));
+  };
+
   // ==================== PRODUCT HANDLERS ====================
   const handleProductChange = (index, updatedProduct) => {
     const updated = [...products];
     updated[index] = updatedProduct;
     setProducts(updated);
+
+    // Clear error for this product on change
+    setErrors((prev) => {
+      const updatedProductErrors = [...(prev.products || [])];
+      updatedProductErrors[index] = { quantity: "", option: "" };
+      return { ...prev, products: updatedProductErrors };
+    });
   };
 
   const handleCustomProductChange = (index, updatedProduct) => {
     const updated = [...customProducts];
     updated[index] = updatedProduct;
     setCustomProducts(updated);
+
+    // Clear error for this custom product on change
+    setErrors((prev) => {
+      const updatedErrors = [...(prev.customProducts || [])];
+      updatedErrors[index] = { quantity: "", unitPrice: "" };
+      return { ...prev, customProducts: updatedErrors };
+    });
   };
 
   const handleAddCustomProduct = () => {
@@ -97,6 +170,13 @@ const AddQuote = () => {
     const updated = [...customProducts];
     updated.splice(index, 1);
     setCustomProducts(updated);
+
+    // Remove error for removed row
+    setErrors((prev) => {
+      const updatedErrors = [...(prev.customProducts || [])];
+      updatedErrors.splice(index, 1);
+      return { ...prev, customProducts: updatedErrors };
+    });
   };
 
   // ==================== ANNOTATION HANDLERS ====================
@@ -126,13 +206,113 @@ const AddQuote = () => {
       setAnnotationSections(
         annotationSections.filter((section) => section.id !== id),
       );
+      // Clear errors for removed section
+      setErrors((prev) => {
+        const updatedAnnotations = { ...prev.annotations };
+        delete updatedAnnotations[id];
+        return { ...prev, annotations: updatedAnnotations };
+      });
     } else {
       alert("At least one annotation section must remain");
     }
   };
 
+  // ==================== VALIDATION ====================
+  const validateQuote = () => {
+    const nextErrors = {
+      customer: "",
+      products: [],
+      customProducts: [],
+      annotations: {},
+    };
+
+    // 1. Customer — required
+    if (!selectedCustomer || !selectedCustomer.cust_id) {
+      nextErrors.customer = "Customer is required";
+    }
+
+    // 2. Products — validate qty & action per row
+    // NOTE: removed "products array empty" check — products always come from API
+    nextErrors.products = products.map((product) => {
+      const qty = parseInt(product?.quantity) || 0;
+      return {
+        quantity: qty > 0 ? "" : "Quantity is required",
+        option:
+          product?.option && ["mandatory", "optional"].includes(product.option)
+            ? ""
+            : "Action is required",
+      };
+    });
+
+    // 3. Custom Products — validate qty & unit price only
+    if (customProducts.length > 0) {
+      nextErrors.customProducts = customProducts.map((product) => {
+        return {
+          quantity:
+            (parseFloat(product?.quantity) || 0) > 0
+              ? ""
+              : "Quantity is required",
+          unitPrice:
+            (parseFloat(product?.unitPrice) || 0) > 0
+              ? ""
+              : "Unit Price is required",
+        };
+      });
+    }
+
+    // 4. Annotation Sections — validate color, unitPrice, action only
+    // NOTE: removed "amount" validation — amount is auto-calculated
+    annotationSections.forEach((section) => {
+      const fd = section?.formData || {};
+      nextErrors.annotations[section.id] = {
+        color: fd.color ? "" : "Color is required",
+        unitPrice:
+          (parseFloat(fd.unitPrice) || 0) > 0 ? "" : "Unit Price is required",
+        // ✅ amount removed — auto calculated from total × unitPrice
+        action:
+          fd.action && ["Mandatory", "Optional"].includes(fd.action)
+            ? ""
+            : "Action is required",
+      };
+    });
+
+    setErrors(nextErrors);
+
+    // 5. Check if any errors exist
+    const hasErrors =
+      !!nextErrors.customer ||
+      // At least one product must have qty > 0
+      nextErrors.products.every((e) => e?.quantity) ||
+      // Any product row has an error
+      nextErrors.products.some((e) => e?.option) ||
+      // Any custom product has an error
+      nextErrors.customProducts.some((e) => e?.quantity || e?.unitPrice) ||
+      // Any annotation section has an error
+      Object.values(nextErrors.annotations).some(
+        (e) => e?.color || e?.unitPrice || e?.action,
+      );
+
+    return !hasErrors;
+  };
+
+  const handleAnnotationErrorChange = (sectionId, field, message) => {
+    setErrors((prev) => ({
+      ...prev,
+      annotations: {
+        ...prev.annotations,
+        [sectionId]: {
+          ...prev.annotations[sectionId],
+          [field]: message,
+        },
+      },
+    }));
+  };
+
   // ==================== SUBMIT HANDLER ====================
   const handleSubmit = () => {
+    const ok = validateQuote();
+    if (!ok) return;
+
     const quoteData = {
       customer: selectedCustomer,
       easyPlug: {
@@ -164,66 +344,13 @@ const AddQuote = () => {
     // TODO: Submit to API
   };
 
-  // Fetch customers on component mount
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        setCustomersLoading(true);
-        const customerData = await getCustomers();
-        setCustomers(customerData);
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-      } finally {
-        setCustomersLoading(false);
-      }
-    };
-
-    fetchCustomers();
-  }, []);
-
-  // Fetch products on component mount
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setProductsLoading(true);
-        const productData = await getProductsData();
-        const formatted = productData.map((product) => ({
-          id: product.product_id,
-          name: product.product_title,
-          quantity: "",
-          amount: "0.00",
-          option: "mandatory",
-          price: product.price,
-        }));
-
-        setProducts(formatted);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setProductsLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  // Format customers for react-select
+  // Format customers for select
   const customerOptions = customers
     .filter((customer) => customer && customer.cust_id)
     .map((customer) => ({
       value: customer.cust_id,
       label: `${customer.fname || ""} ${customer.lname || ""} (${customer.email || "No email"})`,
     }));
-
-  const handleCustomerChange = (e) => {
-    const customerId = e.target.value;
-
-    const selected = customers.find(
-      (cust) => cust.cust_id.toString() === customerId,
-    );
-
-    setSelectedCustomer(selected || null);
-  };
 
   return (
     <Card title="Add Quote">
@@ -243,12 +370,15 @@ const AddQuote = () => {
               }
               disabled={customersLoading}
             />
+            {/* Customer Error */}
+            {errors.customer && (
+              <p className="text-red-500 text-xs mt-1">{errors.customer}</p>
+            )}
           </div>
 
           {/* ==================== IMAGE DETAILS ==================== */}
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-lg font-semibold mb-6">Image Details</h2>
-
             <div className="grid md:grid-cols-2 gap-8">
               {/* Easy Plug Section */}
               <ImageUploadWithToggle
@@ -279,14 +409,11 @@ const AddQuote = () => {
             <h2 className="text-lg font-semibold">Products</h2>
 
             {/* Loading state */}
-            {productsLoading && (
+            {productsLoading ? (
               <div className="text-center py-4">
                 <span className="text-gray-500">Loading products...</span>
               </div>
-            )}
-
-            {/* Products list */}
-            {!productsLoading && (
+            ) : (
               <>
                 {/* Header */}
                 <div className="hidden md:grid md:grid-cols-4 gap-4 text-sm font-medium text-gray-600">
@@ -296,15 +423,27 @@ const AddQuote = () => {
                   <div>Option</div>
                 </div>
 
-                {/* API Products */}
+                {/* Fixed Products from API */}
                 {products.map((product, index) => (
                   <ProductRow
                     key={product.id}
                     product={product}
                     onChange={(updated) => handleProductChange(index, updated)}
+                    errors={errors.products?.[index]}
+                    onErrorChange={(field, message) => {
+                      setErrors((prev) => {
+                        const updatedProducts = [...(prev.products || [])];
+                        updatedProducts[index] = {
+                          ...updatedProducts[index],
+                          [field]: message,
+                        };
+                        return { ...prev, products: updatedProducts };
+                      });
+                    }}
                   />
                 ))}
 
+                {/* Custom Products Header — only show if custom products exist */}
                 {customProducts.length > 0 && (
                   <div className="hidden md:grid md:grid-cols-12 gap-4 mt-6 text-sm font-medium text-gray-600">
                     <div className="col-span-3">Product Description</div>
@@ -315,7 +454,7 @@ const AddQuote = () => {
                   </div>
                 )}
 
-                {/* Custom Products */}
+                {/* Custom Product Rows */}
                 {customProducts.map((product, index) => (
                   <CustomProductRow
                     key={product.id}
@@ -324,6 +463,17 @@ const AddQuote = () => {
                       handleCustomProductChange(index, updated)
                     }
                     onRemove={() => handleRemoveCustomProduct(index)}
+                    errors={errors.customProducts?.[index]}
+                    onErrorChange={(field, message) => {
+                      setErrors((prev) => {
+                        const updatedErrors = [...(prev.customProducts || [])];
+                        updatedErrors[index] = {
+                          ...updatedErrors[index],
+                          [field]: message,
+                        };
+                        return { ...prev, customProducts: updatedErrors };
+                      });
+                    }}
                   />
                 ))}
 
@@ -332,6 +482,7 @@ const AddQuote = () => {
                   text="Custom product +"
                   className="btn-primary btn-sm"
                   onClick={handleAddCustomProduct}
+                  type="button"
                 />
               </>
             )}
@@ -350,8 +501,8 @@ const AddQuote = () => {
                 <AnnotationImagePreview
                   sectionId={section.id}
                   onRemoveSection={handleRemoveAnnotationSection}
-                  files={section.files} // ← must pass this
-                  formData={section.formData} // ← must pass this
+                  files={section.files}
+                  formData={section.formData}
                   onFilesChange={(updatedFiles) =>
                     updateAnnotationSection(section.id, { files: updatedFiles })
                   }
@@ -359,6 +510,10 @@ const AddQuote = () => {
                     updateAnnotationSection(section.id, {
                       formData: updatedFormData,
                     })
+                  }
+                  errors={errors.annotations?.[section.id]}
+                  onErrorChange={(field, message) =>
+                    handleAnnotationErrorChange(section.id, field, message)
                   }
                 />
               </div>
@@ -386,7 +541,6 @@ const AddQuote = () => {
                 className="w-full"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-2">
                 Admin Notes
@@ -427,8 +581,8 @@ const AddQuote = () => {
               icon="ph:check-circle"
               className="btn-outline-primary"
               onClick={handleSubmit}
+              type="button"
             />
-
             <PriceSummary
               totalControllerPrice={totalControllerPrice}
               totalLinearFeetPrice={totalLinearFeetPrice}
