@@ -88,6 +88,8 @@ const ViewQuoteAdmin = () => {
     setEditingPayment((prev) => !prev);
   }, []);
 
+  const [extraWorkTotal, setExtraWorkTotal] = useState(0);
+
   const summaryCalculations = useMemo(() => {
     const totalFeetPrice = Number(quote?.total_feet_price || 0);
     const totalControllerPrice = Number(quote?.total_controller_price || 0);
@@ -95,16 +97,25 @@ const ViewQuoteAdmin = () => {
 
     const subtotal = totalFeetPrice + totalControllerPrice;
     const discountAmount = (subtotal * discountPercentage) / 100;
+    const taxableBase = subtotal - discountAmount + Number(extraWorkTotal || 0);
+    const gstPercentage = Number(quote?.gst_percentage || 0);
+    const gstValue = (taxableBase * gstPercentage) / 100;
+    const mainTotalValue = taxableBase + gstValue;
 
     return {
       subtotal,
       discountAmount,
       discountAmountFormatted: `-$${discountAmount.toFixed(2)}`,
+      extraWorkTotal: Number(extraWorkTotal || 0),
+      gstValue: Number(gstValue.toFixed(2)),
+      mainTotalValue: Number(mainTotalValue.toFixed(2)),
     };
   }, [
     quote?.total_feet_price,
     quote?.total_controller_price,
     quote?.discount_percentage,
+    quote?.gst_percentage,
+    extraWorkTotal,
   ]);
 
   // Show loading
@@ -138,9 +149,9 @@ const ViewQuoteAdmin = () => {
 
   // Show content
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 print-area">
       {/* ── Page Title Bar ── */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between print-hide">
         <div className="flex items-center gap-3">
           <button
             onClick={handleNavigateBack}
@@ -167,7 +178,10 @@ const ViewQuoteAdmin = () => {
       </Card>
 
       {/* ── Line Items Card ── */}
-      <LineItemsTable formattedItems={formattedItems} />
+      <LineItemsTable
+        formattedItems={formattedItems}
+        onExtraTotalChange={setExtraWorkTotal}
+      />
 
       {/* ── Notes + Totals Row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

@@ -15,7 +15,16 @@ const SummarySection = ({ quote, summaryCalculations }) => {
           value={summaryCalculations.discountAmountFormatted} 
           red={true} 
         />
-        <PriceRow label={`GST (${quote.gst_percentage}%)`} value={`$${quote.gst}`} />
+        {summaryCalculations.extraWorkTotal > 0 && (
+          <PriceRow
+            label="Extra Work Total"
+            value={`$${Number(summaryCalculations.extraWorkTotal).toFixed(2)}`}
+          />
+        )}
+        <PriceRow
+          label={`GST (${quote.gst_percentage}%)`}
+          value={`$${Number(summaryCalculations.gstValue || 0).toFixed(2)}`}
+        />
 
         <div className="mt-3 p-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 shadow-base">
           <div className="flex justify-between items-center">
@@ -23,7 +32,7 @@ const SummarySection = ({ quote, summaryCalculations }) => {
               Main Total
             </span>
             <span className="text-2xl font-bold text-white">
-              ${quote.main_total}
+              ${Number(summaryCalculations.mainTotalValue || quote.main_total || 0).toFixed(2)}
             </span>
           </div>
         </div>

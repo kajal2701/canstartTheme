@@ -9,7 +9,7 @@ import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 
-const LineItemsTable = ({ formattedItems = [] }) => {
+const LineItemsTable = ({ formattedItems = [], onExtraTotalChange }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState(null);
   const [extraRows, setExtraRows] = useState([]);
@@ -55,6 +55,15 @@ const LineItemsTable = ({ formattedItems = [] }) => {
     if (url.startsWith("http")) return url;
     return `https://portal.canstarlights.ca/${url.replace(/^\/+/, "")}`;
   };
+
+  React.useEffect(() => {
+    if (!onExtraTotalChange) return;
+    const total = extraRows.reduce(
+      (sum, r) => sum + (parseFloat(r.total) || 0),
+      0,
+    );
+    onExtraTotalChange(total);
+  }, [extraRows, onExtraTotalChange]);
 
   return (
     <Card>

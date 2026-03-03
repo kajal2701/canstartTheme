@@ -1,14 +1,101 @@
 @media print {
+  /* Print only the quote area and force full width */
+  body * {
+    visibility: hidden !important;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible !important;
+  }
+  .print-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 12mm !important;
+    box-sizing: border-box !important;
+  }
+  .print-hide {
+    display: none !important;
+  }
+  @page {
+    margin: 10mm;
+  }
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
   .invocie-btn {
     display: none;
   }
   .sidebar-wrapper,
   .CanStar-app-header,
   .site-footer,
-  .shadow-deep {
+  .shadow-deep,
+  .setting-wrapper,
+  .nav-tools,
+  .footer-bg,
+  .overlay {
     @apply hidden;
   }
   .content-wrapper {
     @apply w-full ml-0;
+    margin-right: 0 !important;
+  }
+  .print-area .page-content,
+  .print-area .container,
+  .print-area .container-fluid {
+    @apply px-0;
+    margin: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+  .card {
+    box-shadow: none !important;
+    border: none !important;
+    break-inside: auto;
+    -webkit-column-break-inside: auto;
+    page-break-inside: auto;
+    margin-bottom: 8mm !important;
+  }
+  .card-header {
+    border: none !important;
+  }
+  .shadow-base,
+  .shadow-base2,
+  .shadow-base3,
+  .shadow-card {
+    box-shadow: none !important;
+  }
+  .rounded,
+  .rounded-lg,
+  .rounded-xl {
+    border-radius: 0 !important;
+  }
+  table {
+    width: 100% !important;
+    page-break-inside: auto;
+  }
+  tr,
+  td,
+  img {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .page-content [style*="transform"] {
+    transform: none !important;
+  }
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tfoot {
+    display: table-footer-group;
   }
 }
