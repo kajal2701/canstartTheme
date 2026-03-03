@@ -158,22 +158,22 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
         <Button
           onClick={handleUndo}
           icon="ph:arrow-clockwise"
-          className="btn-warning h-9 w-9 rounded-full p-0"
+          className="btn-warning h-9 w-9 rounded-full p-3"
         />
         <Button
           onClick={handleReverse}
           icon="ph:arrow-counter-clockwise"
-          className="btn-warning h-9 w-9 rounded-full p-0 "
+          className="btn-warning h-9 w-9 rounded-full p-3 "
         />
         <Button
           onClick={zoomOut}
           icon="ph:magnifying-glass-minus"
-          className="btn-danger h-9 w-9  p-0"
+          className="btn-danger h-9 w-9  p-3"
         />
         <Button
           onClick={zoomIn}
           icon="ph:magnifying-glass-plus"
-          className="btn-danger h-9 w-9  p-0"
+          className="btn-danger h-9 w-9  p-3"
         />
         <Button text="Save" className="btn-secondary " onClick={handleSave} />
       </div>

@@ -1,22 +1,7 @@
 // components/quote/ImageUploadSection.jsx
-import React from "react";
 import Switch from "@/components/ui/Switch";
 import Button from "@/components/ui/Button";
 
-/**
- * ImageUploadWithToggle  Component
- *
- * Displays a toggleable section for image uploads or notes
- *
- * Props:
- * @param {string} title - Section title (e.g., "Easy plug access")
- * @param {boolean} isEnabled - Whether upload mode is enabled
- * @param {function} onToggle - Callback when toggle switch is clicked
- * @param {array} files - Array of file objects with id property
- * @param {function} onFilesChange - Callback to update files array
- * @param {string} notes - Notes text when upload is disabled
- * @param {function} onNotesChange - Callback to update notes
- */
 const ImageUploadWithToggle = ({
   title,
   isEnabled,
@@ -26,16 +11,25 @@ const ImageUploadWithToggle = ({
   notes,
   onNotesChange,
 }) => {
-  // Add a new file input row
-  const handleAddFile = () => {
-    const newFiles = [...files, { id: Date.now() }];
-    onFilesChange(newFiles);
+  // ✅ Fix 1 — define missing handler
+  const handleFileChange = (id, e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+
+    const updatedFiles = files.map((file) =>
+      file.id === id
+        ? { ...file, file: selectedFile, name: selectedFile.name }
+        : file,
+    );
+    onFilesChange(updatedFiles);
   };
 
-  // Remove a file input row by id
+  const handleAddFile = () => {
+    onFilesChange([...files, { id: Date.now() }]);
+  };
+
   const handleRemoveFile = (id) => {
-    const updatedFiles = files.filter((file) => file.id !== id);
-    onFilesChange(updatedFiles);
+    onFilesChange(files.filter((file) => file.id !== id));
   };
 
   return (
@@ -52,7 +46,7 @@ const ImageUploadWithToggle = ({
         />
       </div>
 
-      {/* Notes textarea - shown when disabled */}
+      {/* Notes textarea — shown when disabled */}
       {!isEnabled && (
         <textarea
           rows={4}
@@ -63,23 +57,36 @@ const ImageUploadWithToggle = ({
         />
       )}
 
-      {/* File upload inputs - shown when enabled */}
+      {/* File upload inputs — shown when enabled */}
       {isEnabled && (
         <div className="space-y-3">
-          {files.map((file, index) => (
-            <div key={file.id} className="flex items-center gap-2">
-              <input
-                type="file"
-                accept="image/*"
-                className="flex-1 border border-gray-300 rounded-lg p-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-              />
+          {files.map((file) => (
+            <div key={file.id} className="flex items-center gap-2 w-full">
+              {/* Custom styled file input wrapper */}
+              <label className="flex-1 min-w-0 cursor-pointer">
+                <div className="flex items-center gap-2 border border-gray-300 rounded-lg p-2 bg-white hover:border-indigo-400 transition-colors w-full">
+                  <span className="shrink-0 bg-indigo-50 text-indigo-700 font-semibold text-sm px-3 py-1.5 rounded-md hover:bg-indigo-100 transition-colors">
+                    Choose File
+                  </span>
+                  <span className="text-gray-400 text-sm truncate">
+                    {file.name || "No file chosen"}
+                  </span>
+                </div>
+                {/* ✅ Fix 1 — handleFileChange now defined */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleFileChange(file.id, e)}
+                />
+              </label>
 
-              {/* Only show remove button if more than one file */}
+              {/* Remove button — only show if more than one file */}
               {files.length > 1 && (
                 <button
                   onClick={() => handleRemoveFile(file.id)}
                   type="button"
-                  className="bg-red-400 hover:bg-red-500 text-white px-3 py-2 rounded-lg transition-colors"
+                  className="shrink-0 bg-red-400 hover:bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
                   aria-label="Remove file"
                 >
                   ✕
@@ -92,6 +99,7 @@ const ImageUploadWithToggle = ({
             text="Add Image +"
             className="btn-primary btn-sm"
             onClick={handleAddFile}
+            type="button"
           />
         </div>
       )}

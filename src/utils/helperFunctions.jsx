@@ -9,7 +9,7 @@ export const RichDescription = ({ text }) => {
         i % 2 === 1 ? (
           <strong
             key={i}
-            className="font-semibold text-slate-900 dark:text-white"
+            className="font-semibold text-slate-900 dark:text-white bg-yellow-200 dark:bg-yellow-500/20 px-1 rounded"
           >
             {part}
           </strong>

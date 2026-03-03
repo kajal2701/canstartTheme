@@ -451,6 +451,7 @@ const AnnotationImagePreview = ({
         title="Edit Image – Lines Only"
         activeModal={modal3}
         onClose={() => setModal3(false)}
+        className="max-w-3xl"
       >
         {selectedImage && (
           <ImageLineAnnotationEditor
@@ -465,6 +466,7 @@ const AnnotationImagePreview = ({
         title="Edit Image – Text Boxes Only"
         activeModal={textBoxModel}
         onClose={() => setTextBoxModel(false)}
+        className="max-w-3xl"
       >
         {selectedImage && (
           <ImageTextBoxAnnotationEditor

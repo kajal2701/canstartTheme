@@ -57,14 +57,16 @@ const ViewQuoteAdmin = () => {
   const formattedItems = useMemo(() => {
     if (!quote) return [];
 
-    const annotationItems = (quote.annotation_image || []).map((item, index) => ({
-      id: index + 1,
-      description: `Canstar Puck Lights with a customized data line system, paired with a ${item.color} aluminum track package, designed for the ${item.identify_image_name} of the house/property.`,
-      images: item.images || [],
-      quantity: item.total_numerical_box,
-      unitCost: Number(item.unit_price),
-      total: Number(item.total_amount),
-    }));
+    const annotationItems = (quote.annotation_image || []).map(
+      (item, index) => ({
+        id: index + 1,
+        description: `Canstar Puck Lights with a customized data line system, paired with a **${item.color}** aluminum track package, designed for the **${item.identify_image_name}** of the house/property.`,
+        images: item.images || [],
+        quantity: item.total_numerical_box,
+        unitCost: Number(item.unit_price),
+        total: Number(item.total_amount),
+      }),
+    );
 
     const productItems = (quote.products || []).map((product, index) => ({
       id: (quote.annotation_image?.length || 0) + index + 1,
@@ -77,29 +79,33 @@ const ViewQuoteAdmin = () => {
 
     return [...annotationItems, ...productItems];
   }, [quote?.annotation_image, quote?.products]);
-  
+
   const handleNavigateBack = useCallback(() => {
     navigate("/quote");
   }, [navigate]);
 
   const handleEditPayment = useCallback(() => {
-    setEditingPayment(prev => !prev);
+    setEditingPayment((prev) => !prev);
   }, []);
 
   const summaryCalculations = useMemo(() => {
     const totalFeetPrice = Number(quote?.total_feet_price || 0);
     const totalControllerPrice = Number(quote?.total_controller_price || 0);
     const discountPercentage = Number(quote?.discount_percentage || 0);
-    
+
     const subtotal = totalFeetPrice + totalControllerPrice;
     const discountAmount = (subtotal * discountPercentage) / 100;
-    
+
     return {
       subtotal,
       discountAmount,
-      discountAmountFormatted: `-$${discountAmount.toFixed(2)}`
+      discountAmountFormatted: `-$${discountAmount.toFixed(2)}`,
     };
-  }, [quote?.total_feet_price, quote?.total_controller_price, quote?.discount_percentage]);
+  }, [
+    quote?.total_feet_price,
+    quote?.total_controller_price,
+    quote?.discount_percentage,
+  ]);
 
   // Show loading
   if (loading) {
@@ -166,13 +172,16 @@ const ViewQuoteAdmin = () => {
       {/* ── Notes + Totals Row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <NotesSection quote={quote} />
-        <SummarySection quote={quote} summaryCalculations={summaryCalculations} />
+        <SummarySection
+          quote={quote}
+          summaryCalculations={summaryCalculations}
+        />
       </div>
       {/* ── Actions Card ── */}
-      <ActionsCard 
-        quote={quote} 
-        editingPayment={editingPayment} 
-        onEditPayment={handleEditPayment} 
+      <ActionsCard
+        quote={quote}
+        editingPayment={editingPayment}
+        onEditPayment={handleEditPayment}
       />
     </div>
   );
