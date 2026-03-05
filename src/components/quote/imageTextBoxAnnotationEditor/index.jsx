@@ -110,21 +110,23 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
       boxes.forEach((box) => {
         const x = box.x * scaleX;
         const y = box.y * scaleY;
-        const boxWidth = 60 * scaleX;
-        const boxHeight = 30 * scaleY;
+        ctx.font = `bold ${14 * scaleX}px sans-serif`;
+        const metrics = ctx.measureText(String(box.value));
+        const textWidth = metrics.width;
+        const paddingX = 10 * scaleX;
+        const paddingY = 8 * scaleY;
+        const lineHeight = 18 * scaleY;
+        const boxWidth = textWidth + paddingX * 2;
+        const boxHeight = lineHeight + paddingY * 2;
 
-        // Draw background
         ctx.fillStyle = "rgba(243, 244, 246, 1)";
         ctx.fillRect(x, y, boxWidth, boxHeight);
 
-        // Draw border
         ctx.strokeStyle = "#ccc";
         ctx.lineWidth = 1;
         ctx.strokeRect(x, y, boxWidth, boxHeight);
 
-        // Draw text
         ctx.fillStyle = "#000";
-        ctx.font = `bold ${14 * scaleX}px sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(box.value, x + boxWidth / 2, y + boxHeight / 2);

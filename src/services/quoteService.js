@@ -78,3 +78,20 @@ export const getColors = async () => {
     throw e;
   }
 };
+
+export const addQuote = async (formData) => {
+  try {
+    const res = await fetch(`${BASE_URL}/quote/add_quote_process`, {
+      method: "POST",
+      body: formData,
+    });
+    const result = await res.json();
+    if (!res.ok || !result?.success) {
+      throw new Error(result.message || "Failed to add quote");
+    }
+    return result;
+  } catch (e) {
+    console.error("addQuote error", e);
+    throw e;
+  }
+};

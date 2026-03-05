@@ -42,6 +42,7 @@ export const useQuoteForm = () => {
       id: Date.now(),
       files: [{ file: null, preview: "", lineSaved: "", textSaved: "" }],
       formData: {
+        identifyImageName: "",
         color: "",
         peaksCount: "",
         jumpersCount: "",
@@ -63,8 +64,6 @@ export const useQuoteForm = () => {
   const [discountPercent, setDiscountPercent] = useState(0);
   // const [totalLinearFeetPrice, setTotalLinearFeetPrice] = useState(0);
 
-  console.log(annotationSections, "annotationSections")
-
   // calculate the controller price
   const totalControllerPrice = useMemo(() => {
     const allProducts = [...products, ...customProducts];
@@ -79,21 +78,16 @@ export const useQuoteForm = () => {
     return annotationSections.reduce((sum, item) => {
       return sum + (parseFloat(item.formData.amount) || 0);
     }, 0);
-  }, [annotationSections])
-
+  }, [annotationSections]);
 
   // Add a handler to update a specific section's data
   const updateAnnotationSection = (sectionId, updatedData) => {
-    console.log(updatedData, "updatdata")
     setAnnotationSections((prev) =>
       prev.map((section) =>
-        section.id === sectionId
-          ? { ...section, ...updatedData }
-          : section
-      )
-    )
+        section.id === sectionId ? { ...section, ...updatedData } : section,
+      ),
+    );
   };
-
 
   // Calculated values
   const calculateDiscount = () => {

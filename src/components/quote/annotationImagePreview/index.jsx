@@ -262,7 +262,20 @@ const AnnotationImagePreview = ({
 
       {/* ── Form Fields ──────────────────────────────────────────── */}
       <div className="mt-8 border-t pt-6">
-        <h3 className="text-lg font-semibold mb-4">Identify the Photos</h3>
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">
+            Identify the Photos
+          </label>
+          <input
+            type="text"
+            value={formData.identifyImageName || ""}
+            onChange={(e) =>
+              handleFieldChange("identifyImageName", e.target.value)
+            }
+            className="w-full border border-gray-300 rounded-lg p-2"
+            placeholder="Enter annotation name"
+          />
+        </div>
 
         {/* Row 1: Color, Peaks, Jumpers */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">

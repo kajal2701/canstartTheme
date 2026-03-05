@@ -12,12 +12,15 @@ import AnnotationImagePreview from "@/components/quote/AnnotationImagePreview";
 import PriceSummary from "@/components/quote/PriceSummary";
 import ImageUploadWithToggle from "../../components/quote/imageUploadWithToggle/Index";
 import { getCustomers } from "../../services/customersService";
-import { getProductsData } from "../../services/quoteService";
+import { getProductsData, addQuote } from "../../services/quoteService";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const AddQuote = () => {
   const [customers, setCustomers] = useState([]);
   const [customersLoading, setCustomersLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
+  const { user } = useSelector((state) => state.auth);
 
   const {
     // Customer
@@ -187,6 +190,7 @@ const AddQuote = () => {
         id: Date.now(),
         files: [{ file: null, preview: "", lineSaved: "", textSaved: "" }],
         formData: {
+          identifyImageName: "",
           color: "",
           peaksCount: "",
           jumpersCount: "",
@@ -307,41 +311,129 @@ const AddQuote = () => {
       },
     }));
   };
-
   // ==================== SUBMIT HANDLER ====================
-  const handleSubmit = () => {
-    const ok = validateQuote();
-    if (!ok) return;
+  const handleSubmit = async () => {
+    // const ok = validateQuote();
+    // if (!ok) return;
 
-    const quoteData = {
-      customer: selectedCustomer,
-      easyPlug: {
-        enabled: isEasyPlugEnabled,
-        files: easyPlugFiles,
-        notes: easyPlugNotes,
-      },
-      controller: {
-        enabled: isControllerEnabled,
-        files: controllerFiles,
-        notes: controllerNotes,
-      },
-      products,
-      customProducts,
-      annotationSections,
-      customerNotes,
-      adminNotes,
-      discount: discountPercent,
-      pricing: {
-        totalControllerPrice,
-        totalLinearFeetPrice,
-        discount: calculateDiscount(),
-        gst: calculateGST(),
-        mainTotal: calculateMainTotal(),
-      },
+    const toCurrencyString = (v) => Number(v || 0).toFixed(2);
+    const requiredFlag = (opt) =>
+      opt && String(opt).toLowerCase() === "mandatory" ? "yes" : "no";
+    const dataUrlToFile = (dataUrl, filename = "image.png") => {
+      try {
+        const arr = String(dataUrl).split(",");
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : "image/png";
+        const bstr = atob(arr[1] || "");
+        let n = bstr.length;
+        const u8 = new Uint8Array(n);
+        while (n--) u8[n] = bstr.charCodeAt(n);
+
+        return new File([new Blob([u8], { type: mime })], filename, {
+          type: mime,
+        });
+      } catch {
+        return null;
+      }
     };
 
-    console.log("Quote Data:", quoteData);
-    // TODO: Submit to API
+    const formData = new FormData();
+
+    formData.append("user_id", String(user?.user_id ?? ""));
+    formData.append("fname", String(selectedCustomer?.fname || ""));
+    formData.append("lname", String(selectedCustomer?.lname || ""));
+    formData.append("email", String(selectedCustomer?.email || ""));
+    formData.append("phone", String(selectedCustomer?.phone || ""));
+    formData.append("street", String(selectedCustomer?.address || ""));
+    formData.append("city", String(selectedCustomer?.city || ""));
+    formData.append("state", String(selectedCustomer?.state || ""));
+    formData.append("country", String(selectedCustomer?.country || ""));
+    formData.append("post_code", String(selectedCustomer?.post_code || ""));
+
+    formData.append(
+      "total_controller_price",
+      toCurrencyString(totalControllerPrice),
+    );
+    formData.append("total_feet_price", toCurrencyString(totalLinearFeetPrice));
+    formData.append("discount_percentage", String(discountPercent || 0));
+    formData.append("gst_percentage", String(selectedCustomer?.gst || 0));
+    formData.append("gst", toCurrencyString(calculateGST()));
+    formData.append("main_total", toCurrencyString(calculateMainTotal()));
+    formData.append("notes", String(customerNotes || ""));
+    formData.append("adminnotes", String(adminNotes || ""));
+
+    const productPayload = (products || [])
+      .filter((p) => Number(p.quantity) > 0)
+      .map((p) => ({
+        product_id: String(p.id || ""),
+        product: String(p.name || ""),
+        qty: String(p.quantity || "0"),
+        amount: toCurrencyString(p.amount),
+        required: requiredFlag(p.option),
+      }));
+    formData.append("product_data", JSON.stringify(productPayload));
+
+    const customPayload = (customProducts || [])
+      .filter((p) => Number(p.quantity) > 0 && Number(p.unitPrice) > 0)
+      .map((p) => ({
+        product: String(p.description || ""),
+        qty: String(p.quantity || "0"),
+        unit_price: toCurrencyString(p.unitPrice),
+        amount: toCurrencyString(
+          Number(p.quantity || 0) * Number(p.unitPrice || 0),
+        ),
+        required: requiredFlag(p.option),
+      }));
+    formData.append("custom_product_data", JSON.stringify(customPayload));
+
+    const annotationPayload = (annotationSections || []).map((section, idx) => {
+      const fd = section?.formData || {};
+      const identify =
+        String(fd?.identifyImageName?.trim() || "") ||
+        section?.files?.[0]?.file?.name ||
+        section?.files?.[0]?.preview?.name ||
+        `annotation_${idx + 1}`;
+      return {
+        identify_image_name: identify,
+        sft_count: Number(fd.sftCount || 0),
+        divide: Number(fd.sqftSize || 0),
+        total_numerical_box: Number(fd.total || 0),
+        unit_price: Number(fd.unitPrice || 0),
+        total_amount: Number(fd.amount || 0),
+        no_peaks: Number(fd.peaksCount || 0),
+        no_jumper: Number(fd.jumpersCount || 0),
+        color: String(fd.color || ""),
+        required: requiredFlag(fd.action),
+      };
+    });
+    formData.append("annotation_data", JSON.stringify(annotationPayload));
+
+    (annotationSections || []).forEach((section, nIdx) => {
+      const N = nIdx + 1;
+      (section.files || []).forEach((f, jIdx) => {
+        const drawn =
+          typeof f?.lineSaved === "string"
+            ? dataUrlToFile(f.lineSaved, `preview_${N}_${jIdx}.png`)
+            : null;
+        if (drawn) {
+          formData.append(`preview-image_${N}_${jIdx}`, drawn);
+        }
+        const edited =
+          typeof f?.textSaved === "string"
+            ? dataUrlToFile(f.textSaved, `edited_${N}_${jIdx}.png`)
+            : null;
+        if (edited) {
+          formData.append(`preview-image-edit_${N}_${jIdx}`, edited);
+        }
+      });
+    });
+
+    try {
+      const result = await addQuote(formData);
+      toast.success(result?.message || "Quote added successful.");
+    } catch (e) {
+      toast.error(e.message || "Failed to add quote");
+    }
   };
 
   // Format customers for select

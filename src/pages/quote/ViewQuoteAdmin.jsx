@@ -31,7 +31,6 @@ const ViewQuoteAdmin = () => {
         const data = await getQuote(id);
 
         if (mounted) {
-          console.log(data, "data");
           setQuote(data);
         }
       } catch (e) {

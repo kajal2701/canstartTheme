@@ -53,7 +53,6 @@ const Quote = () => {
         const uid = user?.user_id ?? "";
         const role = user?.role ?? "";
         const list = await getQuotes(uid, role);
-        console.log(list, "list");
         if (!mounted) return;
         const mappedList = list.map(mapQuoteData);
         setQuotesData(mappedList);
