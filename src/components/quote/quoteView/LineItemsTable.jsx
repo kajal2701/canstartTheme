@@ -53,7 +53,7 @@ const LineItemsTable = ({ formattedItems = [], onExtraTotalChange }) => {
   const getImgSrc = (url) => {
     if (!url) return "";
     if (url.startsWith("http")) return url;
-    return `https://portal.canstarlights.ca/${url.replace(/^\/+/, "")}`;
+    return `${import.meta.env.VITE_BASE_URL}/${url.replace(/^\/+/, "")}`;
   };
 
   React.useEffect(() => {

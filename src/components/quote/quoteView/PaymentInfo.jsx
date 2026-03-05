@@ -16,7 +16,7 @@ const PaymentInfo = ({ quote }) => {
           Amount Due
         </p>
         <p className="text-sm font-bold text-blue-600 dark:text-blue-400">
-          ${quote.payment_details.part_payment_amount}
+          ${quote.payment_details?.part_payment_amount}
         </p>
       </div>
       <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
@@ -24,7 +24,7 @@ const PaymentInfo = ({ quote }) => {
           Payment Methods
         </p>
         <p className="text-sm font-bold text-slate-800 dark:text-white capitalize">
-          {quote.payment_details.select_payment_methods}
+          {quote.payment_details?.select_payment_methods}
         </p>
       </div>
     </div>
