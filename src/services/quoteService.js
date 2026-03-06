@@ -95,3 +95,12 @@ export const addQuote = async (formData) => {
     throw e;
   }
 };
+export const getProvinces = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/quote/get_provinces`);
+    const data = await response.json();
+    return data.success ? data.data : [];
+  } catch (error) {
+    return [];
+  }
+};

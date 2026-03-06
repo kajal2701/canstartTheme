@@ -43,7 +43,7 @@ const Users = () => {
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
-  // ────────────────────────────────────────────────────────────────
+  
 
   const handleDeleteClick = (user) => {
     setDeleteModal({ open: true, userId: user.id, userName: user.name });

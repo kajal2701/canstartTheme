@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Textinput from "@/components/ui/Textinput";
 import Select from "@/components/ui/Select";
-import { addCustomer } from "@/services/customersService";
+import { getCustomerById, updateCustomer } from "@/services/customersService";
 import { getProvinces } from "@/services/quoteService";
 import { toast } from "react-toastify";
 
@@ -14,10 +14,11 @@ const countryOptions = [
   { value: "USA", label: "USA" },
 ];
 
-const AddCustomer = () => {
+const EditCustomer = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const [provinceOptions, setProvinceOptions] = useState([]);
-  const [provincesData, setProvincesData] = useState([]); 
+  const [provincesData, setProvincesData] = useState([]);
 
   const methods = useForm({
     defaultValues: {
@@ -42,28 +43,55 @@ const AddCustomer = () => {
     setError,
   } = methods;
 
-  // ── Fetch provinces from API ─────────────────────────────────────
- useEffect(() => {
-  const loadProvinces = async () => {
-    const rows = await getProvinces();
-     setProvincesData(rows);
-    const mapped = Array.isArray(rows)
-      ? rows.map((p) => ({
-          value: p.Province,  // ← capital P
-          label: p.Province,  // ← capital P
-        }))
-      : [];
-    setProvinceOptions(mapped);
-  };
-  loadProvinces();
-}, []);
+  // ── Fetch provinces ──────────────────────────────────────────────
+  useEffect(() => {
+    const loadProvinces = async () => {
+      const rows = await getProvinces();
+      if (Array.isArray(rows)) {
+        setProvincesData(rows);
+        setProvinceOptions(rows.map((p) => ({
+          value: p.Province,
+          label: p.Province,
+        })));
+      }
+    };
+    loadProvinces();
+  }, []);
+  // ────────────────────────────────────────────────────────────────
+
+  // ── Fetch customer and prefill form ─────────────────────────────
+  useEffect(() => {
+    const fetchCustomer = async () => {
+      const result = await getCustomerById(id);
+      if (result.success) {
+        const c = result.data;
+        reset({
+          firstName: c.fname ?? "",
+          lastName: c.lname ?? "",
+          email: c.email ?? "",
+          phoneNumber: c.phone ?? "",
+          street: c.address ?? "",
+          city: c.city ?? "",
+          postCode: c.post_code ?? "",
+          province: c.state ?? "",      // ← state column maps to province
+          country: c.country ?? "",
+        });
+      } else {
+        toast.error("Failed to load customer");
+        navigate("/customer");
+      }
+    };
+    fetchCustomer();
+  }, [id]);
   // ────────────────────────────────────────────────────────────────
 
   const onSubmit = async (data) => {
-      // ← find matching province row and extract GST
-  const selectedProvince = provincesData.find((p) => p.Province === data.province);
-  const gst = selectedProvince?.GST ?? "0.00";
+    // ← get GST from selected province
+    const selectedProvince = provincesData.find((p) => p.Province === data.province);
+    const gst = selectedProvince?.GST ?? "0.00";
+
     const payload = {
+      customer_id: id,
       fname: data.firstName,
       lname: data.lastName,
       email: data.email,
@@ -76,21 +104,21 @@ const AddCustomer = () => {
       gst: gst,
     };
 
-    const result = await addCustomer(payload);
+    const result = await updateCustomer(payload);
     if (result.success) {
       toast.success(result.message);
-      reset();
+      navigate("/customer");
     } else {
       toast.error(result.message);
       if (result.message?.toLowerCase().includes("email")) {
-        setError("email", { type: "server", message: "This email is already registered" });
+        setError("email", { type: "server", message: "This email already exists for another customer" });
       }
     }
   };
 
   return (
     <div>
-      <Card title="Personal Information">
+      <Card title="Edit Customer">
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-5">
@@ -164,7 +192,6 @@ const AddCustomer = () => {
                   Address
                 </div>
 
-                {/* Street — full width */}
                 <div className="lg:col-span-2 col-span-1">
                   <Textinput
                     label="Street"
@@ -202,7 +229,6 @@ const AddCustomer = () => {
                   }}
                 />
 
-                {/* Province — from API */}
                 <Select
                   label="Province"
                   name="province"
@@ -213,7 +239,6 @@ const AddCustomer = () => {
                   options_rule={{ required: "Province is required" }}
                 />
 
-                {/* Country — fixed: Canada / USA */}
                 <Select
                   label="Country"
                   name="country"
@@ -234,7 +259,7 @@ const AddCustomer = () => {
                   onClick={() => navigate("/customer")}
                 />
                 <Button
-                  text="Save"
+                  text="Update"
                   type="submit"
                   className="btn-primary btn-sm"
                 />
@@ -248,4 +273,4 @@ const AddCustomer = () => {
   );
 };
 
-export default AddCustomer;
+export default EditCustomer;
