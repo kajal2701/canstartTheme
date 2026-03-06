@@ -234,17 +234,27 @@ const AddQuote = () => {
     if (!selectedCustomer || !selectedCustomer.cust_id) {
       nextErrors.customer = "Customer is required";
     }
+    const atLeastOneProduct = products.some(
+      (p) => (parseInt(p?.quantity) || 0) > 0,
+    );
 
     // 2. Products — validate qty & action per row
     // NOTE: removed "products array empty" check — products always come from API
     nextErrors.products = products.map((product) => {
       const qty = parseInt(product?.quantity) || 0;
+
       return {
-        quantity: qty > 0 ? "" : "Quantity is required",
+        // If at least one product in the whole list has qty > 0,
+        // we don't show "Quantity is required" on any row.
+        quantity: atLeastOneProduct ? "" : "Quantity is required",
+
+        // Validation for Action: Only required if this specific row has a quantity
         option:
-          product?.option && ["mandatory", "optional"].includes(product.option)
-            ? ""
-            : "Action is required",
+          qty > 0 &&
+          (!product?.option ||
+            !["mandatory", "optional"].includes(product.option.toLowerCase()))
+            ? "Action is required"
+            : "",
       };
     });
 
@@ -313,8 +323,8 @@ const AddQuote = () => {
   };
   // ==================== SUBMIT HANDLER ====================
   const handleSubmit = async () => {
-    // const ok = validateQuote();
-    // if (!ok) return;
+    const ok = validateQuote();
+    if (!ok) return;
 
     const toCurrencyString = (v) => Number(v || 0).toFixed(2);
     const requiredFlag = (opt) =>

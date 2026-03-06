@@ -23,6 +23,7 @@ const Select = ({
   size,
   multiple,
   children,
+  options_rule,
   ...rest
 }) => {
   options = options || Array(3).fill("option");
@@ -46,12 +47,10 @@ const Select = ({
         {name && (
           <select
             onChange={onChange}
-            {...register(name)}
+            {...register(name, options_rule)}
             {...rest}
             multiple={multiple}
-            className={`${
-              error ? " is-error" : " "
-            } text-control py-2  appearance-none ${className}  `}
+            className={`${error ? " is-error" : " "} text-control py-2 appearance-none ${className}`}
             placeholder={placeholder}
             readOnly={readonly}
             disabled={disabled}

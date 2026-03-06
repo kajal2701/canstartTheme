@@ -53,7 +53,7 @@ const Textinput = ({
         {name && !isMask && (
           <input
             type={type === "password" && open === true ? "text" : type}
-            {...register(name)}
+            {...register(name, options)}
             {...rest}
             className={`${
               error ? " is-error" : " "
@@ -62,7 +62,6 @@ const Textinput = ({
             readOnly={readonly}
             disabled={disabled}
             id={id}
-            onChange={onChange}
             defaultValue={defaultValue}
           />
         )}
