@@ -31,3 +31,41 @@ export const addUser = async (payload) => {
   } catch (e) { }
   return { success: false, message: "A server error occurred. Please try again." };
 };
+
+
+export const deleteUser = async (userId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/users/delete_user`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId }),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
+export const getUserById = async (userId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/users/edit_user/${userId}`); 
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
+
+export const updateUser = async (payload) => {
+  try {
+    const response = await fetch(`${BASE_URL}/users/edit_user_process`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};

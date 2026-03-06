@@ -13,7 +13,7 @@ const AddUser = () => {
       lastName: "",
       email: "",
       password: "",
-      role: null,
+      role: "",
     },
     mode: "onChange",
   });
@@ -27,9 +27,9 @@ const AddUser = () => {
   } = methods;
 
   const roles = [
-    { value: "installer", label: "Installer" },
-    { value: "operations", label: "Operations" },
-    { value: "sales", label: "Sales" },
+    { value: "2", label: "Installer" },
+    { value: "3", label: "Operations" },
+    { value: "4", label: "Sales" },
   ];
 
   const onSubmit = async (data) => {
