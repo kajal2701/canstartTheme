@@ -1,68 +1,27 @@
-import { useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Textinput from "@/components/ui/Textinput";
-import Select from "@/components/ui/Select";
+import CustomerForm from "./CustomerForm";
 import { addCustomer } from "@/services/customersService";
-import { getProvinces } from "@/services/quoteService";
 import { toast } from "react-toastify";
-
-const countryOptions = [
-  { value: "Canada", label: "Canada" },
-  { value: "USA", label: "USA" },
-];
 
 const AddCustomer = () => {
   const navigate = useNavigate();
-  const [provinceOptions, setProvinceOptions] = useState([]);
-  const [provincesData, setProvincesData] = useState([]); 
 
   const methods = useForm({
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phoneNumber: "",
-      street: "",
-      city: "",
-      postCode: "",
-      province: "",
-      country: "",
+      firstName: "", lastName: "", email: "",
+      phoneNumber: "", street: "", city: "",
+      postCode: "", province: "", country: "",
     },
     mode: "onChange",
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setError,
-  } = methods;
+  const { reset, setError } = methods;
 
-  // ── Fetch provinces from API ─────────────────────────────────────
- useEffect(() => {
-  const loadProvinces = async () => {
-    const rows = await getProvinces();
-     setProvincesData(rows);
-    const mapped = Array.isArray(rows)
-      ? rows.map((p) => ({
-          value: p.Province,  // ← capital P
-          label: p.Province,  // ← capital P
-        }))
-      : [];
-    setProvinceOptions(mapped);
-  };
-  loadProvinces();
-}, []);
-  // ────────────────────────────────────────────────────────────────
+  const onSubmit = async (data, provincesData) => {
+    const selectedProvince = provincesData.find((p) => p.Province === data.province);
+    const gst = selectedProvince?.GST ?? "0.00";
 
-  const onSubmit = async (data) => {
-      // ← find matching province row and extract GST
-  const selectedProvince = provincesData.find((p) => p.Province === data.province);
-  const gst = selectedProvince?.GST ?? "0.00";
     const payload = {
       fname: data.firstName,
       lname: data.lastName,
@@ -73,13 +32,14 @@ const AddCustomer = () => {
       post_code: data.postCode,
       state: data.province,
       country: data.country,
-      gst: gst,
+      gst,
     };
 
     const result = await addCustomer(payload);
     if (result.success) {
       toast.success(result.message);
       reset();
+
     } else {
       toast.error(result.message);
       if (result.message?.toLowerCase().includes("email")) {
@@ -89,162 +49,12 @@ const AddCustomer = () => {
   };
 
   return (
-    <div>
-      <Card title="Personal Information">
-        <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-5">
-
-              {/* ── Personal Info ── */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-                <Textinput
-                  label="First Name"
-                  type="text"
-                  placeholder="First Name"
-                  name="firstName"
-                  register={register}
-                  error={errors.firstName}
-                  options={{
-                    required: "First name is required",
-                    minLength: { value: 2, message: "First name must be at least 2 characters" },
-                  }}
-                />
-
-                <Textinput
-                  label="Last Name"
-                  type="text"
-                  placeholder="Last Name"
-                  name="lastName"
-                  register={register}
-                  error={errors.lastName}
-                  options={{
-                    required: "Last name is required",
-                    minLength: { value: 2, message: "Last name must be at least 2 characters" },
-                  }}
-                />
-
-                <Textinput
-                  label="Email address"
-                  type="email"
-                  placeholder="Email address"
-                  name="email"
-                  register={register}
-                  error={errors.email}
-                  options={{
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                      message: "Please enter a valid email address",
-                    },
-                  }}
-                />
-
-                <Textinput
-                  label="Phone Number"
-                  type="tel"
-                  placeholder="Phone Number"
-                  name="phoneNumber"
-                  register={register}
-                  error={errors.phoneNumber}
-                  options={{
-                    pattern: {
-                      value: /^[+]?[\d\s\-().]{7,15}$/,
-                      message: "Please enter a valid phone number",
-                    },
-                  }}
-                />
-
-              </div>
-
-              {/* ── Address ── */}
-              <div className="grid lg:grid-cols-2 grid-cols-1 gap-5">
-
-                <div className="lg:col-span-2 col-span-1 text-gray-900 text-base dark:text-gray-300 font-medium">
-                  Address
-                </div>
-
-                {/* Street — full width */}
-                <div className="lg:col-span-2 col-span-1">
-                  <Textinput
-                    label="Street"
-                    type="text"
-                    placeholder="Street address"
-                    name="street"
-                    register={register}
-                    error={errors.street}
-                    options={{ required: "Street is required" }}
-                  />
-                </div>
-
-                <Textinput
-                  label="City"
-                  type="text"
-                  placeholder="City"
-                  name="city"
-                  register={register}
-                  error={errors.city}
-                  options={{ required: "City is required" }}
-                />
-
-                <Textinput
-                  label="Post Code"
-                  type="text"
-                  placeholder="Post code"
-                  name="postCode"
-                  register={register}
-                  error={errors.postCode}
-                  options={{
-                    pattern: {
-                      value: /^[a-zA-Z0-9\s\-]{3,10}$/,
-                      message: "Please enter a valid post code",
-                    },
-                  }}
-                />
-
-                {/* Province — from API */}
-                <Select
-                  label="Province"
-                  name="province"
-                  placeholder="-- Select Province --"
-                  options={provinceOptions}
-                  register={register}
-                  error={errors.province}
-                  options_rule={{ required: "Province is required" }}
-                />
-
-                {/* Country — fixed: Canada / USA */}
-                <Select
-                  label="Country"
-                  name="country"
-                  placeholder="--Select your Country--"
-                  options={countryOptions}
-                  register={register}
-                  error={errors.country}
-                  options_rule={{ required: "Country is required" }}
-                />
-
-              </div>
-
-              <div className="ltr:text-right rtl:text-left space-x-3 rtl:space-x-reverse">
-                <Button
-                  text="Cancel"
-                  type="button"
-                  className="btn-outline-dark btn-sm"
-                  onClick={() => navigate("/customer")}
-                />
-                <Button
-                  text="Save"
-                  type="submit"
-                  className="btn-primary btn-sm"
-                />
-              </div>
-
-            </div>
-          </form>
-        </FormProvider>
-      </Card>
-    </div>
+    <CustomerForm
+      methods={methods}
+      onSubmit={onSubmit}
+      title="Add Customer"
+      submitText="Save"
+    />
   );
 };
 
