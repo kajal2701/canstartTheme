@@ -6,11 +6,16 @@ import { toast } from "react-toastify";
 import { buildAddressParts, AddressCell } from "@/utils/mappers.jsx";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useNavigate } from "react-router-dom";
+import { addressAccessor } from "../../utils/mappers";
 
 const Customer = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [deleteModal, setDeleteModal] = useState({ open: false, customerId: null, customerName: "" });
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    customerId: null,
+    customerName: "",
+  });
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
@@ -24,7 +29,9 @@ const Customer = () => {
             const parts = buildAddressParts(c);
             return {
               id: c.cust_id ?? idx + 1,
-              name: [c.fname, c.lname].filter(Boolean).join(" ").trim() || "Customer",
+              name:
+                [c.fname, c.lname].filter(Boolean).join(" ").trim() ||
+                "Customer",
               email: c.email ?? "",
               phone: c.phone ?? "",
               ...parts,
@@ -45,7 +52,11 @@ const Customer = () => {
   // ────────────────────────────────────────────────────────────────
 
   const handleDeleteClick = (customer) => {
-    setDeleteModal({ open: true, customerId: customer.id, customerName: customer.name });
+    setDeleteModal({
+      open: true,
+      customerId: customer.id,
+      customerName: customer.name,
+    });
   };
 
   const handleClose = () => {
@@ -59,7 +70,7 @@ const Customer = () => {
       if (result.success) {
         toast.success(result.message);
         handleClose();
-        await loadCustomers();  // ← refetch list after delete
+        await loadCustomers(); // ← refetch list after delete
       } else {
         toast.error(result.message);
       }
@@ -75,7 +86,9 @@ const Customer = () => {
       Header: "Sr.",
       accessor: "id",
       Cell: ({ cell: { value } }) => (
-        <span className="text-sm text-gray-700 dark:text-gray-300">{value}</span>
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+          {value}
+        </span>
       ),
     },
     {
@@ -91,19 +104,23 @@ const Customer = () => {
       Header: "Email",
       accessor: "email",
       Cell: ({ cell: { value } }) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">{value || "-"}</span>
+        <span className="text-sm text-gray-600 dark:text-gray-400">
+          {value || "-"}
+        </span>
       ),
     },
     {
       Header: "Phone",
       accessor: "phone",
       Cell: ({ cell: { value } }) => (
-        <span className="text-sm text-gray-600 dark:text-gray-400">{value || "-"}</span>
+        <span className="text-sm text-gray-600 dark:text-gray-400">
+          {value || "-"}
+        </span>
       ),
     },
     {
       Header: "Address",
-      accessor: "address",
+      accessor: addressAccessor,
       Cell: AddressCell,
     },
     {
@@ -111,8 +128,13 @@ const Customer = () => {
       accessor: "action",
       Cell: ({ row }) => (
         <div className="flex space-x-2 rtl:space-x-reverse justify-center">
-          <button className="icon-btn hover:bg-blue-50" type="button" title="Edit"  
-          onClick={() => navigate(`/customer/edit_customer/${row.original.id}`)}
+          <button
+            className="icon-btn hover:bg-blue-50"
+            type="button"
+            title="Edit"
+            onClick={() =>
+              navigate(`/customer/edit_customer/${row.original.id}`)
+            }
           >
             <Icon icon="ph:pencil-line" />
           </button>
@@ -120,7 +142,12 @@ const Customer = () => {
             className="icon-btn hover:bg-red-50"
             type="button"
             title="Delete"
-            onClick={() => handleDeleteClick({ id: row.original.id, name: row.original.name })}
+            onClick={() =>
+              handleDeleteClick({
+                id: row.original.id,
+                name: row.original.name,
+              })
+            }
           >
             <Icon icon="ph:trash" />
           </button>

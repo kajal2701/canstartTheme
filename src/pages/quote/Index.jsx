@@ -12,6 +12,7 @@ import { formatDate } from "@/utils/formatters";
 import { STATUS_MAP, STATUS_OPTIONS } from "@/utils/constants";
 import QuoteActionButtons from "@/components/quote/quotelisting/QuoteActionButtons";
 import FilterSection from "../../components/quote/quotelisting/FilterSection";
+import { addressAccessor } from "../../utils/mappers";
 
 const mapQuoteData = (quote) => {
   return {
@@ -137,7 +138,7 @@ const Quote = () => {
     },
     {
       Header: "Address",
-      accessor: "address",
+      accessor: addressAccessor,
       Cell: ({ row }) => (
         <div className="min-w-[200px]">
           <AddressCell row={row} />

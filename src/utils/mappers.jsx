@@ -15,19 +15,18 @@ export const mapUserRole = (val) => {
   return "User";
 };
 
-export const buildAddressParts = (obj) => {
-  const street =
-    obj.address || [obj.address1, obj.address2].filter(Boolean).join(", ");
-  const address = [street, obj.city, obj.state, obj.country]
-    .filter(Boolean)
-    .join(", ");
+export const buildAddressParts = (customer) => {
+  const parts = [];
+
+  if (customer.address) parts.push(customer.address);
+  if (customer.city) parts.push(customer.city);
+  if (customer.state) parts.push(customer.state);
+  if (customer.country) parts.push(customer.country);
+
+  const address = parts.filter(Boolean).join(", ");
+
   return {
-    address,
-    addressLine: street,
-    city: obj.city ?? "",
-    state: obj.state ?? "",
-    country: obj.country ?? "",
-    post_code: obj.post_code ?? "",
+    address: address,
   };
 };
 
@@ -48,3 +47,8 @@ export const AddressCell = ({ row }) => {
     </div>
   );
 };
+
+export const addressAccessor = (row) =>
+  [row.address, row.city, row.state, row.country, row.post_code]
+    .filter(Boolean)
+    .join(" ");

@@ -7,6 +7,7 @@ import DataTable from "@/components/ui/DataTable";
 import { AddressCell } from "@/utils/mappers";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import { STATUS_MAP } from "@/utils/constants";
+import { addressAccessor } from "../../utils/mappers";
 
 const COLUMNS = [
   {
@@ -39,7 +40,7 @@ const COLUMNS = [
   },
   {
     Header: "Address",
-    accessor: "address",
+    accessor: addressAccessor,
     Cell: ({ row }) => (
       <div className="min-w-[200px]">
         <AddressCell row={row} />
