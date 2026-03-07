@@ -20,6 +20,7 @@ const Textarea = ({
   cols,
   row = 3,
   onChange,
+  options_rule, 
   ...rest
 }) => {
   return (
@@ -41,7 +42,7 @@ const Textarea = ({
       <div className={`relative ${horizontal ? "flex-1" : ""}`}>
         {name && (
           <textarea
-            {...register(name)}
+            {...register(name, options_rule)}
             {...rest}
             className={`${
               error ? " is-error" : " "
@@ -52,7 +53,6 @@ const Textarea = ({
             id={id}
             cols={cols}
             rows={row}
-            onChange={onChange}
           ></textarea>
         )}
         {!name && (

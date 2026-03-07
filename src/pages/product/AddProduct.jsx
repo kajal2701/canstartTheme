@@ -1,73 +1,57 @@
-import React, { useState } from "react";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import Textinput from "@/components/ui/Textinput";
-import Textarea from "@/components/ui/Textarea";
-import Flatpickr from "react-flatpickr";
-import Select from "react-select";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import ProductForm from "./ProductForm";
+import { addProduct } from "@/services/productsService";
+import { toast } from "react-toastify";
 
 const AddProduct = () => {
-  const typeOptions = [
-    { value: "physical", label: "Physical Product" },
-    { value: "digital", label: "Digital Product" },
-    { value: "service", label: "Service" },
-  ];
 
-  const styles = {
-    option: (provided, state) => ({
-      ...provided,
-      fontSize: "14px",
-    }),
+  const methods = useForm({
+    defaultValues: {
+      title: "",
+      sku: "",
+      description: "",
+      inventory: "",
+      price: "",
+      type: "",
+      channel_color: "",
+    },
+    mode: "onChange",
+  });
+
+  const { reset, setError } = methods;
+
+  const onSubmit = async (data) => {
+    const payload = {
+      title: data.title,
+      sku: data.sku,
+      description: data.description,
+      inventory: data.inventory,
+      price: data.price,
+      type: data.type,
+      channel_color: data.type === "2" ? data.channel_color : "",
+    };
+
+    const result = await addProduct(payload);
+    if (result.success) {
+      toast.success(result.message);
+      reset();
+    } else {
+      toast.error(result.message);
+      // ← handle duplicate SKU from backend
+      if (result.message?.toLowerCase().includes("sku")) {
+        setError("sku", { type: "server", message: "This SKU already exists" });
+      }
+    }
   };
+
   return (
-    <div>
-      <Card title="Add Product">
-        <div className="space-y-5">
-          <div className="grid lg:grid-cols-2 grid-cols-1 gap-5">
-            {/* Title */}
-            <Textinput label="Title" type="text" placeholder="Title" />
-
-            {/* SKU */}
-            <Textinput label="SKU" type="text" placeholder="SKU" />
-
-            {/* Description - full width */}
-            <div className="lg:col-span-2 col-span-1">
-              <Textarea
-                label="Description"
-                placeholder="Description"
-                rows="3"
-              />
-            </div>
-
-            {/* Inventory */}
-            <Textinput
-              label="Inventory"
-              type="number"
-              placeholder="Inventory"
-            />
-
-            {/* Price */}
-            <Textinput label="Price" type="number" placeholder="Price" />
-
-            {/* Type - full width select */}
-            <div className="lg:col-span-2 col-span-1">
-              <label className="form-label">Type</label>
-              <Select
-                className="react-select"
-                classNamePrefix="select"
-                placeholder="-- Select type --"
-                options={typeOptions}
-                styles={styles}
-              />
-            </div>
-          </div>
-
-          <div className="ltr:text-right rtl:text-left space-x-3 rtl:space-x-reverse">
-            <Button text="Save" className="btn-primary btn-sm" />
-          </div>
-        </div>
-      </Card>
-    </div>
+    <ProductForm
+      methods={methods}
+      onSubmit={onSubmit}
+      title="Add Product"
+      submitText="Save"
+    />
   );
 };
 

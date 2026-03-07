@@ -27,6 +27,7 @@ import Invoice from "./pages/invoice/Index";
 import ViewQuoteAdmin from "./pages/quote/ViewQuoteAdmin";
 import EditUser from "./pages/users/EditUser";
 import EditCustomer from "./pages/customer/EditCustomer";
+import EditProduct from "./pages/product/EditProduct";
 
 const Profile = lazy(() => import("./pages/utility/profile"));
 
@@ -45,7 +46,7 @@ function App() {
           <Route path="users">
             <Route index element={<Users />} />
             <Route path="add" element={<AddUser />} />
-            <Route path="edit_user/:id" element={<EditUser />} /> 
+            <Route path="edit_user/:id" element={<EditUser />} />
           </Route>
 
           <Route path="customer">
@@ -68,6 +69,7 @@ function App() {
           <Route path="product">
             <Route index element={<Product />} />
             <Route path="add" element={<AddProduct />} />
+            <Route path="edit_product/:id" element={<EditProduct />} />
           </Route>
 
           <Route path="invoice" element={<Invoice />} />
