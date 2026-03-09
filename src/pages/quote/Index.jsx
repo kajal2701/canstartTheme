@@ -46,32 +46,37 @@ const Quote = () => {
   const [quotesData, setQuotesData] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const loadQuotes = async () => {
+    try {
+      setLoading(true);
+      const uid = user?.user_id ?? "";
+      const role = user?.role ?? "";
+      const list = await getQuotes(uid, role);
+      const mappedList = list.map(mapQuoteData);
+      setQuotesData(mappedList);
+    } catch (err) {
+      console.error("Error loading quotes:", err);
+      setQuotesData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
-    const load = async () => {
-      try {
-        setLoading(true);
-        const uid = user?.user_id ?? "";
-        const role = user?.role ?? "";
-        const list = await getQuotes(uid, role);
-        if (!mounted) return;
-        const mappedList = list.map(mapQuoteData);
-        setQuotesData(mappedList);
-      } catch (err) {
-        if (mounted) {
-          setQuotesData([]);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-    load();
+
+    if (mounted) {
+      loadQuotes();
+    }
+
     return () => {
       mounted = false;
     };
   }, [user]);
+
+  const fetchQuotes = async () => {
+    await loadQuotes();
+  };
 
   const uniqueSalesmen = useMemo(() => {
     return [...new Set(quotesData.map((item) => item.salesman))].sort();
@@ -205,7 +210,11 @@ const Quote = () => {
       Header: "Action",
       accessor: "id",
       Cell: ({ cell: { value } }) => (
-        <QuoteActionButtons id={value} navigate={navigate} />
+        <QuoteActionButtons
+          id={value}
+          navigate={navigate}
+          fetchQuotes={fetchQuotes}
+        />
       ),
     },
   ];

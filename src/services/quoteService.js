@@ -16,7 +16,7 @@ export const getQuotes = async (userId, role) => {
     if (res.ok && result?.success) {
       return result.data || [];
     }
-  } catch (e) {}
+  } catch (e) { }
   return [];
 };
 
@@ -102,5 +102,22 @@ export const getProvinces = async () => {
     return data.success ? data.data : [];
   } catch (error) {
     return [];
+  }
+};
+export const deleteQuote = async (quoteId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/quote/delete_quote`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ quote_id: quoteId }),
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting quote:", error);
+    throw error;
   }
 };
