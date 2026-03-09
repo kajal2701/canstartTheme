@@ -1,96 +1,95 @@
-import { Sparkles, Star, Phone, Mail, MapPin, Download } from "lucide-react";
+import { Star, Phone, Mail, MapPin, Download } from "lucide-react";
 import Button from "@/components/ui/Button";
-import Checkbox from "@/components/ui/checkbox";
+import Checkbox from "@/components/ui/Checkbox";
 import CanstarLogo from "@/assets/images/logo/new-canstar-logo.jpg";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getQuote } from "../../services/quoteService";
+import Modal from "@/components/ui/Modal";
+import { formatDateLong } from "../../utils/formatters";
 
-// Dummy Invoice Data
-const dummyInvoice = {
-  invoiceNumber: "250369",
-  date: "March 9, 2026",
-  from: {
-    name: "CANSTAR LIGHT LTD",
-    address: "3227 18 St NW, Edmonton, AB T6T 0H2",
-    email: "info@canstarlight.ca",
-    phone: "(780) 716-4210",
-    gst: "742932601 RT001",
-  },
-  to: {
-    name: "ZEENAT KHALIL",
-    email: "zeenatkhalil89@gmail.com",
-    phone: "7806673102",
-    address: "9209 223A St NW, Edmonton, Alberta – T5T 7P3",
-  },
-  items: [
-    {
-      no: 1,
-      description:
-        "Canstar puck lights with customised data line system, Charcoal aluminium channel track package for the Front Bottom of the house",
-      total: 1536.0,
-      images: [{}, {}, {}, {}],
-    },
-    {
-      no: 2,
-      description:
-        "Canstar puck lights with customised data line system, Charcoal aluminium channel track package for the Front Top of the house",
-      total: 1848.0,
-      images: [{}, {}, {}],
-    },
-    {
-      no: 3,
-      description:
-        "Canstar puck lights with customised data line system, Charcoal aluminium channel track package for the Back of the house",
-      total: 1680.0,
-      images: [{}, {}],
-    },
-    {
-      no: 4,
-      description:
-        "Canstar Four-Zone Smart Controller System with 12V Outdoor-Rated Power Box Unit",
-      total: 280.0,
-      images: [],
-    },
-    {
-      no: 5,
-      description:
-        "Canstar Four-Zone Smart Controller System with 12V Outdoor-Rated Power Box Unit",
-      total: 280.0,
-      images: [],
-    },
-  ],
-  subtotal: 5624.0,
-  discount: 674.88,
-  gst: 247.46,
-  total: 5196.58,
-  depositPaid: 1300.0,
-  pendingPayment: 3896.58,
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+// Safe image URL generator
+const getImgSrc = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return `https://portal.canstarlights.ca/${url.replace(/^\/+/, "")}`;
+  // return `${import.meta.env.VITE_BASE_URL}/${url.replace(/^\/+/, "")}`;
 };
 
+const reviewsData = [
+  {
+    reviewer_name: "Frank Romano",
+    rating: "5 Stars",
+    review_text:
+      "Extraordinary company who delivered a superb product that transformed our house into a beautiful color show at night. We are beyond pleased with our outdoor lighting and highly recommend CANstar to anyone looking for a company true to their word.",
+  },
+  {
+    reviewer_name: "Bhanu Mehta",
+    rating: "5 Stars",
+    review_text:
+      "I normally don't leave reviews but we highly recommend Can Star Lights. Their recommendations and installation work were exceptional. Everything has been great with the lights. Don't think otherwise, just do it!",
+  },
+  {
+    reviewer_name: "Wade Brintnell",
+    rating: "5 Stars",
+    review_text:
+      "Absolutely thrilled with our lighting! Canstar did a fantastic job and their App is simply amazing. Highly recommend their work!",
+  },
+  {
+    reviewer_name: "Ellwood Daycare",
+    rating: "5 Stars",
+    review_text:
+      "Canstar lights edmonton and the team, according to me, is the ultimate 'A' team. Hands down the best in the business in Edmonton. Kudos!",
+  },
+  {
+    reviewer_name: "Cherilyn Vreim",
+    rating: "5 Stars",
+    review_text:
+      "Amazing service. After 2 years, they are still willing to help out to make our house magical. Very smart people!",
+  },
+  {
+    reviewer_name: "Catherine Battiste",
+    rating: "5 Stars",
+    review_text:
+      "Great product and awesome service! We love our lights! Had an issue and got a response very quickly. Definitely recommend going with this company!",
+  },
+];
+
 export default function InvoicePage() {
-  const invoice = dummyInvoice;
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [reviewIdx, setReviewIdx] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setReviewIdx((prev) => (prev === reviewsData.length - 1 ? 0 : prev + 1));
+    }, 3000); // Change review every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         const data = await getQuote(id);
-        console.log(data, "data");
+        console.log(data, "quote data");
         setQuote(data);
       } catch (e) {
+        console.error(e);
         setError("Failed to load invoice");
       } finally {
         setLoading(false);
       }
     };
-    load();
+    if (id) {
+      load();
+    }
   }, [id]);
 
   const formatCurrency = (amount) => {
@@ -100,6 +99,87 @@ export default function InvoicePage() {
       minimumFractionDigits: 2,
     }).format(amount);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#fff6f6] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 text-lg">Loading invoice...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !quote) {
+    return (
+      <div className="min-h-screen bg-[#fff6f6] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 text-lg">{error || "Invoice not found"}</p>
+          <Button onClick={() => navigate(-1)} className="mt-4">
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Build items array from annotation_image, products, custom_product_data, and extra_work_data
+  const buildItems = () => {
+    let items = [];
+    let counter = 0;
+
+    // Add annotation images
+    if (quote.annotation_image && Array.isArray(quote.annotation_image)) {
+      quote.annotation_image.forEach((item) => {
+        items.push({
+          no: ++counter,
+          description: `Canstar puck lights with customised data line system, <b>${item.color}</b> aluminium channel track package for the <b>${item.identify_image_name}</b> of the house`,
+          total: parseFloat(item.total_amount),
+          images: item.images || [],
+        });
+      });
+    }
+
+    // Add products
+    if (quote.products && Array.isArray(quote.products)) {
+      quote.products.forEach((item) => {
+        items.push({
+          no: ++counter,
+          description: item.product_description || item.product,
+          total: parseFloat(item.amount),
+          images: [],
+        });
+      });
+    }
+
+    // Add custom products
+    if (quote.custom_product_data && Array.isArray(quote.custom_product_data)) {
+      quote.custom_product_data.forEach((item) => {
+        items.push({
+          no: ++counter,
+          description: item.product,
+          total: parseFloat(item.amount),
+          images: [],
+        });
+      });
+    }
+
+    // Add extra work
+    if (quote.extra_work_data && Array.isArray(quote.extra_work_data)) {
+      quote.extra_work_data.forEach((item) => {
+        items.push({
+          no: ++counter,
+          description: item.product,
+          total: parseFloat(item.amount),
+          images: [],
+        });
+      });
+    }
+
+    return items;
+  };
+
+  const items = buildItems();
 
   return (
     <div className="min-h-screen bg-[#fff6f6] py-4 md:py-8 px-3 md:px-4 lg:px-8 flex flex-col items-center font-sans">
@@ -116,24 +196,24 @@ export default function InvoicePage() {
           </div>
           {/* Right Invoice Section */}
           <div
-            className="text-white p-8 flex flex-col  flex-wrap-reverse "
+            className="text-white p-8 flex flex-col flex-wrap-reverse"
             style={{
               background: "#ee5d59",
               width: "50%",
               borderBottomLeftRadius: "200px",
             }}
           >
-            <div className=" w-[250px] mr-[30px]">
-              <h2 className="text-3xl font-bold mb-4 text-white ">INVOICE</h2>
+            <div className="w-[250px] mr-[30px]">
+              <h2 className="text-3xl font-bold mb-4 text-white">INVOICE</h2>
               <div className="flex justify-between text-l mb-2">
                 <span>Invoice Number</span>
                 <span className="font-semibold">
-                  #INV{invoice.invoiceNumber}
+                  #INV250{quote.payment_details?.payment_id || quote.quote_id}
                 </span>
               </div>
               <div className="flex justify-between text-l">
                 <span>Invoice Date</span>
-                <span>{invoice.date}</span>
+                <span>{formatDateLong(quote.invoice_date)}</span>
               </div>
             </div>
           </div>
@@ -148,19 +228,19 @@ export default function InvoicePage() {
                 Invoice From
               </h3>
               <p className="font-bold text-gray-900 text-base md:text-lg">
-                {invoice.from.name}
+                CANSTAR LIGHT LTD
               </p>
               <p className="text-gray-600 text-sm md:text-base max-w-[250px] leading-relaxed">
-                {invoice.from.address}
+                3227 18 St NW, Edmonton, AB T6T 0H2
               </p>
               <p className="text-gray-600 text-sm md:text-base mt-1 md:mt-2">
-                {invoice.from.email}
+                info@canstarlight.ca
               </p>
               <p className="text-gray-600 text-sm md:text-base">
-                {invoice.from.phone}
+                (780) 716-4210
               </p>
               <p className="text-gray-600 text-sm md:text-base mt-1 md:mt-2">
-                GST/HST: {invoice.from.gst}
+                GST/HST: 742932601 RT001
               </p>
             </div>
 
@@ -170,16 +250,16 @@ export default function InvoicePage() {
                 Invoice To
               </h3>
               <p className="font-bold text-gray-900 text-base md:text-lg">
-                {invoice.to.name}
+                {quote.fname} {quote.lname}
               </p>
               <p className="text-gray-600 text-sm md:text-base">
-                {invoice.to.email}
+                {quote.email}
               </p>
               <p className="text-gray-600 text-sm md:text-base">
-                {invoice.to.phone}
+                {quote.phone}
               </p>
               <p className="text-gray-600 text-sm md:text-base max-w-[250px] leading-relaxed mt-1 md:mt-2 md:ml-auto">
-                {invoice.to.address}
+                {quote.address}, {quote.city}, {quote.state} - {quote.post_code}
               </p>
             </div>
           </div>
@@ -206,7 +286,7 @@ export default function InvoicePage() {
                 </tr>
               </thead>
               <tbody>
-                {invoice.items.map((item, index) => (
+                {items.map((item, index) => (
                   <tr
                     key={index}
                     className={index % 2 === 0 ? "bg-gray-50/50" : "bg-white"}
@@ -214,16 +294,27 @@ export default function InvoicePage() {
                     <td className="py-3 md:py-5 px-2 md:px-4 font-medium text-gray-900 border-b border-gray-100 align-top text-xs md:text-base">
                       {item.no}
                     </td>
-                    <td className="py-3 md:py-5 px-2 md:px-4 text-gray-600 border-b border-gray-100 align-top leading-relaxed text-xs md:text-base">
-                      {item.description}
-                    </td>
+                    <td
+                      className="py-3 md:py-5 px-2 md:px-4 text-gray-600 border-b border-gray-100 align-top leading-relaxed text-xs md:text-base"
+                      dangerouslySetInnerHTML={{ __html: item.description }}
+                    />
                     <td className="py-3 md:py-5 px-2 md:px-4 border-b border-gray-100 align-top text-center">
                       {item.images && item.images.length > 0 ? (
-                        <div className="flex -space-x-3 justify-center">
-                          {item.images.map((_, i) => (
-                            <div
+                        <div className="flex flex-col gap-2 justify-center items-center">
+                          {item.images.slice(0, 2).map((img, i) => (
+                            <img
                               key={i}
-                              className="w-6 md:w-8 h-6 md:h-8 rounded-full border-2 border-white bg-gray-200 shadow-sm flex-shrink-0"
+                              src={
+                                img.image_url
+                                  ? `https://portal.canstarlights.ca/${img.image_url}`
+                                  : ""
+                              }
+                              alt="preview"
+                              className="w-10 md:w-12 h-10 md:h-12 rounded-full border-2 border-white bg-gray-200 shadow-md flex-shrink-0 object-cover cursor-pointer hover:shadow-lg transition-shadow"
+                              onClick={() => {
+                                setPreviewSrc(getImgSrc(img.image_url));
+                                setPreviewOpen(true);
+                              }}
                             />
                           ))}
                         </div>
@@ -248,44 +339,72 @@ export default function InvoicePage() {
           <div className="w-full md:max-w-[320px] space-y-2 md:space-y-3">
             <div className="flex justify-between text-gray-600 font-medium text-xs md:text-base">
               <span>Subtotal:</span>
-              <span>{formatCurrency(invoice.subtotal)}</span>
+              <span>
+                {formatCurrency(
+                  parseFloat(quote.total_feet_price) +
+                    parseFloat(quote.total_controller_price),
+                )}
+              </span>
             </div>
+
             <div className="flex justify-between text-green-500 font-medium text-xs md:text-base">
-              <span>Discount (12%):</span>
-              <span>{formatCurrency(invoice.discount)}</span>
+              <span>Discount ({quote.discount_percentage}%):</span>
+              <span>
+                {formatCurrency(
+                  quote.discount_amount ||
+                    ((parseFloat(quote.total_feet_price) +
+                      parseFloat(quote.total_controller_price)) *
+                      parseFloat(quote.discount_percentage)) /
+                      100,
+                )}
+              </span>
             </div>
+
             <div className="flex justify-between text-gray-600 font-medium pb-2 md:pb-3 border-b border-gray-200 text-xs md:text-base">
-              <span>GST (5%):</span>
-              <span>{formatCurrency(invoice.gst)}</span>
+              <span>GST ({quote.gst_percentage}%):</span>
+              <span>{formatCurrency(quote.gst)}</span>
             </div>
             <div className="flex justify-between text-[#ee5d59] font-bold text-lg md:text-2xl pt-1 md:pt-2">
               <span>Total:</span>
-              <span>{formatCurrency(invoice.total)}</span>
+              <span>{formatCurrency(quote.main_total)}</span>
             </div>
-            <div className="flex justify-between text-green-500 font-medium pt-1 md:pt-2 text-xs md:text-base">
-              <span>Deposit Payment paid:</span>
-              <span>{formatCurrency(invoice.depositPaid)}</span>
-            </div>
-            <div className="flex justify-between text-[#ee5d59] font-bold pt-1 md:pt-2 text-xs md:text-base">
-              <span>Pending Payment:</span>
-              <span>{formatCurrency(invoice.pendingPayment)}</span>
-            </div>
+            {quote.payment_details?.part_payment_amount && (
+              <div className="flex justify-between text-green-500 font-medium pt-1 md:pt-2 text-xs md:text-base">
+                <span>
+                  {quote.payment_details.payment_type === 1
+                    ? "Full payment"
+                    : "Deposit Payment"}{" "}
+                  paid:
+                </span>
+                <span>
+                  {formatCurrency(quote.payment_details.part_payment_amount)}
+                </span>
+              </div>
+            )}
+            {quote.payment_details?.pending_payment_amount > 0 && (
+              <div className="flex justify-between text-[#ee5d59] font-bold pt-1 md:pt-2 text-xs md:text-base">
+                <span>Pending Payment:</span>
+                <span>
+                  {formatCurrency(quote.payment_details.pending_payment_amount)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Notes  */}
-        <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-16">
-          <div>
-            <h3 className="text-[#ee5d59] font-semibold text-lg md:text-xl mb-2">
-              Notes :
-            </h3>
-            <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-              Thank you for choosing Canstar Permanent Smart Lights. All
-              installations come with a 5-year warranty on parts and a 1-year
-              warranty on labor.
-            </p>
+        {/* Notes */}
+        {quote.notes && (
+          <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-16">
+            <div>
+              <h3 className="text-[#ee5d59] font-semibold text-lg md:text-xl mb-2">
+                Notes :
+              </h3>
+              <p className="text-gray-600 text-sm md:text-base leading-relaxed">
+                {quote.notes}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Reviews Section */}
         <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-16">
@@ -295,27 +414,43 @@ export default function InvoicePage() {
                 Customer Reviews
               </span>
             </div>
-            <div className="flex gap-1 mb-3">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className="w-4 md:w-5 h-4 md:h-5 fill-yellow-400 text-yellow-400"
-                />
-              ))}
-            </div>
-            <p className="text-gray-600 text-sm md:text-base italic leading-relaxed">
-              "Great product and awesome service! We love our lights! Had an
-              issue and got a response very quickly. Definitely recommend going
-              with this company!"
-            </p>
-            <div className="mt-3 md:mt-4">
-              <span className="text-gray-900 font-medium text-xs md:text-base">
-                Catherine Battiste
-              </span>
+
+            {/* Reviews Carousel */}
+            <div className="relative">
+              <div className="flex gap-1 mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="w-4 md:w-5 h-4 md:h-5 fill-yellow-400 text-yellow-400"
+                  />
+                ))}
+              </div>
+              <p className="text-gray-600 text-sm md:text-base italic leading-relaxed mb-4 min-h-[80px]">
+                "{reviewsData[reviewIdx]?.review_text}"
+              </p>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-900 font-medium text-xs md:text-base">
+                  {reviewsData[reviewIdx]?.reviewer_name}
+                </span>
+              </div>
+
+              {/* Dots Indicator */}
+              <div className="flex justify-center gap-2 mt-4">
+                {reviewsData.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setReviewIdx(i)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      i === reviewIdx
+                        ? "bg-[#ee5d59] w-6"
+                        : "bg-gray-300 hover:bg-gray-400"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
-
         {/* Footer Details */}
         <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-12 flex flex-col lg:flex-row gap-6 md:gap-10">
           <div className="w-full lg:w-[70%]">
@@ -337,9 +472,10 @@ export default function InvoicePage() {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="terms"
-                defaultChecked
+                value={true}
                 className="border-[#ee5d59] data-[state=checked]:bg-[#ee5d59]"
               />
+
               <label
                 htmlFor="terms"
                 className="text-xs md:text-base font-medium text-gray-700 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -389,22 +525,40 @@ export default function InvoicePage() {
       </div>
 
       {/* Floating Action Buttons below the document */}
-      <div className="w-full max-w-[1120px] mt-6 md:mt-8 flex flex-col sm:flex-row justify-center gap-3 md:gap-4 no-print px-3 md:px-4">
-        <Button
-          size="lg"
-          className="bg-[#ee5d59] hover:bg-[#ee5d59]/90 text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg shadow-[#ee5d59]/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 text-sm md:text-base w-full sm:w-auto"
-        >
-          Confirm And Pay
-        </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          className="bg-[#2563eb] border-transparent hover:bg-blue-700 text-white font-semibold px-6 md:px-6 py-2 md:py-3 rounded-full shadow-lg shadow-blue-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 gap-2 text-sm md:text-base w-full sm:w-auto"
-        >
-          <Download className="w-4 md:w-5 h-4 md:h-5" />
-          Download Invoice
-        </Button>
-      </div>
+      {quote.payment_details?.pending_payment_amount > 0 && (
+        <div className="w-full max-w-[1120px] mt-6 md:mt-8 flex flex-col sm:flex-row justify-center gap-3 md:gap-4 no-print px-3 md:px-4">
+          <Button
+            size="lg"
+            className="bg-[#ee5d59] hover:bg-[#ee5d59]/90 text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg shadow-[#ee5d59]/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 text-sm md:text-base w-full sm:w-auto"
+          >
+            Confirm And Pay
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="bg-[#2563eb] border-transparent hover:bg-blue-700 text-white font-semibold px-6 md:px-6 py-2 md:py-3 rounded-full shadow-lg shadow-blue-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 gap-2 text-sm md:text-base w-full sm:w-auto"
+          >
+            <Download className="w-4 md:w-5 h-4 md:h-5" />
+            Download Invoice
+          </Button>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      <Modal
+        title="Image"
+        activeModal={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        className="max-w-3xl"
+      >
+        {previewSrc && (
+          <img
+            src={previewSrc}
+            alt="Preview"
+            className="w-full h-auto rounded-lg"
+          />
+        )}
+      </Modal>
     </div>
   );
 }

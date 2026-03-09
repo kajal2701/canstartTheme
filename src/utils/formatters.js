@@ -9,5 +9,27 @@ export const formatDate = (dateString) => {
   if (!dateString) return "-";
 
   // Extract only the date part (YYYY-MM-DD)
-  return dateString.split("T")[0];
+  const datePart = dateString.split("T")[0];
+  const [year, month, day] = datePart.split("-");
+
+  // Return in dd-mm-yyyy format
+  return `${day}-${month}-${year}`;
+};
+
+
+export const formatDateLong = (dateString) => {
+  if (!dateString) return "-";
+
+  // Extract only the date part (YYYY-MM-DD)
+  const datePart = dateString.split("T")[0];
+  const [year, month, day] = datePart.split("-");
+
+  // Month names
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  // Return in "Month DD, YYYY" format
+  return `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
 };
