@@ -28,6 +28,7 @@ import ViewQuoteAdmin from "./pages/quote/ViewQuoteAdmin";
 import EditUser from "./pages/users/EditUser";
 import EditCustomer from "./pages/customer/EditCustomer";
 import EditProduct from "./pages/product/EditProduct";
+import InvoiceView from "./pages/invoice/InvoiceView";
 
 const Profile = lazy(() => import("./pages/utility/profile"));
 
@@ -75,7 +76,9 @@ function App() {
           <Route path="invoice" element={<Invoice />} />
           <Route path="profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/404" />} />
+         
         </Route>
+         <Route path="users/quote_final_invoice/:id" element={<InvoiceView />} />
         <Route
           path="/404"
           element={

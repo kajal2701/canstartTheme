@@ -4,9 +4,11 @@ import DataTable from "@/components/ui/DataTable";
 import { getPayments } from "@/services/paymentService";
 import { useSelector } from "react-redux";
 import { formatDate } from "@/utils/formatters";
+import { useNavigate } from "react-router-dom";
 
 const Invoice = () => {
   const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
 
   const TEXT_CLASSES = {
     primary: "text-sm text-gray-700 dark:text-gray-300",
@@ -49,15 +51,19 @@ const Invoice = () => {
         <span className={TEXT_CLASSES.secondary}>{value}</span>
       ),
     },
+
     {
       Header: "Actions",
       accessor: "actions",
-      Cell: () => (
+      Cell: ({ row }) => (
         <div className="flex justify-center">
           <button
             className="icon-btn hover:bg-blue-50"
             type="button"
             title="Print"
+            onClick={() =>
+              navigate(`/users/quote_final_invoice/${row.original.quoteId}`)
+            }
           >
             <Icon icon="ph:printer" />
           </button>
@@ -78,16 +84,16 @@ const Invoice = () => {
       try {
         setLoading(true);
         setError(null);
-        console.log(user, "user");
         const uid = user?.user_id ?? "";
         const role = user?.role ?? "";
         const list = await getPayments(uid, role);
-        console.log(list, "list");
+
         if (!mounted) return;
         const mapped = Array.isArray(list)
           ? list.map((p, idx) => ({
-              invoiceNo: p.payment_id || idx + 1,
-              customerName: p.customer_name || p.name || "-",
+              invoiceNo: p.payment_id,
+              quoteId: p.quote_id,
+              customerName: p.customer_name || "-",
               paymentType: p.payment_method || "-",
               paymentAmount: p.amount || "-",
               date: formatDate(p.created_at),
