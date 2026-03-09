@@ -7,14 +7,15 @@ import { useEffect, useState } from "react";
 import { getQuote } from "../../services/quoteService";
 import Modal from "@/components/ui/Modal";
 import { formatDateLong } from "../../utils/formatters";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 // Safe image URL generator
 const getImgSrc = (url) => {
   if (!url) return "";
   if (url.startsWith("http")) return url;
-  return `https://portal.canstarlights.ca/${url.replace(/^\/+/, "")}`;
-  // return `${import.meta.env.VITE_BASE_URL}/${url.replace(/^\/+/, "")}`;
+  return `${BASE_URL}/${url.replace(/^\/+/, "")}`;
 };
 
 const reviewsData = [
@@ -110,6 +111,44 @@ export default function InvoicePage() {
     );
   }
 
+  const handleDownloadInvoice = async () => {
+    try {
+      const element = document.querySelector(".invoice-layout"); // Invoice container
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      let heightLeft = (canvas.height * imgWidth) / canvas.width;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, pageHeight);
+      heightLeft -= pageHeight;
+
+      // Add remaining pages
+      while (heightLeft > 0) {
+        position = heightLeft - (canvas.height * imgWidth) / canvas.width;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, pageHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(
+        `Invoice-${quote.payment_details?.payment_id || quote.quote_id}.pdf`,
+      );
+    } catch (error) {
+      console.error("Error downloading invoice:", error);
+      alert("Failed to download invoice");
+    }
+  };
+
   if (error || !quote) {
     return (
       <div className="min-h-screen bg-[#fff6f6] flex items-center justify-center">
@@ -183,37 +222,44 @@ export default function InvoicePage() {
 
   return (
     <div className="min-h-screen bg-[#fff6f6] py-4 md:py-8 px-3 md:px-4 lg:px-8 flex flex-col items-center font-sans">
-      <div className="bg-white w-full max-w-[1120px] shadow-2xl print-shadow-none rounded-lg md:rounded-2xl overflow-hidden relative pb-12 md:pb-16">
+      <div className="bg-white w-full max-w-[1120px] shadow-2xl print-shadow-none rounded-lg md:rounded-2xl overflow-hidden relative pb-12 md:pb-16 invoice-layout">
         {/* Top Header with Logo and Invoice Section */}
-        <div className="flex h-[150px]">
+        <div className="flex flex-col md:flex-row h-auto md:h-[150px]">
           {/* Left Logo Section */}
-          <div className="flex items-center p-6 bg-white flex-1">
+          <div className="flex items-center justify-center md:justify-start p-4 md:p-6 bg-white flex-1">
             <img
               src={CanstarLogo}
               alt="Canstar Logo"
-              className="h-[120px] object-contain"
+              className="h-[80px] md:h-[120px] object-contain"
             />
           </div>
           {/* Right Invoice Section */}
           <div
-            className="text-white p-8 flex flex-col flex-wrap-reverse"
+            className="text-white  flex flex-col  flex-wrap-reverse w-full p-6 md:p-0 items-start md:w-[50%] md:justify-center"
             style={{
               background: "#ee5d59",
-              width: "50%",
-              borderBottomLeftRadius: "200px",
+              borderBottomLeftRadius:
+                window.innerWidth >= 768 ? "200px" : "0px",
             }}
           >
-            <div className="w-[250px] mr-[30px]">
-              <h2 className="text-3xl font-bold mb-4 text-white">INVOICE</h2>
-              <div className="flex justify-between text-l mb-2">
+            <div className="w-full md:w-[250px] md:mr-[50px]">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white">
+                INVOICE
+              </h2>
+              <div className="flex justify-between text-sm md:text-base">
                 <span>Invoice Number</span>
                 <span className="font-semibold">
                   #INV250{quote.payment_details?.payment_id || quote.quote_id}
                 </span>
               </div>
-              <div className="flex justify-between text-l">
+              <div className="flex justify-between  text-sm md:text-base">
                 <span>Invoice Date</span>
-                <span>{formatDateLong(quote.invoice_date)}</span>
+                <span>
+                  {formatDateLong(
+                    quote.invoice_date ||
+                      new Date().toISOString().split("T")[0],
+                  )}
+                </span>
               </div>
             </div>
           </div>
@@ -306,7 +352,7 @@ export default function InvoicePage() {
                               key={i}
                               src={
                                 img.image_url
-                                  ? `https://portal.canstarlights.ca/${img.image_url}`
+                                  ? `${BASE_URL}/${img.image_url}`
                                   : ""
                               }
                               alt="preview"
@@ -346,6 +392,13 @@ export default function InvoicePage() {
                 )}
               </span>
             </div>
+
+            {quote.total_extra_work && (
+              <div className="flex justify-between text-gray-600 font-medium text-xs md:text-base">
+                <span>Total Extra Work :</span>
+                <span>{formatCurrency(quote.total_extra_work)}</span>
+              </div>
+            )}
 
             <div className="flex justify-between text-green-500 font-medium text-xs md:text-base">
               <span>Discount ({quote.discount_percentage}%):</span>
@@ -537,6 +590,7 @@ export default function InvoicePage() {
             size="lg"
             variant="outline"
             className="bg-[#2563eb] border-transparent hover:bg-blue-700 text-white font-semibold px-6 md:px-6 py-2 md:py-3 rounded-full shadow-lg shadow-blue-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 gap-2 text-sm md:text-base w-full sm:w-auto"
+            onClick={handleDownloadInvoice}
           >
             <Download className="w-4 md:w-5 h-4 md:h-5" />
             Download Invoice

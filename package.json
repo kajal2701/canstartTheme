@@ -35,6 +35,8 @@
     "d3-array": "^3.2.2",
     "dayjs": "^1.11.7",
     "framer-motion": "^10.12.6",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.0",
     "leaflet": "^1.9.3",
     "localforage": "^1.10.0",
     "lucide-react": "^0.290.0",
