@@ -11,7 +11,7 @@ import jsPDF from "jspdf";
 import { decodeId } from "../../utils/mappers";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
-// Safe image URL generator
+
 const getImgSrc = (url) => {
   if (!url) return "";
   if (url.startsWith("http")) return url;
@@ -57,7 +57,7 @@ const reviewsData = [
   },
 ];
 
-export default function InvoicePage() {
+export default function QuoteView() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState(null);
   const { id } = useParams();
@@ -66,11 +66,14 @@ export default function InvoicePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [reviewIdx, setReviewIdx] = useState(0);
+
+  // ✅ CHANGE 1: Terms checkbox state driven by payment status
+  const [termsChecked, setTermsChecked] = useState(false);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setReviewIdx((prev) => (prev === reviewsData.length - 1 ? 0 : prev + 1));
-    }, 3000); // Change review every 5 seconds
-
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -78,19 +81,21 @@ export default function InvoicePage() {
     const load = async () => {
       try {
         setLoading(true);
-
-        // 🔑 DECODE THE ID HERE
         const decodedId = decodeId(id);
-
         if (!decodedId) {
           setError("Invalid invoice ID");
           return;
         }
-
-        // Pass decoded ID to your service
         const data = await getQuote(decodedId);
-        console.log(data, "quote data");
         setQuote(data);
+
+        // ✅ CHANGE 2: Auto-check terms if payment exists with status 0 or 1
+        if (data?.payment_details) {
+          const ps = data.payment_details.status;
+          if (ps === 0 || ps === "0" || ps === 1 || ps === "1") {
+            setTermsChecked(true);
+          }
+        }
       } catch (e) {
         console.error(e);
         setError("Failed to load invoice");
@@ -98,10 +103,7 @@ export default function InvoicePage() {
         setLoading(false);
       }
     };
-
-    if (id) {
-      load();
-    }
+    if (id) load();
   }, [id]);
 
   const formatCurrency = (amount) => {
@@ -112,53 +114,48 @@ export default function InvoicePage() {
     }).format(amount);
   };
 
+  // ✅ CHANGE 3: Determine if Confirm and Pay button should be hidden
+  const isPayButtonHidden = () => {
+    if (!quote?.payment_details) return false;
+    const ps = quote.payment_details.status;
+    return ps === 0 || ps === "0" || ps === 1 || ps === "1";
+  };
+
+  // ✅ CHANGE 4: Determine if terms checkbox should be disabled
+  const isTermsDisabled = () => {
+    if (!quote?.payment_details) return false;
+    const ps = quote.payment_details.status;
+    return ps === 0 || ps === "0" || ps === 1 || ps === "1";
+  };
+
+  // ✅ CHANGE 5: Deposit payment row label + color (matches PHP logic)
+  const getDepositLabel = () => {
+    if (!quote?.payment_details) return null;
+    const ps = quote.payment_details.status;
+    const type =
+      quote.payment_details.payment_type === 1
+        ? "Full Payment"
+        : "Deposit Payment";
+
+    if (ps === 0 || ps === "0") {
+      return {
+        label: `${type} — Awaiting Confirmation`,
+        color: "text-orange-500",
+      };
+    } else if (ps === 1 || ps === "1") {
+      return { label: `${type} — Paid`, color: "text-green-500" };
+    } else {
+      return { label: "Deposit Amount", color: "text-gray-600" };
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#fff6f6] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 text-lg">Loading invoice...</p>
-        </div>
+        <p className="text-gray-600 text-lg">Loading invoice...</p>
       </div>
     );
   }
-
-  const handleDownloadInvoice = async () => {
-    try {
-      const element = document.querySelector(".invoice-layout"); // Invoice container
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      let heightLeft = (canvas.height * imgWidth) / canvas.width;
-      let position = 0;
-
-      // Add first page
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, pageHeight);
-      heightLeft -= pageHeight;
-
-      // Add remaining pages
-      while (heightLeft > 0) {
-        position = heightLeft - (canvas.height * imgWidth) / canvas.width;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, pageHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save(
-        `Invoice-${quote.payment_details?.payment_id || quote.quote_id}.pdf`,
-      );
-    } catch (error) {
-      console.error("Error downloading invoice:", error);
-      alert("Failed to download invoice");
-    }
-  };
 
   if (error || !quote) {
     return (
@@ -173,24 +170,54 @@ export default function InvoicePage() {
     );
   }
 
-  // Build items array from annotation_image, products, custom_product_data, and extra_work_data
+  const handleDownloadInvoice = async () => {
+    try {
+      const element = document.querySelector(".invoice-layout");
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 210;
+      const pageHeight = 297;
+      let heightLeft = (canvas.height * imgWidth) / canvas.width;
+      let position = 0;
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, pageHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - (canvas.height * imgWidth) / canvas.width;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, pageHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save(`Quote-${quote.quote_no}.pdf`);
+    } catch (error) {
+      console.error("Error downloading:", error);
+      alert("Failed to download");
+    }
+  };
+
   const buildItems = () => {
     let items = [];
     let counter = 0;
 
-    // Add annotation images
     if (quote.annotation_image && Array.isArray(quote.annotation_image)) {
       quote.annotation_image.forEach((item) => {
+        // ✅ CHANGE 6: Use drawnLines images only (matches PHP)
+        const drawnImages = item.images || [];
+        // ✅ CHANGE 7: Updated description wording to match PHP exactly
         items.push({
           no: ++counter,
-          description: `Canstar puck lights with customised data line system, <b>${item.color}</b> aluminium channel track package for the <b>${item.identify_image_name}</b> of the house`,
+          description: `Canstar Puck Lights with a customized data line system, paired with a <b>${item.color}</b> aluminum track package, designed for the <b>${item.identify_image_name}</b> of the house/property.`,
           total: parseFloat(item.total_amount),
-          images: item.images || [],
+          images: drawnImages,
+          required: item.required, // ✅ CHANGE 8: pass required for checkbox
         });
       });
     }
 
-    // Add products
     if (quote.products && Array.isArray(quote.products)) {
       quote.products.forEach((item) => {
         items.push({
@@ -198,11 +225,11 @@ export default function InvoicePage() {
           description: item.product_description || item.product,
           total: parseFloat(item.amount),
           images: [],
+          required: item.required,
         });
       });
     }
 
-    // Add custom products
     if (quote.custom_product_data && Array.isArray(quote.custom_product_data)) {
       quote.custom_product_data.forEach((item) => {
         items.push({
@@ -210,11 +237,11 @@ export default function InvoicePage() {
           description: item.product,
           total: parseFloat(item.amount),
           images: [],
+          required: item.required,
         });
       });
     }
 
-    // Add extra work
     if (quote.extra_work_data && Array.isArray(quote.extra_work_data)) {
       quote.extra_work_data.forEach((item) => {
         items.push({
@@ -222,6 +249,7 @@ export default function InvoicePage() {
           description: item.product,
           total: parseFloat(item.amount),
           images: [],
+          required: null, // extra work has no checkbox in PHP
         });
       });
     }
@@ -230,13 +258,13 @@ export default function InvoicePage() {
   };
 
   const items = buildItems();
+  const depositInfo = getDepositLabel();
 
   return (
     <div className="min-h-screen bg-[#fff6f6] py-4 md:py-8 px-3 md:px-4 lg:px-8 flex flex-col items-center font-sans">
-      <div className="bg-white w-full max-w-[1120px] shadow-2xl print-shadow-none rounded-lg md:rounded-2xl overflow-hidden relative pb-12 md:pb-16 invoice-layout">
-        {/* Top Header with Logo and Invoice Section */}
+      <div className="bg-white w-full max-w-[1120px] shadow-2xl rounded-lg md:rounded-2xl overflow-hidden relative pb-12 md:pb-16 invoice-layout">
+        {/* ✅ CHANGE 9: Header shows "QUOTE" and quote_no instead of "INVOICE" and payment_id */}
         <div className="flex flex-col md:flex-row h-auto md:h-[150px]">
-          {/* Left Logo Section */}
           <div className="flex items-center justify-center md:justify-start p-4 md:p-6 bg-white flex-1">
             <img
               src={CanstarLogo}
@@ -244,9 +272,8 @@ export default function InvoicePage() {
               className="h-[80px] md:h-[120px] object-contain"
             />
           </div>
-          {/* Right Invoice Section */}
           <div
-            className="text-white  flex flex-col  flex-wrap-reverse w-full p-6 md:p-0 items-start md:w-[50%] md:justify-center"
+            className="text-white flex flex-col flex-wrap-reverse w-full p-6 md:p-0 items-start md:w-[50%] md:justify-center"
             style={{
               background: "#ee5d59",
               borderBottomLeftRadius:
@@ -255,19 +282,17 @@ export default function InvoicePage() {
           >
             <div className="w-full md:w-[250px] md:mr-[50px]">
               <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white">
-                INVOICE
+                QUOTE
               </h2>
               <div className="flex justify-between text-sm md:text-base">
-                <span>Invoice Number</span>
-                <span className="font-semibold">
-                  #INV250{quote.payment_details?.payment_id || quote.quote_id}
-                </span>
+                <span>Quote Number</span>
+                <span className="font-semibold">#{quote.quote_no}</span>
               </div>
-              <div className="flex justify-between  text-sm md:text-base">
-                <span>Invoice Date</span>
+              <div className="flex justify-between text-sm md:text-base">
+                <span>Quote Date</span>
                 <span>
                   {formatDateLong(
-                    quote.invoice_date ||
+                    quote.created_at?.split("T")[0] ||
                       new Date().toISOString().split("T")[0],
                   )}
                 </span>
@@ -277,12 +302,11 @@ export default function InvoicePage() {
         </div>
 
         <div className="px-4 md:px-10 lg:px-14 pt-6 md:pt-8 relative z-0">
-          {/* Addresses Section */}
           <div className="flex flex-col md:flex-row justify-between gap-6 md:gap-0">
-            {/* Invoice From */}
             <div className="space-y-1 flex-1">
+              {/* ✅ CHANGE 10: "Quote From" instead of "Invoice From" */}
               <h3 className="text-[#ee5d59] font-semibold text-lg md:text-xl mb-3">
-                Invoice From
+                Quote From
               </h3>
               <p className="font-bold text-gray-900 text-base md:text-lg">
                 CANSTAR LIGHT LTD
@@ -300,11 +324,10 @@ export default function InvoicePage() {
                 GST/HST: 742932601 RT001
               </p>
             </div>
-
-            {/* Invoice To */}
             <div className="space-y-1 flex-1 md:text-right">
+              {/* ✅ CHANGE 11: "Quote To" instead of "Invoice To" */}
               <h3 className="text-[#ee5d59] font-semibold text-lg md:text-xl mb-3">
-                Invoice To
+                Quote To
               </h3>
               <p className="font-bold text-gray-900 text-base md:text-lg">
                 {quote.fname} {quote.lname}
@@ -328,6 +351,8 @@ export default function InvoicePage() {
             <table className="w-full text-xs md:text-base text-left">
               <thead>
                 <tr className="bg-[#ee5d59] text-white">
+                  {/* ✅ CHANGE 12: Added empty checkbox column header to match PHP */}
+                  <th className="py-3 md:py-4 px-2 md:px-4 w-8"></th>
                   <th className="py-3 md:py-4 px-2 md:px-4 font-medium text-xs md:text-base">
                     NO.
                   </th>
@@ -348,6 +373,17 @@ export default function InvoicePage() {
                     key={index}
                     className={index % 2 === 0 ? "bg-gray-50/50" : "bg-white"}
                   >
+                    {/* ✅ CHANGE 13: Show checkbox for Optional items (matches PHP) */}
+                    <td className="py-3 md:py-5 px-2 md:px-4 border-b border-gray-100 align-top">
+                      {item.required === "Optional" && (
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          className="w-4 h-4 accent-[#ee5d59]"
+                          onChange={(e) => setTermsChecked(e.target.checked)}
+                        />
+                      )}
+                    </td>
                     <td className="py-3 md:py-5 px-2 md:px-4 font-medium text-gray-900 border-b border-gray-100 align-top text-xs md:text-base">
                       {item.no}
                     </td>
@@ -367,7 +403,7 @@ export default function InvoicePage() {
                                   : ""
                               }
                               alt="preview"
-                              className="w-10 md:w-12 h-10 md:h-12 rounded-full border-2 border-white bg-gray-200 shadow-md flex-shrink-0 object-cover cursor-pointer hover:shadow-lg transition-shadow"
+                              className="w-10 md:w-12 h-10 md:h-12 rounded-full border-2 border-white bg-gray-200 shadow-md object-cover cursor-pointer hover:shadow-lg transition-shadow"
                               onClick={() => {
                                 setPreviewSrc(getImgSrc(img.image_url));
                                 setPreviewOpen(true);
@@ -391,7 +427,7 @@ export default function InvoicePage() {
           </div>
         </div>
 
-        {/* Totals Section */}
+        {/* Totals */}
         <div className="flex justify-end px-4 md:px-10 lg:px-14 mt-6 md:mt-8">
           <div className="w-full md:max-w-[320px] space-y-2 md:space-y-3">
             <div className="flex justify-between text-gray-600 font-medium text-xs md:text-base">
@@ -406,7 +442,7 @@ export default function InvoicePage() {
 
             {quote.total_extra_work && (
               <div className="flex justify-between text-gray-600 font-medium text-xs md:text-base">
-                <span>Total Extra Work :</span>
+                <span>Total Extra Work:</span>
                 <span>{formatCurrency(quote.total_extra_work)}</span>
               </div>
             )}
@@ -425,52 +461,42 @@ export default function InvoicePage() {
             </div>
 
             <div className="flex justify-between text-gray-600 font-medium pb-2 md:pb-3 border-b border-gray-200 text-xs md:text-base">
-              <span>GST ({quote.gst_percentage}%):</span>
+              <span>GST ({parseInt(quote.gst_percentage)}%):</span>
               <span>{formatCurrency(quote.gst)}</span>
             </div>
+
             <div className="flex justify-between text-[#ee5d59] font-bold text-lg md:text-2xl pt-1 md:pt-2">
               <span>Total:</span>
               <span>{formatCurrency(quote.main_total)}</span>
             </div>
-            {quote.payment_details?.part_payment_amount && (
-              <div className="flex justify-between text-green-500 font-medium pt-1 md:pt-2 text-xs md:text-base">
-                <span>
-                  {quote.payment_details.payment_type === 1
-                    ? "Full payment"
-                    : "Deposit Payment"}{" "}
-                  paid:
-                </span>
+
+            {/* ✅ CHANGE 14: Deposit row with dynamic label + color matching PHP */}
+            {quote.payment_details?.part_payment_amount && depositInfo && (
+              <div
+                className={`flex justify-between font-medium pt-1 md:pt-2 text-xs md:text-base ${depositInfo.color}`}
+              >
+                <span>{depositInfo.label}:</span>
                 <span>
                   {formatCurrency(quote.payment_details.part_payment_amount)}
-                </span>
-              </div>
-            )}
-            {quote.payment_details?.pending_payment_amount > 0 && (
-              <div className="flex justify-between text-[#ee5d59] font-bold pt-1 md:pt-2 text-xs md:text-base">
-                <span>Pending Payment:</span>
-                <span>
-                  {formatCurrency(quote.payment_details.pending_payment_amount)}
                 </span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Notes */}
-        {quote.notes && (
+        {/* ✅ CHANGE 15: Notes only shown if customer_visible === 'yes' */}
+        {quote.notes && quote.customer_visible === "yes" && (
           <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-16">
-            <div>
-              <h3 className="text-[#ee5d59] font-semibold text-lg md:text-xl mb-2">
-                Notes :
-              </h3>
-              <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                {quote.notes}
-              </p>
-            </div>
+            <h3 className="text-[#ee5d59] font-semibold text-lg md:text-xl mb-2">
+              Notes :
+            </h3>
+            <p className="text-gray-600 text-sm md:text-base leading-relaxed">
+              {quote.notes}
+            </p>
           </div>
         )}
 
-        {/* Reviews Section */}
+        {/* Reviews */}
         <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-16">
           <div className="border-2 border-gray-100 rounded-xl md:rounded-2xl p-4 md:p-6 relative bg-white shadow-sm">
             <div className="absolute -top-3 md:-top-3.5 left-4 md:left-6 bg-white px-2 md:px-3">
@@ -478,8 +504,6 @@ export default function InvoicePage() {
                 Customer Reviews
               </span>
             </div>
-
-            {/* Reviews Carousel */}
             <div className="relative">
               <div className="flex gap-1 mb-3">
                 {[...Array(5)].map((_, i) => (
@@ -492,30 +516,23 @@ export default function InvoicePage() {
               <p className="text-gray-600 text-sm md:text-base italic leading-relaxed mb-4 min-h-[80px]">
                 "{reviewsData[reviewIdx]?.review_text}"
               </p>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-900 font-medium text-xs md:text-base">
-                  {reviewsData[reviewIdx]?.reviewer_name}
-                </span>
-              </div>
-
-              {/* Dots Indicator */}
+              <span className="text-gray-900 font-medium text-xs md:text-base">
+                {reviewsData[reviewIdx]?.reviewer_name}
+              </span>
               <div className="flex justify-center gap-2 mt-4">
                 {reviewsData.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setReviewIdx(i)}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      i === reviewIdx
-                        ? "bg-[#ee5d59] w-6"
-                        : "bg-gray-300 hover:bg-gray-400"
-                    }`}
+                    className={`w-2 h-2 rounded-full transition-all ${i === reviewIdx ? "bg-[#ee5d59] w-6" : "bg-gray-300 hover:bg-gray-400"}`}
                   />
                 ))}
               </div>
             </div>
           </div>
         </div>
-        {/* Footer Details */}
+
+        {/* Terms & Payment */}
         <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-12 flex flex-col lg:flex-row gap-6 md:gap-10">
           <div className="w-full lg:w-[70%]">
             <h3 className="text-[#ee5d59] font-semibold mb-2 md:mb-3 text-lg md:text-xl">
@@ -533,17 +550,21 @@ export default function InvoicePage() {
               processing fees.) The product comes with a 5-year warranty, and
               labor is covered for 4 years from the date of installation.
             </p>
+            {/* ✅ CHANGE 16: Terms checkbox disabled + pre-checked based on payment status */}
             <div className="flex items-center space-x-2">
               <input
-                id="terms"
                 type="checkbox"
-                defaultChecked
+                id="terms"
+                checked={termsChecked}
+                disabled={isTermsDisabled()}
+                onChange={(e) =>
+                  !isTermsDisabled() && setTermsChecked(e.target.checked)
+                }
                 className="w-4 h-4 accent-[#ee5d59]"
               />
-
               <label
                 htmlFor="terms"
-                className="text-xs md:text-base font-medium text-gray-700 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-xs md:text-base font-medium text-gray-700"
               >
                 I agree to the Terms & Conditions
               </label>
@@ -567,50 +588,48 @@ export default function InvoicePage() {
           </div>
         </div>
 
-        {/* Bottom Contact Bar */}
+        {/* Footer */}
         <div className="mt-10 md:mt-14 bg-[#f8f9fa] py-4 md:py-6 px-4 md:px-10 lg:px-14 flex flex-col md:flex-row justify-start items-start md:items-center gap-3 md:gap-4 text-xs md:text-base relative border-t border-gray-100">
           <div className="flex items-center gap-2 text-gray-600 z-10">
             <Phone className="w-4 md:w-5 h-4 md:h-5 text-[#ee5d59]" />
-            <span className="text-xs md:text-base">(780) 716-4210</span>
+            <span>(780) 716-4210</span>
           </div>
           <div className="flex items-center gap-2 text-gray-600 z-10">
             <Mail className="w-4 md:w-5 h-4 md:h-5 text-[#ee5d59]" />
-            <span className="text-xs md:text-base">info@canstarlight.ca</span>
+            <span>info@canstarlight.ca</span>
           </div>
           <div className="flex items-center gap-2 text-gray-600 z-10">
             <MapPin className="w-4 md:w-5 h-4 md:h-5 text-[#ee5d59] shrink-0" />
-            <span className="truncate text-xs md:text-base">
+            <span className="truncate">
               3227 18 St NW, Edmonton, AB T6T 0H2
             </span>
           </div>
-
-          {/* Bottom Right Red Curve */}
           <div className="hidden md:block absolute bottom-0 right-0 bg-[#ee5d59] w-40 md:w-80 h-6 md:h-8 rounded-tl-[60px] opacity-90"></div>
         </div>
       </div>
 
-      {/* Floating Action Buttons below the document */}
-      {quote.payment_details?.pending_payment_amount > 0 && (
-        <div className="w-full max-w-[1120px] mt-6 md:mt-8 flex flex-col sm:flex-row justify-center gap-3 md:gap-4 no-print px-3 md:px-4">
+      {/* ✅ CHANGE 17: Confirm and Pay hidden based on payment status (matches PHP) */}
+      <div className="w-full max-w-[1120px] mt-6 md:mt-8 flex flex-col sm:flex-row justify-center gap-3 md:gap-4 no-print px-3 md:px-4">
+        {!isPayButtonHidden() && (
           <Button
             size="lg"
-            className="bg-[#ee5d59] hover:bg-[#ee5d59]/90 text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg shadow-[#ee5d59]/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 text-sm md:text-base w-full sm:w-auto"
+            disabled={!termsChecked}
+            className="bg-[#ee5d59] hover:bg-[#ee5d59]/90 text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg"
           >
             Confirm And Pay
           </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="bg-[#2563eb] border-transparent hover:bg-blue-700 text-white font-semibold px-6 md:px-6 py-2 md:py-3 rounded-full shadow-lg shadow-blue-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 gap-2 text-sm md:text-base w-full sm:w-auto"
-            onClick={handleDownloadInvoice}
-          >
-            <Download className="w-4 md:w-5 h-4 md:h-5" />
-            Download Invoice
-          </Button>
-        </div>
-      )}
+        )}
+        <Button
+          size="lg"
+          variant="outline"
+          className="bg-[#2563eb] border-transparent hover:bg-blue-700 text-white font-semibold px-6 py-2 md:py-3 rounded-full shadow-lg gap-2"
+          onClick={handleDownloadInvoice}
+        >
+          <Download className="w-4 md:w-5 h-4 md:h-5" />
+          Download Quote
+        </Button>
+      </div>
 
-      {/* Image Preview Modal */}
       <Modal
         title="Image"
         activeModal={previewOpen}

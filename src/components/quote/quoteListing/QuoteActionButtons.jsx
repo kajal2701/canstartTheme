@@ -2,6 +2,7 @@ import Icon from "@/components/ui/Icon";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { deleteQuote } from "../../../services/quoteService";
 import { useState } from "react";
+import { encodeId } from "../../../utils/mappers";
 
 const QuoteActionButtons = ({ id, navigate, fetchQuotes }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -60,6 +61,7 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes }) => {
           className="icon-btn hover:bg-green-50 dark:hover:bg-green-900"
           type="button"
           title="Print"
+          onClick={() => navigate(`/users/quote_invoice/${encodeId(id)}`)}
         >
           <Icon icon="ph:printer" />
         </button>
