@@ -52,3 +52,30 @@ export const addressAccessor = (row) =>
   [row.address, row.city, row.state, row.country, row.post_code]
     .filter(Boolean)
     .join(" ");
+
+export const encodeId = (id) => {
+  // Add random padding to make each encoding unique and longer
+  const randomSalt = Math.random().toString(36).substring(2, 15);
+  const paddedId = `${id}__${randomSalt}__${Date.now()}`;
+
+  // Multiple base64 encodings
+  let encoded = btoa(paddedId);
+  encoded = btoa(encoded);
+
+  return encoded;
+};
+
+export const decodeId = (encoded) => {
+  try {
+    let decoded = encoded;
+    decoded = atob(decoded);
+    decoded = atob(decoded);
+
+    // Extract the original ID
+    const parts = decoded.split("__");
+    return parts[0]; // Return just the ID
+  } catch (error) {
+    console.error("Invalid encoded ID:", error);
+    return null;
+  }
+};

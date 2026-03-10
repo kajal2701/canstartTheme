@@ -9,6 +9,7 @@ import Modal from "@/components/ui/Modal";
 import { formatDateLong } from "../../utils/formatters";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { decodeId } from "../../utils/mappers";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 // Safe image URL generator
@@ -78,7 +79,17 @@ export default function InvoicePage() {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await getQuote(id);
+
+        // 🔑 DECODE THE ID HERE
+        const decodedId = decodeId(id);
+
+        if (!decodedId) {
+          setError("Invalid invoice ID");
+          return;
+        }
+
+        // Pass decoded ID to your service
+        const data = await getQuote(decodedId);
         console.log(data, "quote data");
         setQuote(data);
       } catch (e) {
@@ -88,6 +99,7 @@ export default function InvoicePage() {
         setLoading(false);
       }
     };
+
     if (id) {
       load();
     }

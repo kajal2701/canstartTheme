@@ -5,6 +5,7 @@ import { getPayments } from "@/services/paymentService";
 import { useSelector } from "react-redux";
 import { formatDate } from "@/utils/formatters";
 import { useNavigate } from "react-router-dom";
+import { encodeId } from "../../utils/mappers";
 
 const Invoice = () => {
   const { user } = useSelector((state) => state.auth);
@@ -62,7 +63,9 @@ const Invoice = () => {
             type="button"
             title="Print"
             onClick={() =>
-              navigate(`/users/quote_final_invoice/${row.original.quoteId}`)
+              navigate(
+                `/users/quote_final_invoice/${encodeId(row.original.quoteId)}`,
+              )
             }
           >
             <Icon icon="ph:printer" />
