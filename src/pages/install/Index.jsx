@@ -1,11 +1,41 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
 import PastInstallations from "../../components/install/pastInstallations";
 import UpcomingInstallations from "../../components/install/upcomingInstallations";
 import AwaitingInstallationSchedule from "../../components/install/awaitingInstallationSchedule";
+import { getInstalls } from "../../services/installService";
+import { useSelector } from "react-redux";
 
 const Install = () => {
+  const { user } = useSelector((state) => state.auth);
+  const [installs, setInstalls] = useState({
+    upcoming_installations: [],
+    non_scheduled_jobs: [],
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const loadInstalls = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const uid = user?.user_id ?? "";
+      const role = user?.role ?? "";
+      const data = await getInstalls(uid, role);
+      setInstalls(data);
+      console.log(data, "data");
+    } catch (err) {
+      setError(err.message || "Failed to load installs");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadInstalls();
+  }, []);
+
   return (
     <div className=" space-y-5">
       <div className="grid xl:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-5">
@@ -87,7 +117,10 @@ const Install = () => {
       <div>
         <PastInstallations />
         <UpcomingInstallations />
-        <AwaitingInstallationSchedule />
+        <AwaitingInstallationSchedule
+          data={installs.non_scheduled_jobs}
+          loading={loading}
+        />
       </div>
     </div>
   );
