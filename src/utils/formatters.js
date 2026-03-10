@@ -1,8 +1,14 @@
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
 export const formatCurrency = (v) => {
   if (v == null || v === "") return "-";
   const n = Number(v);
-  if (Number.isFinite(n)) return `$${n.toFixed(2)}`;
-  return String(v);
+  if (!Number.isFinite(n)) return "-";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(n);
 };
 
 export const formatDate = (dateString) => {
@@ -32,4 +38,11 @@ export const formatDateLong = (dateString) => {
 
   // Return in "Month DD, YYYY" format
   return `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
+};
+
+// Safe image URL generator
+export const getImgSrc = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return `${BASE_URL}/${url.replace(/^\/+/, "")}`;
 };
