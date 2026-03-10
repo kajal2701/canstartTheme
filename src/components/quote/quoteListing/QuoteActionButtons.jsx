@@ -10,6 +10,9 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes }) => {
   const handleView = () => {
     navigate(`/quote/view_quote_admin/${id}`);
   };
+  const handleEdit = () => {
+    navigate(`/quote/edit_quote/${id}`);
+  };
 
   const handleConfirmDelete = async () => {
     try {
@@ -44,6 +47,7 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes }) => {
           className="icon-btn hover:bg-gray-100 dark:hover:bg-gray-700"
           type="button"
           title="Edit"
+          onClick={handleEdit}
         >
           <Icon icon="ph:pencil-line" />
         </button>

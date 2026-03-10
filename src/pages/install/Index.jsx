@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
-import Icon from "@/components/ui/Icon";
 import PastInstallations from "../../components/install/pastInstallations";
 import UpcomingInstallations from "../../components/install/upcomingInstallations";
 import AwaitingInstallationSchedule from "../../components/install/awaitingInstallationSchedule";
@@ -12,6 +11,7 @@ const Install = () => {
   const [installs, setInstalls] = useState({
     upcoming_installations: [],
     non_scheduled_jobs: [],
+    past_installations_pending_invoice: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,7 +24,6 @@ const Install = () => {
       const role = user?.role ?? "";
       const data = await getInstalls(uid, role);
       setInstalls(data);
-      console.log(data, "data");
     } catch (err) {
       setError(err.message || "Failed to load installs");
     } finally {
@@ -36,89 +35,63 @@ const Install = () => {
     loadInstalls();
   }, []);
 
+  const upcomingCount = installs.upcoming_installations?.length ?? 0;
+  const pastCount = installs.past_installations_pending_invoice?.length ?? 0;
+  const awaitingCount = installs.non_scheduled_jobs?.length ?? 0;
+
   return (
-    <div className=" space-y-5">
-      <div className="grid xl:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-5">
+    <div className="space-y-5">
+      {/* ── Stats Cards ── */}
+      <div className="grid xl:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-5">
+        {/* Upcoming Installations */}
         <Card>
-          <div>
-            <div className="flex">
-              <div className="flex-1 text-base font-medium">Sales</div>
-              <div className="flex-none">
-                <div className="h-10 w-10  rounded-full bg-indigo-500 text-white text-2xl flex items-center justify-center">
-                  <Icon icon="ph:car" />
-                </div>
-              </div>
+          <div className="text-center py-2">
+            <div className="text-4xl font-bold text-indigo-500 mb-2">
+              {upcomingCount}
             </div>
-            <div>
-              <span className=" text-2xl font-medium text-gray-800  dark:text-white">
-                2.382
-              </span>
-              <span className="  space-x-2 block mt-4 ">
-                <span className="badge bg-indigo-500/10 text-indigo-500 ">
-                  3.65%
-                </span>
-                <span className=" text-sm text-gray-500 dark:text-gray-400">
-                  Since last week
-                </span>
-              </span>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Upcoming Installations
             </div>
           </div>
         </Card>
-        <Card>
-          <div>
-            <div className="flex">
-              <div className="flex-1 text-base font-medium">Earnings</div>
-              <div className="flex-none">
-                <div className="h-10 w-10  rounded-full bg-yellow-500 text-white text-2xl flex items-center justify-center">
-                  <Icon icon="ph:currency-dollar" />
-                </div>
-              </div>
+
+        {/* Past — Pending Invoice — highlighted with left red border like image */}
+        <Card className="border-l-4 border-l-red-500">
+          <div className="text-center py-2">
+            <div className="text-4xl font-bold text-red-500 mb-2">
+              {pastCount}
             </div>
-            <div>
-              <span className=" text-2xl font-medium text-gray-800  dark:text-white">
-                $21.300
-              </span>
-              <span className="  space-x-2 block mt-4 ">
-                <span className="badge bg-yellow-500/10 text-yellow-500 ">
-                  4.44%
-                </span>
-                <span className=" text-sm text-gray-500 dark:text-gray-400">
-                  Since last week
-                </span>
-              </span>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Past - Pending Invoice
             </div>
           </div>
         </Card>
+
+        {/* Awaiting Schedule */}
         <Card>
-          <div>
-            <div className="flex">
-              <div className="flex-1 text-base font-medium">Visitors</div>
-              <div className="flex-none">
-                <div className="h-10 w-10  rounded-full bg-red-500 text-white text-2xl flex items-center justify-center">
-                  <Icon icon="ph:user-switch" />
-                </div>
-              </div>
+          <div className="text-center py-2">
+            <div className="text-4xl font-bold text-indigo-500 mb-2">
+              {awaitingCount}
             </div>
-            <div>
-              <span className=" text-2xl font-medium text-gray-800  dark:text-white">
-                14.212
-              </span>
-              <span className="  space-x-2 block mt-4 ">
-                <span className="badge bg-red-500/10 text-red-500 ">5.25%</span>
-                <span className=" text-sm text-gray-500 dark:text-gray-400">
-                  Since last week
-                </span>
-              </span>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Awaiting Schedule
             </div>
           </div>
         </Card>
       </div>
 
-      <div>
-        <PastInstallations />
-        <UpcomingInstallations />
+      {/* ── Tables ── */}
+      <div className="space-y-5">
+        <PastInstallations
+          jobs={installs.past_installations_pending_invoice}
+          loading={loading}
+        />
+        <UpcomingInstallations
+          jobs={installs.upcoming_installations}
+          loading={loading}
+        />
         <AwaitingInstallationSchedule
-          data={installs.non_scheduled_jobs}
+          jobs={installs.non_scheduled_jobs}
           loading={loading}
         />
       </div>

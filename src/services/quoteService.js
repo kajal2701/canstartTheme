@@ -121,3 +121,20 @@ export const deleteQuote = async (quoteId) => {
     throw error;
   }
 };
+
+export const getEditQuote = async (quoteId) => {
+  const response = await fetch(`${BASE_URL}/quote/edit_quote/${quoteId}`);
+  const data = await response.json();
+  if (!data.success) throw new Error("Failed to fetch quote");
+  return data.data; // { quote, products, colors, provinces }
+};
+
+export const updateQuote = async (formData) => {
+  const response = await fetch(`${BASE_URL}/quote/update_quote`, {
+    method: "POST",
+    body: formData,
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "Failed to update quote");
+  return data;
+};

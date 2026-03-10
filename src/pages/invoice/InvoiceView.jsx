@@ -25,7 +25,7 @@ import {
 } from "../../utils/helperFunctions";
 import { Download } from "lucide-react";
 
-export default function InvoicePage() {
+export default function InvoiceView() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState(null);
   const { id } = useParams();

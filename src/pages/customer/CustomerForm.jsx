@@ -12,7 +12,13 @@ const countryOptions = [
   { value: "USA", label: "USA" },
 ];
 
-const CustomerForm = ({ methods, onSubmit, title, submitText }) => {
+const CustomerForm = ({
+  methods,
+  onSubmit,
+  title,
+  submitText,
+  hideActions = false,
+}) => {
   const navigate = useNavigate();
   const [provinceOptions, setProvinceOptions] = useState([]);
   const [provincesData, setProvincesData] = useState([]);
@@ -29,10 +35,12 @@ const CustomerForm = ({ methods, onSubmit, title, submitText }) => {
       const rows = await getProvinces();
       if (Array.isArray(rows)) {
         setProvincesData(rows);
-        setProvinceOptions(rows.map((p) => ({
-          value: p.Province,
-          label: p.Province,
-        })));
+        setProvinceOptions(
+          rows.map((p) => ({
+            value: p.Province,
+            label: p.Province,
+          })),
+        );
       }
     };
     loadProvinces();
@@ -44,10 +52,8 @@ const CustomerForm = ({ methods, onSubmit, title, submitText }) => {
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit((data) => onSubmit(data, provincesData))}>
           <div className="space-y-5">
-
             {/* ── Personal Info ── */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
               <Textinput
                 label="First Name"
                 type="text"
@@ -57,7 +63,10 @@ const CustomerForm = ({ methods, onSubmit, title, submitText }) => {
                 error={errors.firstName}
                 options={{
                   required: "First name is required",
-                  minLength: { value: 2, message: "First name must be at least 2 characters" },
+                  minLength: {
+                    value: 2,
+                    message: "First name must be at least 2 characters",
+                  },
                 }}
               />
 
@@ -70,7 +79,10 @@ const CustomerForm = ({ methods, onSubmit, title, submitText }) => {
                 error={errors.lastName}
                 options={{
                   required: "Last name is required",
-                  minLength: { value: 2, message: "Last name must be at least 2 characters" },
+                  minLength: {
+                    value: 2,
+                    message: "Last name must be at least 2 characters",
+                  },
                 }}
               />
 
@@ -104,12 +116,10 @@ const CustomerForm = ({ methods, onSubmit, title, submitText }) => {
                   },
                 }}
               />
-
             </div>
 
             {/* ── Address ── */}
             <div className="grid lg:grid-cols-2 grid-cols-1 gap-5">
-
               <div className="lg:col-span-2 col-span-1 text-gray-900 text-base dark:text-gray-300 font-medium">
                 Address
               </div>
@@ -170,23 +180,24 @@ const CustomerForm = ({ methods, onSubmit, title, submitText }) => {
                 error={errors.country}
                 options_rule={{ required: "Country is required" }}
               />
-
             </div>
 
-            <div className="ltr:text-right rtl:text-left space-x-3 rtl:space-x-reverse">
-              <Button
-                text="Cancel"
-                type="button"
-                className="btn-outline-dark btn-sm"
-                onClick={() => navigate("/customer")}
-              />
-              <Button
-                text={submitText}
-                type="submit"
-                className="btn-primary btn-sm"
-              />
-            </div>
-
+            {/* ── Action Buttons — hidden when used inside EditQuote ── */}
+            {!hideActions && (
+              <div className="ltr:text-right rtl:text-left space-x-3 rtl:space-x-reverse">
+                <Button
+                  text="Cancel"
+                  type="button"
+                  className="btn-outline-dark btn-sm"
+                  onClick={() => navigate("/customer")}
+                />
+                <Button
+                  text={submitText}
+                  type="submit"
+                  className="btn-primary btn-sm"
+                />
+              </div>
+            )}
           </div>
         </form>
       </FormProvider>
