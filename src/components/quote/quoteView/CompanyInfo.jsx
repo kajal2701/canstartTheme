@@ -1,6 +1,7 @@
 import React from "react";
 import Icon from "@/components/ui/Icon";
 import { COMPANY_INFO } from "./constants";
+import CanstarLogo from "@/assets/images/logo/canstar-logo-white.png";
 
 const CompanyInfo = ({ quote }) => {
   return (
@@ -30,7 +31,7 @@ const CompanyInfo = ({ quote }) => {
           <div className="relative">
             <div className="absolute inset-0 rounded-2xl bg-red-200 dark:bg-red-900/40 blur-2xl opacity-50 scale-110" />
             <img
-              src={COMPANY_INFO.logoPath}
+              src={CanstarLogo}
               alt="Canstar Logo"
               className="relative w-[13rem] h-[13rem] object-contain"
               loading="lazy"

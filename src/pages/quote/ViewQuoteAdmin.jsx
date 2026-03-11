@@ -20,38 +20,27 @@ const ViewQuoteAdmin = () => {
   const [editingPayment, setEditingPayment] = useState(false);
   const [error, setError] = useState(null);
 
-  React.useEffect(() => {
-    let mounted = true;
-
-    const fetch = async () => {
-      if (!id) return;
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getQuote(id);
-
-        if (mounted) {
-          setQuote(data);
-        }
-      } catch (e) {
-        if (mounted) {
-          const errorMsg = e.message || "Quote not found";
-          setError(errorMsg);
-          toast.error(errorMsg);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetch();
-
-    return () => {
-      mounted = false;
-    };
+  // ── Common fetch function ─────────────────────────────────────────────────
+  const fetchQuoteData = useCallback(async () => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getQuote(id);
+      setQuote(data);
+    } catch (e) {
+      const errorMsg = e.message || "Quote not found";
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
+
+  // ── Initial fetch ─────────────────────────────────────────────────────────
+  React.useEffect(() => {
+    fetchQuoteData();
+  }, [fetchQuoteData]);
 
   const formattedItems = useMemo(() => {
     if (!quote) return [];
@@ -76,8 +65,23 @@ const ViewQuoteAdmin = () => {
       total: Number(product.amount),
     }));
 
-    return [...annotationItems, ...productItems];
-  }, [quote?.annotation_image, quote?.products]);
+    const customItems = (quote.custom_product_data || []).map(
+      (item, index) => ({
+        id:
+          (quote.annotation_image?.length || 0) +
+          (quote.products?.length || 0) +
+          index +
+          1,
+        description: item.product,
+        images: [],
+        quantity: Number(item.qty),
+        unitCost: Number(item.unit_price),
+        total: Number(item.amount),
+      }),
+    );
+
+    return [...annotationItems, ...productItems, ...customItems];
+  }, [quote?.annotation_image, quote?.products, quote?.custom_product_data]);
 
   const handleNavigateBack = useCallback(() => {
     navigate("/quote");
@@ -169,9 +173,9 @@ const ViewQuoteAdmin = () => {
         </div>
         <StatusBadge status={quote?.status} />
       </div>
-      {/* ── Header Card: From / Logo / To ── */}
+
+      {/* ── Header Card ── */}
       <Card bodyClass="p-0 overflow-hidden">
-        {/* Top accent bar */}
         <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600" />
         <CompanyInfo quote={quote} />
       </Card>
@@ -180,6 +184,11 @@ const ViewQuoteAdmin = () => {
       <LineItemsTable
         formattedItems={formattedItems}
         onExtraTotalChange={setExtraWorkTotal}
+        quoteId={quote?.quote_id}
+        gst={summaryCalculations.gstValue}
+        mainTotal={summaryCalculations.mainTotalValue}
+        existingExtraWork={quote?.extra_work_data || []}
+        onSubmitSuccess={fetchQuoteData} // ← refetch after submit
       />
 
       {/* ── Notes + Totals Row ── */}
@@ -190,6 +199,7 @@ const ViewQuoteAdmin = () => {
           summaryCalculations={summaryCalculations}
         />
       </div>
+
       {/* ── Actions Card ── */}
       <ActionsCard
         quote={quote}

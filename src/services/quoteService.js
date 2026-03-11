@@ -138,3 +138,53 @@ export const updateQuote = async (formData) => {
   if (!data.success) throw new Error(data.message || "Failed to update quote");
   return data;
 };
+
+
+export const addExtraWork = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/add_extra_work_process`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  console.log(data, "data api")
+  if (!data.success) throw new Error(data.message || "Failed to add extra work");
+  return data;
+};
+
+
+export const sendFinalQuote = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/send_final_quote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "Failed to send final quote");
+  return data;
+};
+
+
+export const resendQuote = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/resend_quote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "Failed to resend quote");
+  return data;
+};
+
+export const updateQuoteSend = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/update_quote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "Failed to send updated quote");
+  return data;
+};

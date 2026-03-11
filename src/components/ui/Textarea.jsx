@@ -20,7 +20,7 @@ const Textarea = ({
   cols,
   row = 3,
   onChange,
-  options_rule, 
+  options_rule,
   ...rest
 }) => {
   return (
@@ -67,6 +67,7 @@ const Textarea = ({
             cols={cols}
             rows={row}
             onChange={onChange}
+            {...rest}
           ></textarea>
         )}
 

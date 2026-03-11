@@ -1,6 +1,16 @@
 import React from "react";
 
 const PaymentInfo = ({ quote }) => {
+  // ✅ payment_details is an array — always use [0]
+  const pd = Array.isArray(quote?.payment_details)
+    ? quote.payment_details[0]
+    : quote?.payment_details;
+  console.log(pd, "pd");
+
+  if (!pd) return null; // ✅ hide entirely if no payment set yet
+
+  const isFullPayment = pd.payment_type === 1;
+
   return (
     <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
       <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
@@ -8,7 +18,7 @@ const PaymentInfo = ({ quote }) => {
           Payment Option
         </p>
         <p className="text-sm font-bold text-slate-800 dark:text-white">
-          Deposit Payment
+          {isFullPayment ? "Full Payment" : "Deposit Payment"}
         </p>
       </div>
       <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
@@ -16,7 +26,7 @@ const PaymentInfo = ({ quote }) => {
           Amount Due
         </p>
         <p className="text-sm font-bold text-blue-600 dark:text-blue-400">
-          ${quote.payment_details?.part_payment_amount}
+          ${pd.part_payment_amount}
         </p>
       </div>
       <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
@@ -24,7 +34,7 @@ const PaymentInfo = ({ quote }) => {
           Payment Methods
         </p>
         <p className="text-sm font-bold text-slate-800 dark:text-white capitalize">
-          {quote.payment_details?.select_payment_methods}
+          {pd.select_payment_methods}
         </p>
       </div>
     </div>
