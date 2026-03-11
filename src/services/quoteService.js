@@ -188,3 +188,66 @@ export const updateQuoteSend = async (payload) => {
   if (!data.success) throw new Error(data.message || "Failed to send updated quote");
   return data;
 };
+
+export const setPaymentOption = async (payload) => {
+  try {
+    const res = await fetch(`${BASE_URL}/quote/set_payment_option`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+    if (!res.ok || !result?.success) {
+      throw new Error(result.message || "Failed to set payment option");
+    }
+    return result;
+  } catch (e) {
+    console.error("setPaymentOption error", e);
+    throw e;
+  }
+};
+
+
+export const sendForApproval = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/send_for_approval`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "Failed to send for approval");
+  return data;
+};
+
+export const sendForApprove = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/send_for_approve`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "Failed to approve quote");
+  return data;
+};
+
+export const paymentReceive = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/payment_receive`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "Failed to confirm payment");
+  return data;
+};
+
+export const scheduleInstallation = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/schedule_installation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "Failed to schedule installation");
+  return data;
+};

@@ -17,7 +17,6 @@ const ViewQuoteAdmin = () => {
   const navigate = useNavigate();
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editingPayment, setEditingPayment] = useState(false);
   const [error, setError] = useState(null);
 
   // ── Common fetch function ─────────────────────────────────────────────────
@@ -86,10 +85,6 @@ const ViewQuoteAdmin = () => {
   const handleNavigateBack = useCallback(() => {
     navigate("/quote");
   }, [navigate]);
-
-  const handleEditPayment = useCallback(() => {
-    setEditingPayment((prev) => !prev);
-  }, []);
 
   const [extraWorkTotal, setExtraWorkTotal] = useState(0);
 
@@ -201,11 +196,7 @@ const ViewQuoteAdmin = () => {
       </div>
 
       {/* ── Actions Card ── */}
-      <ActionsCard
-        quote={quote}
-        editingPayment={editingPayment}
-        onEditPayment={handleEditPayment}
-      />
+      <ActionsCard quote={quote} onSubmitSuccess={fetchQuoteData} />
     </div>
   );
 };
