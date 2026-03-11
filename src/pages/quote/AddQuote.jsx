@@ -15,12 +15,14 @@ import { getCustomers } from "../../services/customersService";
 import { getProductsData, addQuote } from "../../services/quoteService";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const AddQuote = () => {
   const [customers, setCustomers] = useState([]);
   const [customersLoading, setCustomersLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
   const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
 
   const {
     // Customer
@@ -441,6 +443,7 @@ const AddQuote = () => {
     try {
       const result = await addQuote(formData);
       toast.success(result?.message || "Quote added successful.");
+      navigate("/quote");
     } catch (e) {
       toast.error(e.message || "Failed to add quote");
     }

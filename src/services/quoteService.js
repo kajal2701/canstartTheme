@@ -129,13 +129,13 @@ export const getEditQuote = async (quoteId) => {
   return data.data; // { quote, products, colors, provinces }
 };
 
-export const updateQuote = async (formData) => {
-  const response = await fetch(`${BASE_URL}/quote/update_quote`, {
+export const editQuote = async (formData) => {
+  const response = await fetch(`${BASE_URL}/quote/edit_quote_process`, {
     method: "POST",
-    body: formData,
+    body: formData, // FormData — no Content-Type header needed
   });
   const data = await response.json();
-  if (!data.success) throw new Error(data.message || "Failed to update quote");
+  if (!data.success) throw new Error(data.message || "Failed to edit quote");
   return data;
 };
 

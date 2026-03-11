@@ -11,11 +11,11 @@ import CustomProductRow from "@/components/quote/CustomProductRow";
 import AnnotationImagePreview from "@/components/quote/AnnotationImagePreview";
 import PriceSummary from "@/components/quote/PriceSummary";
 import ImageUploadWithToggle from "../../components/quote/imageUploadWithToggle/Index";
-
-import { getEditQuote, updateQuote } from "../../services/quoteService";
+import { editQuote, getEditQuote } from "../../services/quoteService";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import CustomerForm from "../customer/CustomerForm";
+import { getImgSrc } from "../../utils/formatters";
 
 const EditQuote = () => {
   const { id } = useParams();
@@ -26,7 +26,6 @@ const EditQuote = () => {
   const [quoteData, setQuoteData] = useState(null);
   const [colorOptions, setColorOptions] = useState([]);
 
-  // ── react-hook-form for CustomerForm ──────────────────────────────
   const methods = useForm({
     defaultValues: {
       firstName: "",
@@ -88,20 +87,17 @@ const EditQuote = () => {
     const load = async () => {
       try {
         setPageLoading(true);
-
         const data = await getEditQuote(id);
-
-        console.log(data, "data");
         const { quote, products: apiProducts, colors } = data;
 
         setQuoteData(quote);
 
-        // ✅ Set color options for annotation dropdowns
+        // ── Color options ──
         setColorOptions(
           colors.map((c) => ({ value: c.color_name, label: c.color_name })),
         );
 
-        // ✅ Pre-fill CustomerForm — all fields are editable
+        // ── CustomerForm prefill ──
         methods.reset({
           firstName: quote.fname || "",
           lastName: quote.lname || "",
@@ -114,7 +110,7 @@ const EditQuote = () => {
           country: quote.country || "",
         });
 
-        // ✅ Keep selectedCustomer in sync for GST calculation
+        // ── selectedCustomer for GST ──
         setSelectedCustomer({
           cust_id: quote.user_id,
           fname: quote.fname || "",
@@ -129,9 +125,8 @@ const EditQuote = () => {
           gst: parseFloat(quote.gst_percentage) || 5,
         });
 
-        // ✅ Map API products — pre-fill qty/amount/option from saved product_data
+        // ── Products ──
         const savedProducts = JSON.parse(quote.product_data || "[]");
-        console.log(savedProducts, "savedProducts");
         const mappedProducts = apiProducts.map((p) => {
           const saved = savedProducts.find(
             (s) => String(s.product_id) === String(p.product_id),
@@ -151,24 +146,99 @@ const EditQuote = () => {
         });
         setProducts(mappedProducts);
 
-        // ✅ Map custom products
-        const savedCustom = JSON.parse(quote.custom_product_data || "[]");
+        // ── Custom products ──
+        const savedCustom = Array.isArray(quote.custom_product_data)
+          ? quote.custom_product_data
+          : JSON.parse(quote.custom_product_data || "[]");
+
         if (savedCustom.length > 0) {
-          const mappedCustom = savedCustom.map((c, i) => ({
-            id: Date.now() + i,
-            description: c.product || "",
-            quantity: c.qty || "",
-            unitPrice: c.unit_price || "",
-            amount: c.amount || "",
-            option: c.required === "Mandatory" ? "mandatory" : "optional",
-          }));
-          setCustomProducts(mappedCustom);
+          setCustomProducts(
+            savedCustom.map((c, i) => ({
+              id: Date.now() + i,
+              description: c.product || "",
+              quantity: c.qty || "",
+              unitPrice: c.unit_price || "",
+              amount: c.amount || "",
+              option: c.required === "Mandatory" ? "mandatory" : "optional",
+            })),
+          );
         }
 
-        // ✅ Set notes & discount
+        // ── Annotation sections — prefill from API including existing images ──
+        if (quote.annotation_image?.length > 0) {
+          const mappedSections = quote.annotation_image.map((ann) => {
+            // Separate drawnLines and fullyEdited images
+            const drawnImages =
+              ann.images?.filter((img) => img.type === "drawnLines") || [];
+            const editedImages =
+              ann.images?.filter((img) => img.type === "fullyEdited") || [];
+
+            // Build files array — pair drawnLines with fullyEdited by index
+            const maxLen = Math.max(drawnImages.length, editedImages.length, 1);
+            const files = Array.from({ length: maxLen }, (_, i) => ({
+              file: null,
+              preview: drawnImages[i]
+                ? getImgSrc(drawnImages[i].image_url)
+                : "",
+              lineSaved: drawnImages[i]
+                ? getImgSrc(drawnImages[i].image_url)
+                : "",
+              textSaved: editedImages[i]
+                ? getImgSrc(editedImages[i].image_url)
+                : "",
+              // Keep existing image IDs for backend reference
+              existingDrawnImageId: drawnImages[i]?.image_id ?? null,
+              existingEditedImageId: editedImages[i]?.image_id ?? null,
+              textSum: i === 0 ? Number(ann.sft_count || 0) : 0,
+            }));
+
+            return {
+              id: ann.annotation_image_id,
+              files,
+              formData: {
+                identifyImageName: ann.identify_image_name || "",
+                color: ann.color || "",
+                peaksCount: String(ann.no_peaks || "0"),
+                jumpersCount: String(ann.no_jumper || "0"),
+                sftCount: String(ann.sft_count || ""),
+                sqftSize: String(ann.divide || ""),
+                total: String(ann.total_numerical_box || ""),
+                unitPrice: String(ann.unit_price || ""),
+                amount: String(ann.total_amount || ""),
+                action:
+                  ann.required === "yes" || ann.required === "Mandatory"
+                    ? "Mandatory"
+                    : "Optional",
+              },
+            };
+          });
+          setAnnotationSections(mappedSections);
+        }
+
+        // ── Notes & discount ──
         setCustomerNotes(quote.notes || "");
         setAdminNotes(quote.adminnotes || "");
         setDiscountPercent(quote.discount_percentage || 0);
+
+        // ── Easy plug / Controller access images ──
+        if (quote.access_image_plug) {
+          setIsEasyPlugEnabled(true);
+          setEasyPlugFiles([
+            {
+              file: null,
+              preview: getImgSrc(quote.access_image_plug),
+            },
+          ]);
+        }
+        if (quote.access_image_controller) {
+          setIsControllerEnabled(true);
+          setControllerFiles([
+            {
+              file: null,
+              preview: getImgSrc(quote.access_image_controller),
+            },
+          ]);
+        }
       } catch (e) {
         console.error(e);
         toast.error("Failed to load quote");
@@ -272,10 +342,7 @@ const EditQuote = () => {
       ...prev,
       annotations: {
         ...prev.annotations,
-        [sectionId]: {
-          ...prev.annotations[sectionId],
-          [field]: message,
-        },
+        [sectionId]: { ...prev.annotations[sectionId], [field]: message },
       },
     }));
   };
@@ -348,7 +415,6 @@ const EditQuote = () => {
 
   // ==================== SUBMIT ====================
   const handleSubmit = async () => {
-    // ✅ Validate CustomerForm fields first
     const isCustomerValid = await methods.trigger();
     if (!isCustomerValid) {
       toast.error("Please fix customer form errors");
@@ -358,14 +424,17 @@ const EditQuote = () => {
     const ok = validateQuote();
     if (!ok) return;
 
-    // ✅ Read latest values from CustomerForm inputs
     const formValues = methods.getValues();
 
     const toCurrencyString = (v) => Number(v || 0).toFixed(2);
     const requiredFlag = (opt) =>
       opt && String(opt).toLowerCase() === "mandatory" ? "yes" : "no";
+
     const dataUrlToFile = (dataUrl, filename = "image.png") => {
       try {
+        // Skip existing remote URLs
+        if (typeof dataUrl === "string" && dataUrl.startsWith("http"))
+          return null;
         const arr = String(dataUrl).split(",");
         const mimeMatch = arr[0].match(/:(.*?);/);
         const mime = mimeMatch ? mimeMatch[1] : "image/png";
@@ -381,13 +450,14 @@ const EditQuote = () => {
       }
     };
 
+    const isRemoteUrl = (url) =>
+      typeof url === "string" &&
+      (url.startsWith("http") || url.startsWith("/"));
+
     const formData = new FormData();
 
-    // ✅ quote_id required for update
     formData.append("quote_id", String(quoteData?.quote_id ?? ""));
     formData.append("user_id", String(user?.user_id ?? ""));
-
-    // ✅ Customer fields from editable form
     formData.append("fname", formValues.firstName || "");
     formData.append("lname", formValues.lastName || "");
     formData.append("email", formValues.email || "");
@@ -397,7 +467,6 @@ const EditQuote = () => {
     formData.append("state", formValues.province || "");
     formData.append("country", formValues.country || "");
     formData.append("post_code", formValues.postCode || "");
-
     formData.append(
       "total_controller_price",
       toCurrencyString(totalControllerPrice),
@@ -410,6 +479,7 @@ const EditQuote = () => {
     formData.append("notes", String(customerNotes || ""));
     formData.append("adminnotes", String(adminNotes || ""));
 
+    // ── Products ──
     const productPayload = (products || [])
       .filter((p) => Number(p.quantity) > 0)
       .map((p) => ({
@@ -421,6 +491,7 @@ const EditQuote = () => {
       }));
     formData.append("product_data", JSON.stringify(productPayload));
 
+    // ── Custom products ──
     const customPayload = (customProducts || [])
       .filter((p) => Number(p.quantity) > 0 && Number(p.unitPrice) > 0)
       .map((p) => ({
@@ -434,13 +505,38 @@ const EditQuote = () => {
       }));
     formData.append("custom_product_data", JSON.stringify(customPayload));
 
+    // ── Annotation data — include existing_images so backend keeps them ──
     const annotationPayload = (annotationSections || []).map((section, idx) => {
       const fd = section?.formData || {};
       const identify =
         String(fd?.identifyImageName?.trim() || "") ||
         section?.files?.[0]?.file?.name ||
         `annotation_${idx + 1}`;
+
+      // ── Collect existing remote image URLs to tell backend to keep them ──
+      const existing_images = [];
+      (section.files || []).forEach((f) => {
+        if (f.lineSaved && isRemoteUrl(f.lineSaved)) {
+          // Extract relative path from full URL e.g. http://localhost/uploads/xxx.jpg → uploads/xxx.jpg
+          const url = f.lineSaved.includes("/uploads/")
+            ? "uploads/" + f.lineSaved.split("/uploads/")[1]
+            : f.lineSaved;
+          existing_images.push({ image_url: url, type: "drawnLines" });
+        }
+        if (f.textSaved && isRemoteUrl(f.textSaved)) {
+          const url = f.textSaved.includes("/uploads/")
+            ? "uploads/" + f.textSaved.split("/uploads/")[1]
+            : f.textSaved;
+          existing_images.push({ image_url: url, type: "fullyEdited" });
+        }
+      });
+
       return {
+        // Send existing annotation_image_id so backend UPDATEs instead of INSERTs
+        annotation_image_id:
+          typeof section.id === "number" && section.id < 1e12
+            ? section.id
+            : null,
         identify_image_name: identify,
         sft_count: Number(fd.sftCount || 0),
         divide: Number(fd.sqftSize || 0),
@@ -451,36 +547,37 @@ const EditQuote = () => {
         no_jumper: Number(fd.jumpersCount || 0),
         color: String(fd.color || ""),
         required: requiredFlag(fd.action),
+        existing_images, // ← backend uses this to keep existing images
       };
     });
     formData.append("annotation_data", JSON.stringify(annotationPayload));
 
+    // ── Only append NEW images (skip existing remote URLs) ──
     (annotationSections || []).forEach((section, nIdx) => {
       const N = nIdx + 1;
       (section.files || []).forEach((f, jIdx) => {
-        const drawn =
-          typeof f?.lineSaved === "string"
-            ? dataUrlToFile(f.lineSaved, `preview_${N}_${jIdx}.png`)
-            : null;
-        if (drawn) formData.append(`preview-image_${N}_${jIdx}`, drawn);
-
-        const edited =
-          typeof f?.textSaved === "string"
-            ? dataUrlToFile(f.textSaved, `edited_${N}_${jIdx}.png`)
-            : null;
-        if (edited) formData.append(`preview-image-edit_${N}_${jIdx}`, edited);
+        // drawnLines — only if new base64
+        if (f.lineSaved && !isRemoteUrl(f.lineSaved)) {
+          const drawn = dataUrlToFile(f.lineSaved, `preview_${N}_${jIdx}.png`);
+          if (drawn) formData.append(`preview-image_${N}_${jIdx}`, drawn);
+        }
+        // fullyEdited — only if new base64
+        if (f.textSaved && !isRemoteUrl(f.textSaved)) {
+          const edited = dataUrlToFile(f.textSaved, `edited_${N}_${jIdx}.png`);
+          if (edited)
+            formData.append(`preview-image-edit_${N}_${jIdx}`, edited);
+        }
       });
     });
 
     try {
-      const result = await updateQuote(formData);
+      const result = await editQuote(formData);
       toast.success(result?.message || "Quote updated successfully.");
       navigate("/quote");
     } catch (e) {
       toast.error(e.message || "Failed to update quote");
     }
   };
-
   // ==================== LOADING ====================
   if (pageLoading) {
     return (
@@ -495,7 +592,6 @@ const EditQuote = () => {
     <Card title="Edit Quote">
       <form>
         <div className="space-y-8">
-          {/* ==================== CUSTOMER FORM — fully editable ==================== */}
           <CustomerForm
             methods={methods}
             title="Customer Info"
@@ -504,7 +600,6 @@ const EditQuote = () => {
             hideActions={true}
           />
 
-          {/* ==================== IMAGE DETAILS ==================== */}
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-lg font-semibold mb-6">Image Details</h2>
             <div className="grid md:grid-cols-2 gap-8">
@@ -529,17 +624,14 @@ const EditQuote = () => {
             </div>
           </div>
 
-          {/* ==================== PRODUCTS ==================== */}
           <div className="space-y-6">
             <h2 className="text-lg font-semibold">Products</h2>
-
             <div className="hidden md:grid md:grid-cols-4 gap-4 text-sm font-medium text-gray-600">
               <div>Product</div>
               <div>Quantity</div>
               <div>Amount</div>
               <div>Option</div>
             </div>
-
             {products.map((product, index) => (
               <ProductRow
                 key={product.id}
@@ -568,7 +660,6 @@ const EditQuote = () => {
                 <div className="col-span-3">Actions</div>
               </div>
             )}
-
             {customProducts.map((product, index) => (
               <CustomProductRow
                 key={product.id}
@@ -590,7 +681,6 @@ const EditQuote = () => {
                 }}
               />
             ))}
-
             <Button
               text="Custom product +"
               className="btn-primary btn-sm"
@@ -599,7 +689,6 @@ const EditQuote = () => {
             />
           </div>
 
-          {/* ==================== ANNOTATION SECTIONS ==================== */}
           <div className="space-y-4">
             {annotationSections.map((section) => (
               <div
@@ -630,7 +719,6 @@ const EditQuote = () => {
                 />
               </div>
             ))}
-
             <Button
               text="Add New File Section +"
               className="btn-primary btn-sm"
@@ -639,7 +727,6 @@ const EditQuote = () => {
             />
           </div>
 
-          {/* ==================== NOTES ==================== */}
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -667,7 +754,6 @@ const EditQuote = () => {
             </div>
           </div>
 
-          {/* ==================== DISCOUNT ==================== */}
           <div className="flex justify-end">
             <div className="w-full md:w-64">
               <label className="block text-sm font-medium mb-2 text-right">
@@ -685,7 +771,6 @@ const EditQuote = () => {
             </div>
           </div>
 
-          {/* ==================== SUBMIT & SUMMARY ==================== */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <Button
               text="Update Quote"
