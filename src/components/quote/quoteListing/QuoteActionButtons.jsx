@@ -11,6 +11,7 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
+  const canSchedule = rowData?.status === "Confirmed - Deposit Paid";
   const handleView = () => navigate(`/quote/view_quote_admin/${id}`);
   const handleEdit = () => navigate(`/quote/edit_quote/${id}`);
 
@@ -80,8 +81,13 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
         <button
           className="icon-btn hover:bg-indigo-50 dark:hover:bg-indigo-900"
           type="button"
-          title="Schedule Installation"
-          onClick={() => setShowScheduleModal(true)}
+          title={
+            canSchedule
+              ? "Schedule Installation"
+              : `Cannot schedule — current status: ${rowData?.status}`
+          }
+          onClick={() => canSchedule && setShowScheduleModal(true)}
+          disabled={!canSchedule}
         >
           <Icon icon="ph:calendar-check" />
         </button>

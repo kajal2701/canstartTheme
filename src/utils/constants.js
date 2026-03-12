@@ -1,12 +1,9 @@
 export const STATUS_MAP = {
-    1: "Created",
-    2: "Pending Approval",
-    3: "Confirmed - Awaiting Payment",
-    4: "Confirmed - Deposit Paid",
-    5: "Invoice Sent",
-    6: "Invoice Sent - Awaiting Confirmation",
-    7: "Fully Paid",
-    8: "Cancelled"
+    1: { label: "Created", color: "bg-blue-500 text-white" }, // bg-info
+    2: { label: "Pending Approval", color: "bg-indigo-500 text-white" }, // bg-primary
+    3: { label: "Approved", color: "bg-green-500 text-white" }, // bg-success
+    4: { label: "Confirmed", color: "bg-yellow-400 text-gray-800" }, // bg-warning
+    5: { label: "Cancelled", color: "bg-red-500 text-white" }, // bg-danger
 };
 export const quoteStatusList = [
     { value: "", label: "All Quotes" },
@@ -20,11 +17,6 @@ export const quoteStatusList = [
     { value: "Cancelled", label: "Cancelled" },
 ];
 
-export const STATUS_OPTIONS = [
-    { value: "all", label: "All Quotes" },
-    { value: "Sent", label: "Sent" },
-    { value: "Pending", label: "Pending" },
-];
 
 export const REVIEW_DATA = [
     {

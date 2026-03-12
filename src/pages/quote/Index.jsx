@@ -17,6 +17,7 @@ import { exportQuotesToExcel } from "../../utils/exportUtils";
 import { toast } from "react-toastify";
 
 const mapQuoteData = (quote) => {
+  const stage = getQuoteStage(quote);
   return {
     id: quote.quote_id,
     srNumber: quote.quote_no,
@@ -32,7 +33,8 @@ const mapQuoteData = (quote) => {
     linearFeet: quote.total_numerical_box,
     colors: quote.colors,
     total: `$${parseFloat(quote.main_total).toFixed(2)}`,
-    status: getQuoteStage(quote),
+    status: stage.label,
+    statusColor: stage.color,
     date: quote.created_at ? quote.created_at.split("T")[0] : "",
     installationDate: quote.installation_date || "",
     installationSchedule: quote.installation_date
@@ -184,11 +186,11 @@ const Quote = () => {
     {
       Header: "Status",
       accessor: "status",
-      Cell: ({ cell: { value } }) => (
+      Cell: ({ row }) => (
         <span
-          className={`inline-block text-xs px-3 py-1 rounded font-medium ${value === "Sent" ? "bg-yellow-400 text-gray-800" : "bg-gray-400 text-white"}`}
+          className={`inline-block text-xs px-3 py-1 rounded font-medium ${row.original.statusColor}`}
         >
-          {value}
+          {row.original.status}
         </span>
       ),
     },

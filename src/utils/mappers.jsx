@@ -80,42 +80,83 @@ export const decodeId = (encoded) => {
   }
 };
 
-export const getQuoteStage = (quote) => {
-  const payment = quote.payment_details?.[0];
-  const hasPayment = !!payment;
-  const onlinePayment = quote.online_payment_details?.[0];
+// with color
+export const getQuoteStage = (row) => {
+  // Step 1: Get payment details
+  const paymentDetails = row.payment_details || [];
+  const hasPayment = paymentDetails.length > 0;
 
-  // Cancelled
-  if (quote.status == 5) return "Cancelled";
+  // Step 2: Get paymentStatus and payStatus from first payment record
+  let paymentStatus = null;
+  let payStatus = null;
 
-  // Fully Paid
-  if (payment?.status == 1) return "Fully Paid";
+  if (hasPayment && paymentDetails[0]?.status !== undefined) {
+    paymentStatus = paymentDetails[0].status;
+    payStatus = paymentDetails[0].payment_status;
+  }
 
-  // Created - no payment set yet
-  if (quote.status == 1 && !hasPayment) return "Created";
+  // Step 3: Loop ALL payments → check if all confirmed or all pending
+  let paymentStatusValue = null;
 
-  // Pending Approval - payment exists but not approved yet
-  if (quote.status == 1 && hasPayment) return "Pending Approval";
+  if (hasPayment) {
+    let allConfirmed = true;
+    let allPending = true;
 
-  // Confirmed - Awaiting Payment (no online payment/deposit yet)
-  if (quote.status == 3 && !onlinePayment)
-    return "Confirmed - Awaiting Payment";
+    paymentDetails.forEach((payment) => {
+      if (payment.payment_status == 1) {
+        allPending = false;
+      } else if (payment.payment_status == 0) {
+        allConfirmed = false;
+      } else {
+        allConfirmed = false;
+        allPending = false;
+      }
+    });
 
-  // Confirmed - Deposit Paid (deposit made, awaiting admin confirmation)
-  if (quote.status == 3 && onlinePayment?.status == 0)
-    return "Confirmed - Deposit Paid";
+    if (allConfirmed) paymentStatusValue = 1;
+    else if (allPending) paymentStatusValue = 0;
+    else paymentStatusValue = 0;
+  }
 
-  // Invoice Sent (installation done, invoice not sent yet)
-  if (quote.status == 3 && quote.installation_date && !quote.invoice_date)
-    return "Invoice Sent";
+  // Step 4: Check date flags
+  const hasInvoiceDate = !!row.invoice_date;
 
-  // Invoice Sent - Awaiting Confirmation
-  if (
-    quote.status == 3 &&
-    quote.invoice_date &&
-    parseFloat(payment?.pending_payment_amount) > 0
-  )
-    return "Invoice Sent - Awaiting Confirmation";
+  // Step 5: Priority conditions — EXACT SAME ORDER AS PHP
 
-  return "Created"; // fallback
+  if (row.status == 1) {
+    return { label: "Created", color: "bg-blue-500 text-white" }; // bg-info
+  } else if (paymentStatusValue == 1 && paymentStatus == 1) {
+    return { label: "Fully Paid", color: "bg-green-500 text-white" }; // bg-success
+  } else if (paymentStatusValue != 1 && paymentStatus == 0 && hasInvoiceDate) {
+    return {
+      label: "Invoice Sent - Awaiting Confirmation",
+      color: "bg-yellow-400 text-gray-800",
+    }; // bg-warning
+  } else if (hasInvoiceDate) {
+    return { label: "Invoice Sent", color: "bg-indigo-500 text-white" }; // bg-primary
+  } else if (
+    paymentStatus == 0 &&
+    paymentStatusValue == 1 &&
+    payStatus != null
+  ) {
+    return {
+      label: "Confirmed - Deposit Paid",
+      color: "bg-blue-500 text-white",
+    }; // bg-info
+  } else if (paymentStatus == 0 && hasPayment && paymentStatusValue != 1) {
+    return {
+      label: "Confirmed - Awaiting Payment",
+      color: "bg-yellow-400 text-gray-800",
+    }; // bg-warning
+  } else if (paymentStatus === null && row.status == 3) {
+    return { label: "Sent", color: "bg-yellow-400 text-gray-800" }; // bg-warning
+  } else if (row.status == 3) {
+    return { label: "Sent", color: "bg-yellow-400 text-gray-800" }; // bg-warning
+  } else if (row.status == 2) {
+    return { label: "Pending Approval", color: "bg-indigo-500 text-white" }; // bg-primary
+  } else if (row.status == 4) {
+    return { label: "Cancelled", color: "bg-red-500 text-white" }; // bg-danger
+  } else {
+    return { label: "Unknown Status", color: "bg-gray-400 text-white" }; // bg-secondary
+  }
 };

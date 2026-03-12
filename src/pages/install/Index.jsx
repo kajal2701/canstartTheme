@@ -85,14 +85,17 @@ const Install = () => {
         <PastInstallations
           jobs={installs.past_installations_pending_invoice}
           loading={loading}
+          onRefresh={loadInstalls}
         />
         <UpcomingInstallations
           jobs={installs.upcoming_installations}
           loading={loading}
+          onRefresh={loadInstalls}
         />
         <AwaitingInstallationSchedule
           jobs={installs.non_scheduled_jobs}
           loading={loading}
+          onRefresh={loadInstalls}
         />
       </div>
     </div>

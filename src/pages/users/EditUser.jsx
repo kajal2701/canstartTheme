@@ -12,21 +12,26 @@ const EditUser = () => {
 
   const methods = useForm({
     defaultValues: {
-      firstName: "", lastName: "", email: "", password: "", role: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      role: "",
     },
     mode: "onChange",
   });
 
   const { reset, setError } = methods;
-
   // ── Fetch user and prefill form ──────────────────────────────────
   useEffect(() => {
     const fetchUser = async () => {
       const result = await getUserById(id);
       if (result.success) {
         const u = result.data;
+        const decodedPassword = atob(u.password);
         const isAdminRole = Number(u.role) === 1;
-        originalPassword.current = u.password ?? "";
+        originalPassword.current = decodedPassword ?? "";
+
         reset({
           firstName: u.fname ?? "",
           lastName: u.lname ?? "",
@@ -49,12 +54,12 @@ const EditUser = () => {
       fname: data.firstName,
       lname: data.lastName,
       email: data.email,
-      password: data.password && data.password.trim() !== ""
-        ? data.password
-        : originalPassword.current,
+      password:
+        data.password && data.password.trim() !== ""
+          ? data.password
+          : originalPassword.current,
       role: data.role,
     };
-
     const result = await updateUser(payload);
     if (result.success) {
       toast.success(result.message);

@@ -1,22 +1,49 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react"; // ✅ added useState
 import Icon from "@/components/ui/Icon";
 import DataTable from "@/components/ui/DataTable";
 import { AddressCell, addressAccessor } from "@/utils/mappers";
 import { formatDateLong } from "@/utils/formatters";
 import { useNavigate } from "react-router-dom";
+import { encodeId, getQuoteStage } from "../../utils/mappers"; // ✅ added encodeId, getQuoteStage
+import ScheduleInstallationModal from "@/components/quote/quotelisting/ScheduleInstallationModal"; // ✅ added
+import { toast } from "react-toastify"; // ✅ added
 
-const getDaysAhead = (installationDate) => {
-  if (!installationDate) return null;
-  const install = new Date(installationDate.split("T")[0]);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diffMs = install - today;
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-  return diffDays >= 0 ? diffDays : null;
-};
-
-const UpcomingInstallations = ({ jobs = [], loading }) => {
+const UpcomingInstallations = ({ jobs = [], loading, onRefresh }) => {
+  // ✅ added onRefresh
   const navigate = useNavigate();
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false); // ✅ added
+  const [selectedJob, setSelectedJob] = useState(null); // ✅ added
+
+  // ✅ Map jobs to add statusLabel + statusColor (same pattern as other components)
+  const mappedJobs = useMemo(() => {
+    return jobs.map((job) => {
+      const stage = getQuoteStage(job);
+      return {
+        ...job,
+        statusLabel: stage.label,
+        statusColor: stage.color,
+      };
+    });
+  }, [jobs]);
+
+  // ✅ Handle reschedule button click — pass existing installation_date as prefillDate
+  const handleRescheduleClick = (jobRow) => {
+    setSelectedJob({
+      id: jobRow.quote_id,
+      srNumber: jobRow.quote_no,
+      customerName: `${jobRow.fname || ""} ${jobRow.lname || ""}`.trim(),
+      email: jobRow.email,
+      installation_date: jobRow.installation_date, // ✅ existing date for prefill
+    });
+    setShowRescheduleModal(true);
+  };
+
+  // ✅ Handle after rescheduled
+  const handleRescheduled = async () => {
+    toast.success("Installation rescheduled & email sent successfully!");
+    setShowRescheduleModal(false);
+    if (onRefresh) await onRefresh();
+  };
 
   const COLUMNS = [
     {
@@ -31,21 +58,7 @@ const UpcomingInstallations = ({ jobs = [], loading }) => {
         </div>
       ),
     },
-    {
-      Header: "Days Ahead",
-      accessor: "installation_date",
-      id: "daysAhead",
-      Cell: ({ cell: { value } }) => {
-        const days = getDaysAhead(value);
-        if (days === null)
-          return <span className="text-gray-400 text-xs">-</span>;
-        return (
-          <span className="inline-block bg-green-100 text-green-600 px-3 py-1 rounded text-xs font-medium">
-            {days} days
-          </span>
-        );
-      },
-    },
+
     {
       Header: "Quote #",
       accessor: "quote_no",
@@ -110,30 +123,19 @@ const UpcomingInstallations = ({ jobs = [], loading }) => {
     },
     {
       Header: "Payment Status",
-      accessor: "payment_details",
-      id: "paymentStatus",
-      Cell: ({ cell: { value } }) => {
-        const status = value?.[0]?.payment_status;
-        const isFull = value?.[0]?.payment_type === 1; // 1 = full, 2 = deposit
-        const label = isFull
-          ? "Confirmed - Full Payment"
-          : "Confirmed - Deposit Paid";
-        const cls = isFull
-          ? "bg-green-100 text-green-600"
-          : "bg-cyan-100 text-cyan-600";
-        return (
-          <span
-            className={`inline-block ${cls} text-xs px-3 py-1 rounded-full font-medium`}
-          >
-            {status === 1 ? label : "Pending"}
-          </span>
-        );
-      },
+      accessor: "statusLabel",
+      Cell: ({ row }) => (
+        <span
+          className={`inline-block ${row.original.statusColor} text-xs px-4 py-1.5 rounded font-medium whitespace-nowrap`}
+        >
+          {row.original.statusLabel}
+        </span>
+      ),
     },
     {
       Header: "Action",
       accessor: "quote_id",
-      Cell: ({ cell: { value } }) => (
+      Cell: ({ cell: { value }, row }) => (
         <div className="flex gap-2 justify-center">
           <button
             className="icon-btn hover:bg-blue-50 dark:hover:bg-blue-900"
@@ -143,20 +145,23 @@ const UpcomingInstallations = ({ jobs = [], loading }) => {
           >
             <Icon icon="ph:eye" />
           </button>
+
           <button
-            className="icon-btn hover:bg-indigo-50 dark:hover:bg-indigo-900"
+            className="icon-btn hover:bg-green-50 dark:hover:bg-green-900"
             type="button"
-            title="Edit"
-            onClick={() => navigate(`/quote/edit_quote/${value}`)}
+            title="Print"
+            onClick={() => navigate(`/users/quote_invoice/${encodeId(value)}`)}
           >
-            <Icon icon="ph:pencil-line" />
+            <Icon icon="ph:printer" />
           </button>
+
           <button
-            className="icon-btn hover:bg-red-50 dark:hover:bg-red-900"
+            className="icon-btn hover:bg-indigo-50 dark:hover:bg-indigo-900 text-indigo-600"
             type="button"
-            title="Cancel"
+            title="Reschedule Installation"
+            onClick={() => handleRescheduleClick(row.original)}
           >
-            <Icon icon="ph:x-circle" />
+            <Icon icon="ph:calendar-check" />
           </button>
         </div>
       ),
@@ -164,51 +169,58 @@ const UpcomingInstallations = ({ jobs = [], loading }) => {
   ];
 
   const columns = useMemo(() => COLUMNS, []);
-  const data = useMemo(() => jobs, [jobs]);
 
   return (
-    <div className="my-5">
-      <div className="border-2 border-blue-300 bg-blue-50/30 rounded-xl overflow-hidden">
-        {/* ── Header ── */}
-        <div className="flex items-center gap-3 px-6 pt-6 pb-4">
-          <Icon icon="ph:calendar-dots" className="text-2xl text-gray-600" />
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-            Upcoming Installations
-          </h2>
-          <span className="bg-indigo-500 text-white text-sm px-3 py-1 rounded-full font-medium">
-            {jobs.length} Jobs
-          </span>
-        </div>
+    <>
+      <div className="my-5">
+        <div className="border-2 border-blue-300 bg-blue-50/30 rounded-xl overflow-hidden">
+          <div className="flex items-center gap-3 px-6 pt-6 pb-4">
+            <Icon icon="ph:calendar-dots" className="text-2xl text-gray-600" />
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+              Upcoming Installations
+            </h2>
+            <span className="bg-indigo-500 text-white text-sm px-3 py-1 rounded-full font-medium">
+              {jobs.length} Jobs
+            </span>
+          </div>
 
-        {/* ── Empty state ── */}
-        {!loading && jobs.length === 0 ? (
-          <div className="px-6 pb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <Icon
-                  icon="ph:info"
-                  className="text-blue-500 text-xl flex-shrink-0"
-                />
-                <p className="text-blue-700 text-sm">
-                  No upcoming installations scheduled at this time.
-                </p>
+          {!loading && jobs.length === 0 ? (
+            <div className="px-6 pb-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <Icon
+                    icon="ph:info"
+                    className="text-blue-500 text-xl flex-shrink-0"
+                  />
+                  <p className="text-blue-700 text-sm">
+                    No upcoming installations scheduled at this time.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          /* ── DataTable ── */
-          <DataTable
-            title=""
-            columns={columns}
-            data={data}
-            loading={loading}
-            initialPageSize={5}
-            rowClassName="hover:bg-blue-50 dark:hover:bg-gray-700 hover:bg-opacity-50"
-            tableWrapperClassName="card bg-blue-50/30"
-          />
-        )}
+          ) : (
+            <DataTable
+              title=""
+              columns={columns}
+              data={mappedJobs} // ✅ use mappedJobs
+              loading={loading}
+              initialPageSize={5}
+              rowClassName="hover:bg-blue-50 dark:hover:bg-gray-700 hover:bg-opacity-50"
+              tableWrapperClassName="card bg-blue-50/30"
+            />
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* ✅ Reschedule Modal — prefillDate passed so date is pre-filled */}
+      <ScheduleInstallationModal
+        activeModal={showRescheduleModal}
+        onClose={() => setShowRescheduleModal(false)}
+        quoteData={selectedJob}
+        onScheduled={handleRescheduled}
+        prefillDate={selectedJob?.installation_date ?? null} // ✅ prefill existing date
+      />
+    </>
   );
 };
 

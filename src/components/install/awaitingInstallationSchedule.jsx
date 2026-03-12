@@ -1,12 +1,47 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react"; // ✅ added useState
 import Icon from "@/components/ui/Icon";
 import DataTable from "@/components/ui/DataTable";
 import { AddressCell, addressAccessor } from "@/utils/mappers";
 import { formatDateLong } from "@/utils/formatters";
 import { useNavigate } from "react-router-dom";
+import { getQuoteStage } from "../../utils/mappers";
+import ScheduleInstallationModal from "@/components/quote/quotelisting/ScheduleInstallationModal"; // ✅ added
+import { toast } from "react-toastify"; // ✅ added
 
-const AwaitingInstallationSchedule = ({ jobs = [], loading }) => {
+const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
   const navigate = useNavigate();
+  const [showScheduleModal, setShowScheduleModal] = useState(false); // ✅ added
+  const [selectedJob, setSelectedJob] = useState(null); // ✅ added
+
+  const mappedJobs = useMemo(() => {
+    return jobs.map((job) => {
+      const stage = getQuoteStage(job);
+      return {
+        ...job,
+        statusLabel: stage.label,
+        statusColor: stage.color,
+      };
+    });
+  }, [jobs]);
+
+  // ✅ Handle schedule button click
+  const handleScheduleClick = (jobRow) => {
+    const quote = {
+      id: jobRow.quote_id,
+      srNumber: jobRow.quote_no,
+      customerName: `${jobRow.fname || ""} ${jobRow.lname || ""}`,
+      email: jobRow.email,
+    };
+    setSelectedJob(quote);
+    setShowScheduleModal(true);
+  };
+
+  // ✅ Handle after scheduled
+  const handleScheduled = async () => {
+    toast.success("Installation scheduled & email sent successfully!");
+    setShowScheduleModal(false);
+    if (onRefresh) await onRefresh();
+  };
 
   const COLUMNS = [
     {
@@ -73,27 +108,14 @@ const AwaitingInstallationSchedule = ({ jobs = [], loading }) => {
     },
     {
       Header: "Payment Status",
-      accessor: "status",
-      Cell: ({ cell: { value } }) => {
-        const statusMap = {
-          0: { label: "Draft", color: "bg-gray-400" },
-          1: { label: "Sent", color: "bg-yellow-500" },
-          2: { label: "Approved", color: "bg-blue-500" },
-          3: { label: "Invoice Sent", color: "bg-indigo-500" },
-          4: { label: "Completed", color: "bg-green-500" },
-        };
-        const s = statusMap[value] || {
-          label: "Unknown",
-          color: "bg-gray-400",
-        };
-        return (
-          <span
-            className={`inline-block ${s.color} text-white text-xs px-4 py-1.5 rounded font-medium`}
-          >
-            {s.label}
-          </span>
-        );
-      },
+      accessor: "statusLabel",
+      Cell: ({ row }) => (
+        <span
+          className={`inline-block ${row.original.statusColor} text-xs px-4 py-1.5 rounded font-medium whitespace-nowrap`}
+        >
+          {row.original.statusLabel}
+        </span>
+      ),
     },
     {
       Header: "Date",
@@ -107,49 +129,74 @@ const AwaitingInstallationSchedule = ({ jobs = [], loading }) => {
     {
       Header: "Action",
       accessor: "quote_id",
-      Cell: ({ cell: { value } }) => (
-        <div className="flex gap-2 justify-center">
-          <button
-            className="icon-btn hover:bg-indigo-50 dark:hover:bg-indigo-900"
-            type="button"
-            title="Schedule"
-          >
-            <Icon icon="ph:calendar-check" />
-          </button>
-          <button
-            className="icon-btn hover:bg-blue-50 dark:hover:bg-blue-900"
-            type="button"
-            title="View"
-            onClick={() => navigate(`/quote/view_quote_admin/${value}`)}
-          >
-            <Icon icon="ph:eye" />
-          </button>
-        </div>
-      ),
+      Cell: ({ cell: { value }, row }) => {
+        const canSchedule =
+          row.original.statusLabel === "Confirmed - Deposit Paid";
+        return (
+          <div className="flex gap-2 justify-center">
+            {/* ✅ Schedule button with modal */}
+            <button
+              className={`icon-btn transition-colors ${
+                canSchedule
+                  ? "hover:bg-indigo-50 dark:hover:bg-indigo-900 text-indigo-600 cursor-pointer"
+                  : "opacity-40 cursor-not-allowed text-gray-400"
+              }`}
+              type="button"
+              title={
+                canSchedule
+                  ? "Schedule Installation"
+                  : `Cannot schedule — status: ${row.original.statusLabel}`
+              }
+              disabled={!canSchedule}
+              onClick={() => canSchedule && handleScheduleClick(row.original)} // ✅ open modal
+            >
+              <Icon icon="ph:calendar-check" />
+            </button>
+
+            <button
+              className="icon-btn hover:bg-blue-50 dark:hover:bg-blue-900"
+              type="button"
+              title="View"
+              onClick={() => navigate(`/quote/view_quote_admin/${value}`)}
+            >
+              <Icon icon="ph:eye" />
+            </button>
+          </div>
+        );
+      },
     },
   ];
 
   const columns = useMemo(() => COLUMNS, []);
-  const data = useMemo(() => jobs, [jobs]);
 
   return (
-    <div className="border-2 border-yellow-300 bg-yellow-50/30 rounded-xl">
-      <DataTable
-        title={
-          <div className="flex items-center gap-3">
-            <Icon icon="ph:clock" className="text-2xl text-gray-700" />
-            <span>Awaiting Installation Schedule</span>
-            <span className="bg-pink-500 text-white text-sm px-3 py-1 rounded-full font-medium">
-              {jobs.length} Jobs
-            </span>
-          </div>
-        }
-        columns={columns}
-        data={data}
-        loading={loading}
-        initialPageSize={5}
+    <>
+      <div className="border-2 border-yellow-300 bg-yellow-50/30 rounded-xl">
+        <DataTable
+          title={
+            <div className="flex items-center gap-3">
+              <Icon icon="ph:clock" className="text-2xl text-gray-700" />
+              <span>Awaiting Installation Schedule</span>
+              <span className="bg-pink-500 text-white text-sm px-3 py-1 rounded-full font-medium">
+                {jobs.length} Jobs
+              </span>
+            </div>
+          }
+          columns={columns}
+          data={mappedJobs}
+          loading={loading}
+          initialPageSize={5}
+        />
+      </div>
+
+      {/* ✅ Schedule Modal */}
+      <ScheduleInstallationModal
+        activeModal={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        quoteData={selectedJob}
+        onScheduled={handleScheduled}
       />
-    </div>
+    </>
   );
 };
 

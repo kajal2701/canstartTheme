@@ -4,21 +4,17 @@ export const menuItems = [
     icon: "ph:house",
     isHide: true,
     link: "dashboard",
+    roles: [1, 2, 3, 4], // all roles
   },
   {
     title: "Users",
     icon: "ph:user-circle",
     link: "#",
     isHide: true,
+    roles: [1], // admin only
     child: [
-      {
-        childtitle: "List",
-        childlink: "users",
-      },
-      {
-        childtitle: "Add",
-        childlink: "users/add",
-      },
+      { childtitle: "List", childlink: "users" },
+      { childtitle: "Add", childlink: "users/add" },
     ],
   },
   {
@@ -26,15 +22,10 @@ export const menuItems = [
     icon: "ph:user-switch",
     link: "#",
     isHide: true,
+    roles: [1, 4], // admin + sales
     child: [
-      {
-        childtitle: "List",
-        childlink: "customer",
-      },
-      {
-        childtitle: "Add",
-        childlink: "customer/add",
-      },
+      { childtitle: "List", childlink: "customer" },
+      { childtitle: "Add", childlink: "customer/add" },
     ],
   },
   {
@@ -42,39 +33,28 @@ export const menuItems = [
     icon: "ph:chats",
     link: "#",
     isHide: true,
+    roles: [1, 4], // admin + sales
     child: [
-      {
-        childtitle: "List",
-        childlink: "quote",
-      },
-      {
-        childtitle: "Add",
-        childlink: "quote/add",
-      },
+      { childtitle: "List", childlink: "quote" },
+      { childtitle: "Add", childlink: "quote/add" },
     ],
   },
-
   {
     title: "Install",
     isHide: true,
     icon: "ph:calendar-plus",
     link: "install",
+    roles: [1], // admin only
   },
-
   {
-    title: "Product ",
+    title: "Product",
     icon: "ph:basket",
     link: "#",
     isHide: true,
+    roles: [1], // admin only
     child: [
-      {
-        childtitle: "List",
-        childlink: "product",
-      },
-      {
-        childtitle: "Add",
-        childlink: "product/add",
-      },
+      { childtitle: "List", childlink: "product" },
+      { childtitle: "Add", childlink: "product/add" },
     ],
   },
   {
@@ -82,6 +62,7 @@ export const menuItems = [
     isHide: true,
     icon: "ph:invoice",
     link: "invoice",
+    roles: [1], // admin only
   },
 ];
 

@@ -58,14 +58,18 @@ const COLUMNS = [
   },
   {
     Header: "Status",
-    accessor: "status",
+    accessor: "statusLabel", // ✅ now searches "Created", "Sent" etc. instead of 1, 2, 3
     Cell: ({ row }) => {
-      const s = STATUS_MAP[row.original.status] || "Unknown";
+      const s = STATUS_MAP[row.original.status] || {
+        label: "Unknown",
+        color: "bg-gray-400 text-white",
+      };
+
       return (
         <span
-          className={`inline-block text-xs px-3 py-1 rounded font-medium ${s === "Sent" ? "bg-yellow-400 text-gray-800" : "bg-gray-400 text-white"}`}
+          className={`inline-block ${s.color} text-xs px-3 py-1 rounded font-medium`}
         >
-          {s}
+          {s.label}
         </span>
       );
     },
@@ -99,12 +103,17 @@ const Dashboard = () => {
       try {
         const data = await getDashboard(user.user_id, user.role);
         if (mounted && data) {
+          const mappedQuotes = (data.quotes || []).map((quote) => ({
+            ...quote,
+            // ✅ Add a searchable statusLabel field
+            statusLabel: STATUS_MAP[quote.status]?.label || "Unknown",
+          }));
           setStats({
             total_quotes: data.total_quotes || 0,
             total_approved_quotes: data.total_approved_quotes || 0,
             total_users: data.total_users || 0,
             total_products: data.total_products || 0,
-            quotes: data.quotes || [],
+            quotes: mappedQuotes,
           });
         }
       } catch (e) {

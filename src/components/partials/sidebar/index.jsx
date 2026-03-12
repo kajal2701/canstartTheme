@@ -8,7 +8,7 @@ import useSidebar from "@/hooks/useSidebar";
 import useSemiDark from "@/hooks/useSemiDark";
 import clsx from "clsx";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/store/auth/authSlice";
 
 const Sidebar = () => {
@@ -37,6 +37,15 @@ const Sidebar = () => {
     dispatch(logout());
   };
 
+  // ✅ Get user role from redux store
+  const { user } = useSelector((state) => state.auth);
+  const userRole = user?.role; // number: 1=Admin, 2=Installer, 3=Operations, 4=Sales
+
+  // ✅ Filter menuItems based on user role
+  const filteredMenuItems = menuItems.filter((item) =>
+    item.roles?.includes(userRole),
+  );
+
   return (
     <div className={isSemiDark ? "dark" : ""}>
       <div
@@ -64,7 +73,7 @@ const Sidebar = () => {
           className="sidebar-menu h-[calc(100%-160px)]"
           scrollableNodeProps={{ ref: scrollableNodeRef }}
         >
-          <Navmenu menus={menuItems} />
+          <Navmenu menus={filteredMenuItems} />
         </SimpleBar>
 
         {/* Logout Button - Fixed at Bottom */}
