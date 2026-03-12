@@ -79,3 +79,43 @@ export const decodeId = (encoded) => {
     return null;
   }
 };
+
+export const getQuoteStage = (quote) => {
+  const payment = quote.payment_details?.[0];
+  const hasPayment = !!payment;
+  const onlinePayment = quote.online_payment_details?.[0];
+
+  // Cancelled
+  if (quote.status == 5) return "Cancelled";
+
+  // Fully Paid
+  if (payment?.status == 1) return "Fully Paid";
+
+  // Created - no payment set yet
+  if (quote.status == 1 && !hasPayment) return "Created";
+
+  // Pending Approval - payment exists but not approved yet
+  if (quote.status == 1 && hasPayment) return "Pending Approval";
+
+  // Confirmed - Awaiting Payment (no online payment/deposit yet)
+  if (quote.status == 3 && !onlinePayment)
+    return "Confirmed - Awaiting Payment";
+
+  // Confirmed - Deposit Paid (deposit made, awaiting admin confirmation)
+  if (quote.status == 3 && onlinePayment?.status == 0)
+    return "Confirmed - Deposit Paid";
+
+  // Invoice Sent (installation done, invoice not sent yet)
+  if (quote.status == 3 && quote.installation_date && !quote.invoice_date)
+    return "Invoice Sent";
+
+  // Invoice Sent - Awaiting Confirmation
+  if (
+    quote.status == 3 &&
+    quote.invoice_date &&
+    parseFloat(payment?.pending_payment_amount) > 0
+  )
+    return "Invoice Sent - Awaiting Confirmation";
+
+  return "Created"; // fallback
+};

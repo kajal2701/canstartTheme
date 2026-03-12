@@ -3,28 +3,24 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 import { deleteQuote } from "../../../services/quoteService";
 import { useState } from "react";
 import { encodeId } from "../../../utils/mappers";
+import { toast } from "react-toastify";
+import ScheduleInstallationModal from "./ScheduleInstallationModal";
 
-const QuoteActionButtons = ({ id, navigate, fetchQuotes }) => {
+const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const handleView = () => {
-    navigate(`/quote/view_quote_admin/${id}`);
-  };
-  const handleEdit = () => {
-    navigate(`/quote/edit_quote/${id}`);
-  };
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+
+  const handleView = () => navigate(`/quote/view_quote_admin/${id}`);
+  const handleEdit = () => navigate(`/quote/edit_quote/${id}`);
 
   const handleConfirmDelete = async () => {
     try {
       setIsDeleting(true);
       const response = await deleteQuote(id);
-
       if (response.success) {
         setShowDeleteModal(false);
-        // Refresh the parent component
-        if (fetchQuotes) {
-          fetchQuotes();
-        }
+        if (fetchQuotes) fetchQuotes();
       } else {
         alert(response.message || "Failed to delete quote");
       }
@@ -35,11 +31,12 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes }) => {
       setIsDeleting(false);
     }
   };
-  const handleCloseModal = () => {
-    if (!isDeleting) {
-      setShowDeleteModal(false);
-    }
+
+  const handleScheduled = async () => {
+    toast.success("Installation scheduled & email sent successfully!");
+    if (fetchQuotes) await fetchQuotes(); // ✅ refetch quotes
   };
+
   return (
     <>
       <div className="flex space-x-2 rtl:space-x-reverse justify-center">
@@ -69,6 +66,7 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes }) => {
         >
           <Icon icon="ph:printer" />
         </button>
+
         <button
           className="icon-btn hover:bg-red-50 dark:hover:bg-red-900"
           type="button"
@@ -77,20 +75,31 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes }) => {
         >
           <Icon icon="ph:trash" />
         </button>
+
+        {/* ✅ Schedule button */}
         <button
           className="icon-btn hover:bg-indigo-50 dark:hover:bg-indigo-900"
           type="button"
-          title="Schedule"
+          title="Schedule Installation"
+          onClick={() => setShowScheduleModal(true)}
         >
           <Icon icon="ph:calendar-check" />
         </button>
       </div>
+
       <ConfirmModal
         activeModal={showDeleteModal}
-        onClose={handleCloseModal}
+        onClose={() => !isDeleting && setShowDeleteModal(false)}
         onConfirm={handleConfirmDelete}
         itemName={`Quote #${id}`}
         isLoading={isDeleting}
+      />
+
+      <ScheduleInstallationModal
+        activeModal={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        quoteData={rowData}
+        onScheduled={handleScheduled}
       />
     </>
   );

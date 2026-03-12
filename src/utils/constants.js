@@ -1,9 +1,24 @@
 export const STATUS_MAP = {
-    1: "Pending",
-    2: "Approved",
-    3: "Sent",
-    4: "Completed",
+    1: "Created",
+    2: "Pending Approval",
+    3: "Confirmed - Awaiting Payment",
+    4: "Confirmed - Deposit Paid",
+    5: "Invoice Sent",
+    6: "Invoice Sent - Awaiting Confirmation",
+    7: "Fully Paid",
+    8: "Cancelled"
 };
+export const quoteStatusList = [
+    { value: "", label: "All Quotes" },
+    { value: "Created", label: "Created" },
+    { value: "Pending Approval", label: "Pending Approval" },
+    { value: "Confirmed - Awaiting Payment", label: "Confirmed - Awaiting Payment" },
+    { value: "Confirmed - Deposit Paid", label: "Confirmed - Deposit Paid" },
+    { value: "Invoice Sent", label: "Invoice Sent" },
+    { value: "Invoice Sent - Awaiting Confirmation", label: "Invoice Sent - Awaiting Confirmation" },
+    { value: "Fully Paid", label: "Fully Paid" },
+    { value: "Cancelled", label: "Cancelled" },
+];
 
 export const STATUS_OPTIONS = [
     { value: "all", label: "All Quotes" },

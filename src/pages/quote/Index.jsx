@@ -9,15 +9,18 @@ import { getQuotes } from "@/services/quoteService";
 import { useSelector } from "react-redux";
 import { AddressCell } from "@/utils/mappers";
 import { formatDate } from "@/utils/formatters";
-import { STATUS_MAP, STATUS_OPTIONS } from "@/utils/constants";
 import QuoteActionButtons from "@/components/quote/quotelisting/QuoteActionButtons";
 import FilterSection from "../../components/quote/quotelisting/FilterSection";
-import { addressAccessor } from "../../utils/mappers";
+import { addressAccessor, getQuoteStage } from "../../utils/mappers";
+import { quoteStatusList } from "../../utils/constants";
+import { exportQuotesToExcel } from "../../utils/exportUtils";
+import { toast } from "react-toastify";
 
 const mapQuoteData = (quote) => {
   return {
     id: quote.quote_id,
     srNumber: quote.quote_no,
+    email: quote.email,
     salesman: quote.salesman,
     customerName: `${quote.fname} ${quote.lname}`,
     phone: quote.phone,
@@ -29,8 +32,9 @@ const mapQuoteData = (quote) => {
     linearFeet: quote.total_numerical_box,
     colors: quote.colors,
     total: `$${parseFloat(quote.main_total).toFixed(2)}`,
-    status: STATUS_MAP[quote.status] || "Unknown",
+    status: getQuoteStage(quote),
     date: quote.created_at ? quote.created_at.split("T")[0] : "",
+    installationDate: quote.installation_date || "",
     installationSchedule: quote.installation_date
       ? quote.installation_date
       : "Not Scheduled",
@@ -40,7 +44,7 @@ const Quote = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("");
   const [salesmanFilter, setSalesmanFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
   const [quotesData, setQuotesData] = useState([]);
@@ -84,7 +88,7 @@ const Quote = () => {
 
   const onClearAll = () => {
     setSearchQuery("");
-    setStatusFilter("all");
+    setStatusFilter("");
     setSalesmanFilter("all");
     setDateFilter("");
   };
@@ -97,15 +101,17 @@ const Quote = () => {
         item.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.phone?.includes(searchQuery) ||
         item.address?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus =
-        statusFilter === "all" || item.status === statusFilter;
+
+      // ✅ Change this line (was: item.status === statusFilter)
+      const matchesStatus = statusFilter === "" || item.status === statusFilter;
+
       const matchesSalesman =
         salesmanFilter === "all" || item.salesman === salesmanFilter;
       const matchesDate = dateFilter === "" || item.date === dateFilter;
+
       return matchesSearch && matchesStatus && matchesSalesman && matchesDate;
     });
   }, [searchQuery, statusFilter, salesmanFilter, dateFilter, quotesData]);
-
   const COLUMNS = [
     {
       Header: "Sr.",
@@ -209,16 +215,32 @@ const Quote = () => {
     {
       Header: "Action",
       accessor: "id",
-      Cell: ({ cell: { value } }) => (
+      Cell: (
+        { cell: { value }, row }, // ✅ add row here
+      ) => (
         <QuoteActionButtons
           id={value}
           navigate={navigate}
           fetchQuotes={fetchQuotes}
+          rowData={row.original} // ✅ pass full row data
         />
       ),
     },
   ];
 
+  const handleExport = () => {
+    if (data.length === 0) {
+      toast.error("No data to export!");
+      return;
+    }
+    try {
+      exportQuotesToExcel(data);
+      toast.success(`${data.length} quotes exported successfully!`);
+    } catch (error) {
+      console.error("Export failed:", error);
+      toast.error("Export failed. Please try again.");
+    }
+  };
   const columns = useMemo(() => COLUMNS, []);
   const data = useMemo(() => filteredData, [filteredData]);
 
@@ -241,7 +263,7 @@ const Quote = () => {
               dateFilter={dateFilter}
               setDateFilter={setDateFilter}
               uniqueSalesmen={uniqueSalesmen}
-              STATUS_OPTIONS={STATUS_OPTIONS}
+              STATUS_OPTIONS={quoteStatusList}
               onClearAll={onClearAll}
             />
             <div className="flex gap-2">
@@ -249,6 +271,7 @@ const Quote = () => {
                 text="Export"
                 icon="ph:download-simple"
                 className="btn-warning"
+                onClick={handleExport}
               />
               <Button
                 text="Add Quote"
