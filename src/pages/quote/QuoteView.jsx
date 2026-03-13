@@ -23,6 +23,7 @@ import {
   buildQuoteItems,
 } from "../../utils/helperFunctions";
 import { Download } from "lucide-react";
+import ConfirmAndPay from "./ConfirmAndPay";
 
 export default function QuoteView() {
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -34,6 +35,7 @@ export default function QuoteView() {
   const [error, setError] = useState(null);
   const [reviewIdx, setReviewIdx] = useState(0);
   const [termsChecked, setTermsChecked] = useState(false);
+  const [payModalOpen, setPayModalOpen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -70,31 +72,34 @@ export default function QuoteView() {
 
   const isPayButtonHidden = () => {
     if (!quote?.payment_details) return false;
-    const ps = quote.payment_details.status;
+    const ps = quote.payment_details.payment_status;
     return ps === 0 || ps === "0" || ps === 1 || ps === "1";
   };
 
   const isTermsDisabled = () => {
     if (!quote?.payment_details) return false;
-    const ps = quote.payment_details.status;
+    const ps = quote.payment_details.payment_status;
     return ps === 0 || ps === "0" || ps === 1 || ps === "1";
   };
 
   const getDepositLabel = () => {
     if (!quote?.payment_details) return null;
-    const ps = quote.payment_details.status;
-    const type =
-      quote.payment_details.payment_type === 1
-        ? "Full Payment"
-        : "Deposit Payment";
+
+    const ps = quote.payment_details.payment_status;
+
     if (ps === 0 || ps === "0")
       return {
-        label: `${type} — Awaiting Confirmation`,
+        label: "Deposit Payment — Awaiting Confirmation",
         color: "text-orange-500",
       };
+
     if (ps === 1 || ps === "1")
-      return { label: `${type} — Paid`, color: "text-green-500" };
-    return { label: "Deposit Amount", color: "text-gray-600" };
+      return {
+        label: "Deposit Payment — Paid",
+        color: "text-green-500",
+      };
+
+    return { label: "Deposit Amount", color: "text-red-500" };
   };
 
   const handleDownloadInvoice = async () => {
@@ -334,6 +339,7 @@ export default function QuoteView() {
           <Button
             size="lg"
             disabled={!termsChecked}
+            onClick={() => setPayModalOpen(true)}
             className={`text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg transition-all ${termsChecked ? "bg-[#ee5d59] hover:bg-[#ee5d59]/90 cursor-pointer" : "bg-[#ee5d59]/40 cursor-not-allowed opacity-60"}`}
           >
             Confirm And Pay
@@ -363,6 +369,12 @@ export default function QuoteView() {
           />
         )}
       </Modal>
+      <ConfirmAndPay
+        isOpen={payModalOpen}
+        onClose={() => setPayModalOpen(false)}
+        quote={quote}
+        onSuccess={() => window.location.reload()}
+      />
     </div>
   );
 }

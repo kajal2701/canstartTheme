@@ -251,3 +251,13 @@ export const scheduleInstallation = async (payload) => {
   if (!data.success) throw new Error(data.message || "Failed to schedule installation");
   return data;
 };
+
+export const processPayment = async (formData) => {
+  const response = await fetch(`${BASE_URL}/payment/processPayment`, {
+    method: "POST",
+    body: formData, // multipart — do NOT set Content-Type header
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "Payment failed");
+  return data;
+};

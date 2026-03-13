@@ -8,8 +8,6 @@ const SummarySection = ({ quote, summaryCalculations }) => {
     ? quote.payment_details[0]
     : quote?.payment_details;
 
-  console.log(pd, "summay");
-
   return (
     <Card>
       <SectionHeader icon="ph:calculator" title="Summary" />

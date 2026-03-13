@@ -51,7 +51,6 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
   const hasPaymentDetails = !!pd;
   const paymentStatus = pd?.status ?? null; // 0=awaiting, 1=confirmed
   const quoteStatus = Number(quote?.status);
-
   // online_payment_details joined rows
   const onlinePayments = Array.isArray(quote?.payment_details)
     ? quote.payment_details.filter((r) => r.payment_method)
@@ -72,12 +71,11 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
   const showPaymentForm = !hasPaymentDetails;
 
   // Stage 2: payment set, awaiting approval (status 1 or 2)
-  const showApprove = hasPaymentDetails && [1, 2].includes(quoteStatus);
-
+  const showApprove =
+    (hasPaymentDetails && [1, 2].includes(quoteStatus)) || quoteStatus === 3;
   // Stage 3 & 4: approved, show payment receive cards if online payment exists
   const showPaymentReceiveCards = quoteStatus === 3 && hasOnlinePayment;
 
-  console.log("showPaymentReceiveCards :>> ", showPaymentReceiveCards);
 
   // Stage 5: deposit confirmed, no installation date yet → show schedule
   const showScheduleInstallation =
@@ -145,9 +143,8 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
         .filter(Boolean),
     );
     return {
-      creditCard: set.has("credit card") || set.has("credit_card"),
-      eTransfer:
-        set.has("e-transfer") || set.has("etransfer") || set.has("e_transfer"),
+      creditCard: set.has("credit_card"),
+      eTransfer: set.has("etransfer"),
       cash: set.has("cash"),
     };
   }, [pd?.select_payment_methods]);
@@ -178,12 +175,12 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
   const handlePaymentSubmit = async () => {
     if (!validatePayment()) return;
     const selectedMethods = [
-      methods.creditCard && "Credit Card",
-      methods.eTransfer && "E-Transfer",
-      methods.cash && "Cash",
+      methods.creditCard && "credit_card",
+      methods.eTransfer && "etransfer",
+      methods.cash && "cash",
     ]
       .filter(Boolean)
-      .join(", ");
+      .join(",");
 
     const isFullPayment = paymentType === "full";
     const pendingPaymentAmount = isFullPayment
@@ -232,7 +229,7 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
       setIsReceivingPayment(idx);
       const result = await paymentReceive({
         quote_id: quote?.quote_id,
-        online_payment_id: row.online_payment_id,
+        online_payment_id: row.payment_id,
         maintotal: mainTotal,
         amount: row.part_payment_amount,
       });
@@ -459,9 +456,13 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
               icon={BUTTON_ICONS.approve}
               variant="success"
               onClick={handleApprove}
-              disabled={isApprovingSend}
+              disabled={isApprovingSend || quoteStatus === 3}
             >
-              {isApprovingSend ? "Approving..." : "Approve"}
+              {isApprovingSend
+                ? "Approving..."
+                : quoteStatus === 3
+                  ? "Approved"
+                  : "Approve"}
             </QuoteButton>
           )}
           <QuoteButton
@@ -519,7 +520,7 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
                   <p className="text-sm text-slate-600 dark:text-slate-300">
                     Payment Amount:{" "}
                     <span className="font-bold">
-                      ${row.part_payment_amount}
+                      ${row.amount ?? row.part_payment_amount}
                     </span>
                   </p>
                   <p className="text-sm text-slate-600 dark:text-slate-300 flex items-center gap-2">

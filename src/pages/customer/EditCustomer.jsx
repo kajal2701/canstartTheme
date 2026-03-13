@@ -11,9 +11,16 @@ const EditCustomer = () => {
 
   const methods = useForm({
     defaultValues: {
-      firstName: "", lastName: "", email: "",
-      phoneNumber: "", street: "", city: "",
-      postCode: "", province: "", country: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      phoneNumber: "",
+      street: "",
+      city: "",
+      postCode: "",
+      province: "",
+      country: "",
+      extraEmails: [],
     },
     mode: "onChange",
   });
@@ -26,6 +33,15 @@ const EditCustomer = () => {
       const result = await getCustomerById(id);
       if (result.success) {
         const c = result.data;
+        let extraEmails = [];
+        if (c.email_json) {
+          const parsed =
+            typeof c.email_json === "string"
+              ? JSON.parse(c.email_json)
+              : c.email_json;
+          extraEmails = parsed.map((email) => ({ value: email }));
+        }
+
         reset({
           firstName: c.fname ?? "",
           lastName: c.lname ?? "",
@@ -36,6 +52,7 @@ const EditCustomer = () => {
           postCode: c.post_code ?? "",
           province: c.state ?? "",
           country: c.country ?? "",
+          extraEmails,
         });
       } else {
         toast.error("Failed to load customer");
@@ -47,7 +64,12 @@ const EditCustomer = () => {
   // ────────────────────────────────────────────────────────────────
 
   const onSubmit = async (data, provincesData) => {
-    const selectedProvince = provincesData.find((p) => p.Province === data.province);
+    const email_json = (data.extraEmails || [])
+      .map((e) => e.value)
+      .filter(Boolean);
+    const selectedProvince = provincesData.find(
+      (p) => p.Province === data.province,
+    );
     const gst = selectedProvince?.GST ?? "0.00";
 
     const payload = {
@@ -55,6 +77,7 @@ const EditCustomer = () => {
       fname: data.firstName,
       lname: data.lastName,
       email: data.email,
+      email_json: email_json.length ? JSON.stringify(email_json) : null,
       phone: data.phoneNumber,
       street: data.street,
       city: data.city,
@@ -71,7 +94,10 @@ const EditCustomer = () => {
     } else {
       toast.error(result.message);
       if (result.message?.toLowerCase().includes("email")) {
-        setError("email", { type: "server", message: "This email already exists for another customer" });
+        setError("email", {
+          type: "server",
+          message: "This email already exists for another customer",
+        });
       }
     }
   };

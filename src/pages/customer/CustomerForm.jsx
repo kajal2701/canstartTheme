@@ -6,6 +6,8 @@ import Textinput from "@/components/ui/Textinput";
 import Select from "@/components/ui/Select";
 import { getProvinces } from "@/services/quoteService";
 import { useNavigate } from "react-router-dom";
+import { useFieldArray } from "react-hook-form";
+import Icon from "@/components/ui/Icon";
 
 const countryOptions = [
   { value: "Canada", label: "Canada" },
@@ -27,7 +29,13 @@ const CustomerForm = ({
     register,
     handleSubmit,
     formState: { errors },
+    control,
   } = methods;
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "extraEmails",
+  });
 
   // ── Fetch provinces ──────────────────────────────────────────────
   useEffect(() => {
@@ -86,21 +94,63 @@ const CustomerForm = ({
                 }}
               />
 
-              <Textinput
-                label="Email address"
-                type="email"
-                placeholder="Email address"
-                name="email"
-                register={register}
-                error={errors.email}
-                options={{
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                    message: "Please enter a valid email address",
-                  },
-                }}
-              />
+              {/* Primary email */}
+              <div className="flex flex-col">
+                <Textinput
+                  label="Email address"
+                  type="email"
+                  placeholder="Email address"
+                  name="email"
+                  register={register}
+                  error={errors.email}
+                  options={{
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                      message: "Please enter a valid email address",
+                    },
+                  }}
+                />
+
+                {/* Extra email fields */}
+                {fields.map((field, index) => (
+                  <div key={field.id} className="flex items-center gap-2 mt-3">
+                    <div className="flex-1">
+                      <Textinput
+                        type="email"
+                        placeholder="Email address"
+                        name={`extraEmails.${index}.value`}
+                        register={register}
+                        error={errors.extraEmails?.[index]?.value}
+                        options={{
+                          required: "Email is required",
+                          pattern: {
+                            value:
+                              /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                            message: "Please enter a valid email address",
+                          },
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        className="shrink-0 bg-red-400 hover:bg-red-500 text-white w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  text="Add Email +"
+                  className="btn-primary btn-sm mt-2 w-fit"
+                  type="button"
+                  onClick={() => append({ value: "" })}
+                />
+              </div>
 
               <Textinput
                 label="Phone Number"

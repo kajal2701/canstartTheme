@@ -55,29 +55,6 @@ export const SectionHeader = ({ icon, title }) => (
   </div>
 );
 
-// export const renderCompanyAddress = (title = "Invoice From") => {
-//   return (
-//     <div className="space-y-1 flex-1">
-//       <h3 className="text-[#ee5d59] font-semibold text-lg md:text-xl mb-3">
-//         {title}
-//       </h3>
-//       <p className="font-bold text-gray-900 text-base md:text-lg">
-//         CANSTAR LIGHT LTD
-//       </p>
-//       <p className="text-gray-600 text-sm md:text-base max-w-[250px] leading-relaxed">
-//         3227 18 St NW, Edmonton, AB T6T 0H2
-//       </p>
-//       <p className="text-gray-600 text-sm md:text-base mt-1 md:mt-2">
-//         info@canstarlight.ca
-//       </p>
-//       <p className="text-gray-600 text-sm md:text-base">(780) 716-4210</p>
-//       <p className="text-gray-600 text-sm md:text-base mt-1 md:mt-2">
-//         GST/HST: 742932601 RT001
-//       </p>
-//     </div>
-//   );
-// };
-
 export const renderCompanyAddress = (title = "Invoice From") => (
   <div className="space-y-1 flex-1">
     <h3 className="text-[#ee5d59] font-semibold text-lg md:text-xl mb-3">
@@ -159,8 +136,15 @@ export const renderTermsAndPayment = (
         (Please note that if paying by credit card, an additional 3% will be
         charged per transaction for processing fees.) The product comes with a
         5-year warranty, and labor is covered for 4 years from the date of
-        installation.
-      </p>
+        installation.{" "}
+        <a
+          href="/quote/termsconditions"
+          target="_blank"
+          className="text-[#ee5d59] font-semibold"
+        >
+          Read more..
+        </a>
+      </p>{" "}
       <div className="flex items-center space-x-2">
         <input
           type="checkbox"
@@ -283,7 +267,7 @@ export const buildQuoteItems = (quote, options = {}) => {
     }
     return `Canstar Puck Lights with a customized data line system, paired with a <b>${color}</b> aluminum track package, designed for the <b>${name}</b> of the house/property.`;
   };
-
+  console.log("uote.annotation_image :>> ", quote.annotation_image);
   // Annotation images
   if (quote.annotation_image && Array.isArray(quote.annotation_image)) {
     quote.annotation_image.forEach((item) => {
@@ -291,7 +275,7 @@ export const buildQuoteItems = (quote, options = {}) => {
         no: ++counter,
         description: getDescription(item.color, item.identify_image_name),
         total: parseFloat(item.total_amount),
-        images: item.images || [],
+        images: (item.images || []).filter((img) => img.type === "drawnLines"),
         required: item.required ?? null,
       });
     });
