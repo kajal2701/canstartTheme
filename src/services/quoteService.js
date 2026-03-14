@@ -261,3 +261,30 @@ export const processPayment = async (formData) => {
   if (!data.success) throw new Error(data.message || "Payment failed");
   return data;
 };
+
+export const processPaymentFinal = async (formData) => {
+  const response = await fetch(`${BASE_URL}/payment/processPaymentfinal`, {
+    method: "POST",
+    body: formData, // FormData handles multipart automatically, no Content-Type header needed
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Payment failed");
+  }
+
+  return data;
+};
+
+export const getQuotePaymentDetails = async (quoteId) => {
+  const response = await fetch(`${BASE_URL}/quote/view_quote_payment/${quoteId}`);
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Failed to fetch payment details");
+  }
+
+  return data.data; // returns array of payment records from online_payment_details
+};

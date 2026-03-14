@@ -19,10 +19,10 @@ import {
   setPaymentOption,
   updateQuoteSend,
   paymentReceive, // confirm deposit
-  scheduleInstallation, // schedule installation
+  scheduleInstallation,
 } from "../../../services/quoteService";
 
-const ActionsCard = ({ quote, onSubmitSuccess }) => {
+const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   const handlePrint = () => window.print();
 
   // ── Loading states ──
@@ -44,24 +44,15 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
   );
 
   // ── Derived: payment_details ──
-  const pd = Array.isArray(quote?.payment_details)
-    ? quote.payment_details[0]
-    : quote?.payment_details;
+  const pd = quote?.payment_details ?? null;
 
   const hasPaymentDetails = !!pd;
-  const paymentStatus = pd?.status ?? null; // 0=awaiting, 1=confirmed
+  const paymentStatus = pd?.status ?? null;
   const quoteStatus = Number(quote?.status);
   // online_payment_details joined rows
-  const onlinePayments = Array.isArray(quote?.payment_details)
-    ? quote.payment_details.filter((r) => r.payment_method)
-    : pd?.payment_method
-      ? [pd]
-      : [];
 
   const hasOnlinePayment = onlinePayments.length > 0;
-  const depositConfirmed = onlinePayments.some(
-    (r) => Number(r.payment_status ?? r.status) === 1,
-  );
+  const depositConfirmed = onlinePayments.some((r) => Number(r.status) === 1);
 
   // ── Visibility flags (based on flow) ──
   const canEditPayment =
@@ -75,7 +66,6 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
     (hasPaymentDetails && [1, 2].includes(quoteStatus)) || quoteStatus === 3;
   // Stage 3 & 4: approved, show payment receive cards if online payment exists
   const showPaymentReceiveCards = quoteStatus === 3 && hasOnlinePayment;
-
 
   // Stage 5: deposit confirmed, no installation date yet → show schedule
   const showScheduleInstallation =
@@ -229,9 +219,9 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
       setIsReceivingPayment(idx);
       const result = await paymentReceive({
         quote_id: quote?.quote_id,
-        online_payment_id: row.payment_id,
+        online_payment_id: row.online_payment_id,
         maintotal: mainTotal,
-        amount: row.part_payment_amount,
+        amount: row.amount,
       });
       toast.success(result.message);
       onSubmitSuccess?.();
@@ -507,8 +497,7 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {onlinePayments.map((row, idx) => {
-              const isConfirmed =
-                Number(row.payment_status ?? row.status) === 1;
+              const isConfirmed = Number(row.status) === 1;
               return (
                 <div
                   key={idx}
@@ -519,9 +508,7 @@ const ActionsCard = ({ quote, onSubmitSuccess }) => {
                   </p>
                   <p className="text-sm text-slate-600 dark:text-slate-300">
                     Payment Amount:{" "}
-                    <span className="font-bold">
-                      ${row.amount ?? row.part_payment_amount}
-                    </span>
+                    <span className="font-bold">${row.amount}</span>
                   </p>
                   <p className="text-sm text-slate-600 dark:text-slate-300 flex items-center gap-2">
                     Payment Method:{" "}

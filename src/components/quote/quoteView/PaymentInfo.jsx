@@ -2,10 +2,7 @@ import React from "react";
 
 const PaymentInfo = ({ quote }) => {
   // ✅ payment_details is an array — always use [0]
-  const pd = Array.isArray(quote?.payment_details)
-    ? quote.payment_details[0]
-    : quote?.payment_details;
-  console.log(pd, "pd");
+  const pd = quote?.payment_details ?? null;
 
   if (!pd) return null; // ✅ hide entirely if no payment set yet
 

@@ -3,9 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
 import LoadingIcon from "@/components/LoadingIcon";
-import { getQuote } from "../../services/quoteService";
+import { getQuote, getQuotePaymentDetails } from "../../services/quoteService";
 import { toast } from "react-toastify";
-import { StatusBadge } from "../../utils/helperFunctions";
 import CompanyInfo from "../../components/quote/quoteView/CompanyInfo";
 import LineItemsTable from "../../components/quote/quoteView/LineItemsTable";
 import NotesSection from "../../components/quote/quoteView/NotesSection";
@@ -18,6 +17,7 @@ const ViewQuoteAdmin = () => {
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [onlinePayments, setOnlinePayments] = useState([]);
 
   // ── Common fetch function ─────────────────────────────────────────────────
   const fetchQuoteData = useCallback(async () => {
@@ -25,8 +25,12 @@ const ViewQuoteAdmin = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getQuote(id);
+      const [data, payments] = await Promise.all([
+        getQuote(id),
+        getQuotePaymentDetails(id).catch(() => []), // don't fail if no payments yet
+      ]);
       setQuote(data);
+      setOnlinePayments(payments); // ← array from online_payment_details
     } catch (e) {
       const errorMsg = e.message || "Quote not found";
       setError(errorMsg);
@@ -47,7 +51,7 @@ const ViewQuoteAdmin = () => {
       (item, index) => ({
         id: index + 1,
         description: `Canstar Puck Lights with a customized data line system, paired with a **${item.color}** aluminum track package, designed for the **${item.identify_image_name}** of the house/property.`,
-        images: (item.images || []).filter((img) => img.type === "drawnLines"),
+        images: (item.images || []).filter((img) => img.type === "fullyEdited"),
         quantity: item.total_numerical_box,
         unitCost: Number(item.unit_price),
         total: Number(item.total_amount),
@@ -165,7 +169,6 @@ const ViewQuoteAdmin = () => {
             </p>
           </div>
         </div>
-        <StatusBadge status={quote?.status} />
       </div>
 
       {/* ── Header Card ── */}
@@ -191,11 +194,16 @@ const ViewQuoteAdmin = () => {
         <SummarySection
           quote={quote}
           summaryCalculations={summaryCalculations}
+          onlinePayments={onlinePayments}
         />
       </div>
 
       {/* ── Actions Card ── */}
-      <ActionsCard quote={quote} onSubmitSuccess={fetchQuoteData} />
+      <ActionsCard
+        quote={quote}
+        onSubmitSuccess={fetchQuoteData}
+        onlinePayments={onlinePayments}
+      />
     </div>
   );
 };

@@ -24,6 +24,7 @@ import {
   buildQuoteItems,
 } from "../../utils/helperFunctions";
 import { Download } from "lucide-react";
+import FinalConfirmAndPay from "./FinalConfirmAndPay";
 
 export default function InvoiceView() {
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -34,6 +35,7 @@ export default function InvoiceView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [reviewIdx, setReviewIdx] = useState(0);
+  const [payModalOpen, setPayModalOpen] = useState(false);
   const [termsChecked, setTermsChecked] = useState(true); // invoice always pre-checked
 
   useEffect(() => {
@@ -225,7 +227,7 @@ export default function InvoiceView() {
                 )}
               </span>
             </div>
-            {quote.total_extra_work && (
+            {quote.extra_work_data?.length > 0 && quote.total_extra_work && (
               <div className="flex justify-between text-gray-600 font-medium text-xs md:text-base">
                 <span>Total Extra Work:</span>
                 <span>{formatCurrency(quote.total_extra_work)}</span>
@@ -251,32 +253,50 @@ export default function InvoiceView() {
               <span>Total:</span>
               <span>{formatCurrency(quote.main_total)}</span>
             </div>
-            {quote.payment_details?.part_payment_amount && (
-              <div className="flex justify-between text-green-500 font-medium pt-1 md:pt-2 text-xs md:text-base">
-                <span>
-                  {quote.payment_details.payment_type === 1
-                    ? "Full payment"
-                    : "Deposit Payment"}{" "}
-                  paid:
-                </span>
-                <span>
-                  {formatCurrency(quote.payment_details.part_payment_amount)}
-                </span>
-              </div>
-            )}
-            {quote.payment_details?.pending_payment_amount > 0 && (
-              <div className="flex justify-between text-[#ee5d59] font-bold pt-1 md:pt-2 text-xs md:text-base">
-                <span>Pending Payment:</span>
-                <span>
-                  {formatCurrency(quote.payment_details.pending_payment_amount)}
-                </span>
-              </div>
-            )}
+            {/* Deposit paid row */}
+            {quote.payment_details?.part_payment_amount &&
+              quote.payment_details?.pending_payment_amount > 0 &&
+              quote.payment_details?.status == 0 && (
+                <div className="flex justify-between text-green-500 font-medium pt-1 md:pt-2 text-xs md:text-base">
+                  <span>
+                    {quote.payment_details.payment_type === 1
+                      ? "Full payment"
+                      : "Deposit Payment"}{" "}
+                    paid:
+                  </span>
+                  <span>
+                    {formatCurrency(quote.payment_details.part_payment_amount)}
+                  </span>
+                </div>
+              )}
+
+            {/* Pending payment row */}
+            {quote.payment_details?.pending_payment_amount > 0 &&
+              quote.payment_details?.status == 0 && (
+                <div className="flex justify-between text-[#ee5d59] font-bold pt-1 md:pt-2 text-xs md:text-base">
+                  <span>Pending Payment:</span>
+                  <span>
+                    {formatCurrency(
+                      quote.payment_details.pending_payment_amount,
+                    )}
+                  </span>
+                </div>
+              )}
+            {/* Full payment paid row — when no pending balance */}
+            {quote.payment_details?.pending_payment_amount == 0 &&
+              quote.payment_details?.part_payment_amount && (
+                <div className="flex justify-between text-green-500 font-medium pt-1 md:pt-2 text-xs md:text-base">
+                  <span>Full payment paid:</span>
+                  <span>
+                    {formatCurrency(quote.payment_details.part_payment_amount)}
+                  </span>
+                </div>
+              )}
           </div>
         </div>
 
         {/* Notes */}
-        {quote.notes && (
+        {quote.notes && quote.customer_visible === "yes" && (
           <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-16">
             <h3 className="text-[#ee5d59] font-semibold text-lg md:text-xl mb-2">
               Notes :
@@ -299,6 +319,7 @@ export default function InvoiceView() {
           <Button
             size="lg"
             className="bg-[#ee5d59] hover:bg-[#ee5d59]/90 text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg"
+            onClick={() => setPayModalOpen(true)}
           >
             Confirm And Pay
           </Button>
@@ -327,6 +348,12 @@ export default function InvoiceView() {
           />
         )}
       </Modal>
+      <FinalConfirmAndPay
+        isOpen={payModalOpen}
+        onClose={() => setPayModalOpen(false)}
+        quote={quote}
+        onSuccess={() => window.location.reload()}
+      />
     </div>
   );
 }
