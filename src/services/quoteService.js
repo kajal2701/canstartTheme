@@ -287,3 +287,26 @@ export const getQuotePaymentDetails = async (quoteId) => {
 
   return data.data; // returns array of payment records from online_payment_details
 };
+
+
+export const saveFutureReference = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/saveQuoteSanction`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      quote_id: payload.quote_id,
+      sanction_reason: payload.sanction_reason,
+      sanction_notes: payload.sanction_notes || "",
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Failed to save future reference.");
+  }
+
+  return data;
+};

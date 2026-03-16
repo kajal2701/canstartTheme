@@ -56,3 +56,18 @@ export const REVIEW_DATA = [
             "Great product and awesome service! We love our lights! Had an issue and got a response very quickly. Definitely recommend going with this company!",
     },
 ];
+
+export const REASON_OPTIONS = [
+    { value: "", label: "-- Select Reason --" },
+    { value: "1", label: "Cost" },
+    { value: "2", label: "Complexity" },
+    { value: "3", label: "Better price from competitor" },
+    { value: "4", label: "Other" },
+];
+
+export const SANCTION_REASON_LABELS = {
+    1: "Cost",
+    2: "Complexity",
+    3: "Better price from competitor",
+    4: "Other",
+};

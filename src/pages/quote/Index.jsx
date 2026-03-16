@@ -12,9 +12,10 @@ import { formatDate } from "@/utils/formatters";
 import QuoteActionButtons from "@/components/quote/quotelisting/QuoteActionButtons";
 import FilterSection from "../../components/quote/quotelisting/FilterSection";
 import { addressAccessor, getQuoteStage } from "../../utils/mappers";
-import { quoteStatusList } from "../../utils/constants";
+import { quoteStatusList, SANCTION_REASON_LABELS } from "../../utils/constants";
 import { exportQuotesToExcel } from "../../utils/exportUtils";
 import { toast } from "react-toastify";
+import FutureReferenceModal from "../../components/quote/quoteListing/FutureReferenceModal";
 
 const mapQuoteData = (quote) => {
   const stage = getQuoteStage(quote);
@@ -34,7 +35,13 @@ const mapQuoteData = (quote) => {
     colors: quote.colors,
     total: `$${parseFloat(quote.main_total).toFixed(2)}`,
     status: stage.label,
+    rawStatus: quote.status,
     statusColor: stage.color,
+    sanctionReason: quote.sanction_reason
+      ? parseInt(quote.sanction_reason) === 4
+        ? quote.sanction_notes
+        : SANCTION_REASON_LABELS[parseInt(quote.sanction_reason)]
+      : null,
     date: formatDate(quote.created_at),
     rawDate: quote.created_at ? quote.created_at.split("T")[0] : "",
     rawInstallationDate: quote.installation_date
@@ -56,6 +63,10 @@ const Quote = () => {
   const [quotesData, setQuotesData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [installationFilter, setInstallationFilter] = useState("");
+  const [futureRefModal, setFutureRefModal] = useState({
+    open: false,
+    quoteId: null,
+  });
 
   const loadQuotes = async () => {
     try {
@@ -257,6 +268,41 @@ const Quote = () => {
       ),
     },
     {
+      Header: "Future Reference",
+      accessor: "sanctionReason",
+      Cell: ({ row }) => {
+        const isSanctioned =
+          row.original.status === "Confirmed - Awaiting Payment";
+
+        if (!isSanctioned) {
+          return <span className="text-gray-400 text-sm">—</span>;
+        }
+
+        if (row.original.sanctionReason) {
+          return (
+            <div className="w-[180px]">
+              <span className="inline-block text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 font-medium truncate max-w-[170px]">
+                {row.original.sanctionReason}
+              </span>
+            </div>
+          );
+        }
+
+        return (
+          <button
+            className="icon-btn hover:bg-blue-50"
+            type="button"
+            title="Future Reference"
+            onClick={() =>
+              setFutureRefModal({ open: true, quoteId: row.original.id })
+            }
+          >
+            <Icon icon="ph:note-pencil" />
+          </button>
+        );
+      },
+    },
+    {
       Header: "Action",
       accessor: "id",
       Cell: (
@@ -334,6 +380,13 @@ const Quote = () => {
           />
         </div>
       )}
+
+      <FutureReferenceModal
+        activeModal={futureRefModal.open}
+        quoteId={futureRefModal.quoteId}
+        onClose={() => setFutureRefModal({ open: false, quoteId: null })}
+        onSuccess={fetchQuotes}
+      />
     </>
   );
 };
