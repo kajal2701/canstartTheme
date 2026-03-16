@@ -28,7 +28,7 @@ const CustomerForm = ({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     control,
   } = methods;
 
@@ -241,10 +241,12 @@ const CustomerForm = ({
                   className="btn-outline-dark btn-sm"
                   onClick={() => navigate("/customer")}
                 />
+
                 <Button
-                  text={submitText}
+                  text={isSubmitting ? "Saving..." : submitText}
                   type="submit"
                   className="btn-primary btn-sm"
+                  disabled={isSubmitting}
                 />
               </div>
             )}

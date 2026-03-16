@@ -268,7 +268,6 @@ export const buildQuoteItems = (quote, options = {}) => {
     }
     return `Canstar Puck Lights with a customized data line system, paired with a <b>${color}</b> aluminum track package, designed for the <b>${name}</b> of the house/property.`;
   };
-  console.log("uote.annotation_image :>> ", quote.annotation_image);
   // Annotation images
   if (quote.annotation_image && Array.isArray(quote.annotation_image)) {
     quote.annotation_image.forEach((item) => {

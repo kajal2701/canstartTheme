@@ -22,6 +22,7 @@ const AddQuote = () => {
   const [customersLoading, setCustomersLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
   const { user } = useSelector((state) => state.auth);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -327,7 +328,7 @@ const AddQuote = () => {
   const handleSubmit = async () => {
     const ok = validateQuote();
     if (!ok) return;
-
+    setIsSubmitting(true);
     const toCurrencyString = (v) => Number(v || 0).toFixed(2);
     const requiredFlag = (opt) =>
       opt && String(opt).toLowerCase() === "mandatory" ? "yes" : "no";
@@ -446,6 +447,8 @@ const AddQuote = () => {
       navigate("/quote");
     } catch (e) {
       toast.error(e.message || "Failed to add quote");
+    } finally {
+      setIsSubmitting(false); // 🔓 re-enable button
     }
   };
 
@@ -682,11 +685,12 @@ const AddQuote = () => {
           {/* ==================== SUBMIT & SUMMARY ==================== */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <Button
-              text="Submit"
-              icon="ph:check-circle"
+              text={isSubmitting ? "Submitting..." : "Submit"}
+              icon={isSubmitting ? "ph:circle-notch" : "ph:check-circle"}
               className="btn-outline-primary"
               onClick={handleSubmit}
               type="button"
+              disabled={isSubmitting}
             />
             <PriceSummary
               totalControllerPrice={totalControllerPrice}

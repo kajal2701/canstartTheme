@@ -17,7 +17,7 @@ const UserForm = ({ methods, onSubmit, title, submitText, isEdit = false }) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = methods;
 
   return (
@@ -26,7 +26,6 @@ const UserForm = ({ methods, onSubmit, title, submitText, isEdit = false }) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-5">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
               {/* First Name */}
               <div>
                 <Textinput
@@ -38,7 +37,10 @@ const UserForm = ({ methods, onSubmit, title, submitText, isEdit = false }) => {
                   error={errors.firstName}
                   options={{
                     required: "First name is required",
-                    minLength: { value: 2, message: "First name must be at least 2 characters" },
+                    minLength: {
+                      value: 2,
+                      message: "First name must be at least 2 characters",
+                    },
                   }}
                 />
               </div>
@@ -54,7 +56,10 @@ const UserForm = ({ methods, onSubmit, title, submitText, isEdit = false }) => {
                   error={errors.lastName}
                   options={{
                     required: "Last name is required",
-                    minLength: { value: 2, message: "Last name must be at least 2 characters" },
+                    minLength: {
+                      value: 2,
+                      message: "Last name must be at least 2 characters",
+                    },
                   }}
                 />
               </div>
@@ -84,14 +89,27 @@ const UserForm = ({ methods, onSubmit, title, submitText, isEdit = false }) => {
                   label="Password"
                   type="password"
                   // ← different placeholder for add vs edit
-                  placeholder={isEdit ? "Leave blank to keep current" : "Password"}
+                  placeholder={
+                    isEdit ? "Leave blank to keep current" : "Password"
+                  }
                   name="password"
                   register={register}
                   error={errors.password}
                   options={
                     isEdit
-                      ? { minLength: { value: 8, message: "Password must be at least 8 characters" } }
-                      : { required: "Password is required", minLength: { value: 8, message: "Password must be at least 8 characters" } }
+                      ? {
+                          minLength: {
+                            value: 8,
+                            message: "Password must be at least 8 characters",
+                          },
+                        }
+                      : {
+                          required: "Password is required",
+                          minLength: {
+                            value: 8,
+                            message: "Password must be at least 8 characters",
+                          },
+                        }
                   }
                 />
               </div>
@@ -108,7 +126,6 @@ const UserForm = ({ methods, onSubmit, title, submitText, isEdit = false }) => {
                   options_rule={{ required: "Role is required" }}
                 />
               </div>
-
             </div>
 
             <div className="ltr:text-right rtl:text-left space-x-3 rtl:space-x-reverse">
@@ -121,9 +138,10 @@ const UserForm = ({ methods, onSubmit, title, submitText, isEdit = false }) => {
                 />
               )}
               <Button
-                text={submitText}
+                text={isSubmitting ? "Saving..." : submitText}
                 type="submit"
                 className="btn-primary btn-sm"
+                disabled={isSubmitting}
               />
             </div>
           </div>

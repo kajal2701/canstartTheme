@@ -149,7 +149,6 @@ export const addExtraWork = async (payload) => {
     body: JSON.stringify(payload),
   });
   const data = await response.json();
-  console.log(data, "data api")
   if (!data.success) throw new Error(data.message || "Failed to add extra work");
   return data;
 };
