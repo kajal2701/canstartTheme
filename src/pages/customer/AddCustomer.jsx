@@ -26,9 +26,10 @@ const AddCustomer = () => {
   const { reset, setError } = methods;
 
   const onSubmit = async (data, provincesData) => {
-    const email_json = (data.extraEmails || [])
-      .map((e) => e.value)
-      .filter(Boolean);
+    const allEmails = [
+      data.email,
+      ...(data.extraEmails || []).map((e) => e.value).filter(Boolean),
+    ];
     const selectedProvince = provincesData.find(
       (p) => p.Province === data.province,
     );
@@ -38,7 +39,7 @@ const AddCustomer = () => {
       fname: data.firstName,
       lname: data.lastName,
       email: data.email,
-      email_json: email_json.length ? JSON.stringify(email_json) : null,
+      email_json: JSON.stringify(allEmails),
       phone: data.phoneNumber,
       street: data.street,
       city: data.city,

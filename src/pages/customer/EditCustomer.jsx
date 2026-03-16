@@ -39,7 +39,11 @@ const EditCustomer = () => {
             typeof c.email_json === "string"
               ? JSON.parse(c.email_json)
               : c.email_json;
-          extraEmails = parsed.map((email) => ({ value: email }));
+
+          // Filter out the primary email by matching c.email
+          extraEmails = parsed
+            .filter((email) => email !== c.email)
+            .map((email) => ({ value: email }));
         }
 
         reset({
@@ -64,9 +68,10 @@ const EditCustomer = () => {
   // ────────────────────────────────────────────────────────────────
 
   const onSubmit = async (data, provincesData) => {
-    const email_json = (data.extraEmails || [])
-      .map((e) => e.value)
-      .filter(Boolean);
+    const allEmails = [
+      data.email,
+      ...(data.extraEmails || []).map((e) => e.value).filter(Boolean),
+    ];
     const selectedProvince = provincesData.find(
       (p) => p.Province === data.province,
     );
@@ -77,7 +82,7 @@ const EditCustomer = () => {
       fname: data.firstName,
       lname: data.lastName,
       email: data.email,
-      email_json: email_json.length ? JSON.stringify(email_json) : null,
+      email_json: JSON.stringify(allEmails),
       phone: data.phoneNumber,
       street: data.street,
       city: data.city,
