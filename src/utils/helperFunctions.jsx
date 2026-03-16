@@ -136,13 +136,14 @@ export const renderTermsAndPayment = (
         (Please note that if paying by credit card, an additional 3% will be
         charged per transaction for processing fees.) The product comes with a
         5-year warranty, and labor is covered for 4 years from the date of
-        installation.{" "}
+        installation.
         <a
           href="/quote/termsconditions"
           target="_blank"
-          className="text-[#ee5d59] font-semibold"
+          rel="noopener noreferrer"
+          className="text-blue-600  hover:text-blue-800"
         >
-          Read more..
+          Read More...
         </a>
       </p>{" "}
       <div className="flex items-center space-x-2">
@@ -312,8 +313,8 @@ export const buildQuoteItems = (quote, options = {}) => {
     quote.extra_work_data.forEach((item) => {
       items.push({
         no: ++counter,
-        description: item.product,
-        total: parseFloat(item.amount),
+        description: item.description,
+        total: parseFloat(item.total),
         images: [],
         required: null,
       });

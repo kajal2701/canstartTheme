@@ -22,6 +22,7 @@ const UpcomingInstallations = ({ jobs = [], loading, onRefresh }) => {
         ...job,
         statusLabel: stage.label,
         statusColor: stage.color,
+        installationDate: formatDateLong(job.installation_date),
       };
     });
   }, [jobs]);
@@ -48,12 +49,12 @@ const UpcomingInstallations = ({ jobs = [], loading, onRefresh }) => {
   const COLUMNS = [
     {
       Header: "Installation Date",
-      accessor: "installation_date",
+      accessor: "installationDate",
       Cell: ({ cell: { value } }) => (
         <div className="flex items-center gap-2">
           <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
             <Icon icon="ph:calendar-check" className="inline mr-1" />
-            {formatDateLong(value)}
+            {value}
           </span>
         </div>
       ),

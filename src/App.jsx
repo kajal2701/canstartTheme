@@ -1,35 +1,37 @@
 import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
+// ✅ All lazy imports
 const Dashboard = lazy(() => import("./pages/dashboard"));
 const Login = lazy(() => import("./pages/auth/login"));
 const ForgotPass = lazy(() => import("./pages/auth/forgot-password"));
 const ForgotPass2 = lazy(() => import("./pages/auth/forgot-password2"));
 const Error = lazy(() => import("./pages/404"));
+const Profile = lazy(() => import("./pages/utility/profile"));
+const Users = lazy(() => import("./pages/users"));
+const AddUser = lazy(() => import("./pages/users/AddUser"));
+const EditUser = lazy(() => import("./pages/users/EditUser"));
+const Customer = lazy(() => import("./pages/customer/Index"));
+const AddCustomer = lazy(() => import("./pages/customer/AddCustomer"));
+const EditCustomer = lazy(() => import("./pages/customer/EditCustomer"));
+const Quote = lazy(() => import("./pages/quote/Index"));
+const AddQuote = lazy(() => import("./pages/quote/AddQuote"));
+const EditQuote = lazy(() => import("./pages/quote/EditQuote"));
+const ViewQuoteAdmin = lazy(() => import("./pages/quote/ViewQuoteAdmin"));
+const QuoteView = lazy(() => import("./pages/quote/QuoteView"));
+const TermsAndConditions = lazy(() => import("./pages/termsAndConditions"));
+const Install = lazy(() => import("./pages/install/Index"));
+const Product = lazy(() => import("./pages/product/Index"));
+const AddProduct = lazy(() => import("./pages/product/AddProduct"));
+const EditProduct = lazy(() => import("./pages/product/EditProduct"));
+const Invoice = lazy(() => import("./pages/invoice/Index"));
+const InvoiceView = lazy(() => import("./pages/invoice/InvoiceView"));
 
+// ✅ Keep these as normal imports (not lazy - they are layout/utility components)
 import Layout from "./layout/Layout";
 import Loading from "@/components/Loading";
 import AuthLayout from "./layout/AuthLayout";
-import ProtectedRoute from "./components/ProtectedRoute"; // ✅
-import Users from "./pages/users";
-import AddUser from "./pages/users/AddUser";
-import Customer from "./pages/customer/Index";
-import AddCustomer from "./pages/customer/AddCustomer";
-import Quote from "./pages/quote/Index";
-import AddQuote from "./pages/quote/AddQuote";
-import Install from "./pages/install/Index";
-import Product from "./pages/product/Index";
-import AddProduct from "./pages/product/AddProduct";
-import Invoice from "./pages/invoice/Index";
-import ViewQuoteAdmin from "./pages/quote/ViewQuoteAdmin";
-import EditUser from "./pages/users/EditUser";
-import EditCustomer from "./pages/customer/EditCustomer";
-import EditProduct from "./pages/product/EditProduct";
-import InvoiceView from "./pages/invoice/InvoiceView";
-import QuoteView from "./pages/quote/QuoteView";
-import EditQuote from "./pages/quote/EditQuote";
-
-const Profile = lazy(() => import("./pages/utility/profile"));
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const ADMIN_ONLY = [1];
 const SALES_AND_ADMIN = [1, 4];
@@ -37,174 +39,167 @@ const SALES_AND_ADMIN = [1, 4];
 function App() {
   return (
     <main className="App relative">
-      <Routes>
-        <Route path="/" element={<AuthLayout />}>
-          <Route path="/" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPass />} />
-          <Route path="/forgot-password2" element={<ForgotPass2 />} />
-        </Route>
-
-        <Route path="/*" element={<Layout />}>
-          {/* Dashboard - all roles */}
-          <Route path="dashboard" element={<Dashboard />} />
-
-          {/* Users - admin only */}
-          <Route path="users">
-            <Route
-              index
-              element={
-                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                  <Users />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="add"
-              element={
-                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                  <AddUser />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="edit_user/:id"
-              element={
-                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                  <EditUser />
-                </ProtectedRoute>
-              }
-            />
+      {/* ✅ Wrap all Routes in Suspense */}
+      <Suspense fallback={<Loading />}>
+        <Routes>
+          <Route path="/" element={<AuthLayout />}>
+            <Route path="/" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPass />} />
+            <Route path="/forgot-password2" element={<ForgotPass2 />} />
           </Route>
 
-          {/* Customer - admin + sales */}
-          <Route path="customer">
+          <Route path="/*" element={<Layout />}>
+            <Route path="dashboard" element={<Dashboard />} />
+
+            <Route path="users">
+              <Route
+                index
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <Users />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="add"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <AddUser />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="edit_user/:id"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <EditUser />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
+
+            <Route path="customer">
+              <Route
+                index
+                element={
+                  <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
+                    <Customer />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="add"
+                element={
+                  <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
+                    <AddCustomer />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="edit_customer/:id"
+                element={
+                  <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
+                    <EditCustomer />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
+
+            <Route path="quote">
+              <Route
+                index
+                element={
+                  <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
+                    <Quote />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="add"
+                element={
+                  <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
+                    <AddQuote />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="edit_quote/:id"
+                element={
+                  <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
+                    <EditQuote />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="view_quote_admin/:id"
+                element={
+                  <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
+                    <ViewQuoteAdmin />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
+
             <Route
-              index
+              path="install"
               element={
-                <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
-                  <Customer />
+                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <Install />
                 </ProtectedRoute>
               }
             />
+
+            <Route path="product">
+              <Route
+                index
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <Product />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="add"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <AddProduct />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="edit_product/:id"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <EditProduct />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
+
             <Route
-              path="add"
+              path="invoice"
               element={
-                <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
-                  <AddCustomer />
+                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <Invoice />
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="edit_customer/:id"
-              element={
-                <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
-                  <EditCustomer />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="profile" element={<Profile />} />
+            <Route path="*" element={<Navigate to="/404" />} />
           </Route>
 
-          {/* Quote - admin + sales */}
-          <Route path="quote">
-            <Route
-              index
-              element={
-                <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
-                  <Quote />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="add"
-              element={
-                <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
-                  <AddQuote />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="edit_quote/:id"
-              element={
-                <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
-                  <EditQuote />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="view_quote_admin/:id"
-              element={
-                <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
-                  <ViewQuoteAdmin />
-                </ProtectedRoute>
-              }
-            />
-          </Route>
-
-          {/* Install - admin only */}
           <Route
-            path="install"
-            element={
-              <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                <Install />
-              </ProtectedRoute>
-            }
+            path="users/quote_final_invoice/:id"
+            element={<InvoiceView />}
           />
-
-          {/* Product - admin only */}
-          <Route path="product">
-            <Route
-              index
-              element={
-                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                  <Product />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="add"
-              element={
-                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                  <AddProduct />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="edit_product/:id"
-              element={
-                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                  <EditProduct />
-                </ProtectedRoute>
-              }
-            />
-          </Route>
-
-          {/* Invoice - admin only */}
+          <Route path="users/quote_invoice/:id" element={<QuoteView />} />
           <Route
-            path="invoice"
-            element={
-              <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                <Invoice />
-              </ProtectedRoute>
-            }
+            path="quote/termsconditions"
+            element={<TermsAndConditions />}
           />
-
-          {/* Profile - all roles */}
-          <Route path="profile" element={<Profile />} />
-
-          <Route path="*" element={<Navigate to="/404" />} />
-        </Route>
-
-        <Route path="users/quote_final_invoice/:id" element={<InvoiceView />} />
-        <Route path="users/quote_invoice/:id" element={<QuoteView />} />
-        <Route
-          path="/404"
-          element={
-            <Suspense fallback={<Loading />}>
-              <Error />
-            </Suspense>
-          }
-        />
-      </Routes>
+          <Route path="/404" element={<Error />} />
+        </Routes>
+      </Suspense>
     </main>
   );
 }

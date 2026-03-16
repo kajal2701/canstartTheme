@@ -15,6 +15,15 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [isSendingInvoice, setIsSendingInvoice] = useState(false);
 
+  const getDaysOverdue = (installationDate) => {
+    if (!installationDate) return null;
+    const install = new Date(installationDate.split("T")[0]);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffMs = today - install;
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : null;
+  };
   const mappedJobs = useMemo(() => {
     return jobs.map((job) => {
       const stage = getQuoteStage(job);
@@ -22,6 +31,8 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
         ...job,
         statusLabel: stage.label,
         statusColor: stage.color,
+        installationDate: formatDateLong(job.installation_date),
+        daysOverdue: getDaysOverdue(job.installation_date),
       };
     });
   }, [jobs]);
@@ -45,15 +56,6 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
     if (onRefresh) await onRefresh();
   };
 
-  const getDaysOverdue = (installationDate) => {
-    if (!installationDate) return null;
-    const install = new Date(installationDate.split("T")[0]);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diffMs = today - install;
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : null;
-  };
   const handleSendFinalInvoice = async () => {
     try {
       setIsSendingInvoice(true);
@@ -72,28 +74,28 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
   const COLUMNS = [
     {
       Header: "Installation Date",
-      accessor: "installation_date",
+      accessor: "installationDate",
       Cell: ({ cell: { value } }) => (
         <div className="flex items-center gap-2">
           <span className="bg-red-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-            {formatDateLong(value)}
+            {value}
           </span>
         </div>
       ),
     },
     {
       Header: "Days Overdue",
-      accessor: "installation_date",
+      accessor: "daysOverdue",
       id: "daysOverdue",
       Cell: ({ cell: { value } }) => {
-        const days = getDaysOverdue(value);
-        if (!days) return <span className="text-gray-400 text-xs">-</span>;
-        const isDanger = days >= 90;
+        // const days = getDaysOverdue(value);
+        if (!value) return <span className="text-gray-400 text-xs">-</span>;
+        const isDanger = value >= 90;
         return (
           <span
             className={`inline-block px-3 py-1 rounded text-xs font-medium ${isDanger ? "bg-red-100 text-red-600" : "bg-yellow-100 text-yellow-600"}`}
           >
-            {days} days
+            {value} days
           </span>
         );
       },

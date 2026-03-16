@@ -289,7 +289,7 @@ const AnnotationImagePreview = ({
             >
               <option value="">-- Select color --</option>
               {colors.map((color) => (
-                <option key={color.color_id} value={color.color_id}>
+                <option key={color.color_id} value={color.color_name}>
                   {color.color_name
                     .toLowerCase()
                     .replace(/\b\w/g, (c) => c.toUpperCase())}

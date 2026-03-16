@@ -20,6 +20,7 @@ const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
         ...job,
         statusLabel: stage.label,
         statusColor: stage.color,
+        date: formatDateLong(job.created_at),
       };
     });
   }, [jobs]);
@@ -119,10 +120,10 @@ const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
     },
     {
       Header: "Date",
-      accessor: "created_at",
+      accessor: "date",
       Cell: ({ cell: { value } }) => (
         <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-          {formatDateLong(value)}
+          {value}
         </span>
       ),
     },

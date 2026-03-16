@@ -76,11 +76,9 @@ const COLUMNS = [
   },
   {
     Header: "Date",
-    accessor: "created_at",
+    accessor: "date",
     Cell: ({ cell: { value } }) => (
-      <span className="text-sm text-gray-600 dark:text-gray-400">
-        {formatDate(value)}
-      </span>
+      <span className="text-sm text-gray-600 dark:text-gray-400">{value}</span>
     ),
   },
 ];
@@ -107,6 +105,7 @@ const Dashboard = () => {
             ...quote,
             // ✅ Add a searchable statusLabel field
             statusLabel: STATUS_MAP[quote.status]?.label || "Unknown",
+            date: formatDate(quote.created_at),
           }));
           setStats({
             total_quotes: data.total_quotes || 0,

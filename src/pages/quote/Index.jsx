@@ -35,10 +35,14 @@ const mapQuoteData = (quote) => {
     total: `$${parseFloat(quote.main_total).toFixed(2)}`,
     status: stage.label,
     statusColor: stage.color,
-    date: quote.created_at ? quote.created_at.split("T")[0] : "",
-    installationDate: quote.installation_date || "",
+    date: formatDate(quote.created_at),
+    rawDate: quote.created_at ? quote.created_at.split("T")[0] : "",
+    rawInstallationDate: quote.installation_date
+      ? quote.installation_date.split("T")[0]
+      : "",
+    installationDate: formatDate(quote.installation_date) || "",
     installationSchedule: quote.installation_date
-      ? quote.installation_date
+      ? formatDate(quote.installation_date)
       : "Not Scheduled",
   };
 };
@@ -51,6 +55,7 @@ const Quote = () => {
   const [dateFilter, setDateFilter] = useState("");
   const [quotesData, setQuotesData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [installationFilter, setInstallationFilter] = useState("");
 
   const loadQuotes = async () => {
     try {
@@ -93,27 +98,64 @@ const Quote = () => {
     setStatusFilter("");
     setSalesmanFilter("all");
     setDateFilter("");
+    setInstallationFilter("");
   };
 
   const filteredData = useMemo(() => {
     return quotesData.filter((item) => {
       const matchesSearch =
         searchQuery === "" ||
-        item.srNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.phone?.includes(searchQuery) ||
-        item.address?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      // ✅ Change this line (was: item.status === statusFilter)
+        [
+          item.srNumber,
+          item.customerName,
+          item.phone,
+          item.address,
+          item.email,
+          item.salesman,
+          item.city,
+          item.state,
+          item.country,
+          item.post_code,
+          item.colors,
+          item.total,
+          item.status,
+          item.date,
+          item.installationDate,
+          item.linearFeet?.toString(),
+        ]
+          .filter(Boolean) // removes null/undefined
+          .some((field) =>
+            field.toLowerCase().includes(searchQuery.toLowerCase()),
+          );
+      const matchesInstallation =
+        installationFilter === "" ||
+        item.rawInstallationDate === installationFilter;
       const matchesStatus = statusFilter === "" || item.status === statusFilter;
 
       const matchesSalesman =
         salesmanFilter === "all" || item.salesman === salesmanFilter;
-      const matchesDate = dateFilter === "" || item.date === dateFilter;
+      const matchesDate =
+        dateFilter === "" ||
+        item.rawDate === dateFilter ||
+        item.rawInstallationDate === dateFilter;
 
-      return matchesSearch && matchesStatus && matchesSalesman && matchesDate;
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesSalesman &&
+        matchesDate &&
+        matchesInstallation
+      );
     });
-  }, [searchQuery, statusFilter, salesmanFilter, dateFilter, quotesData]);
+  }, [
+    searchQuery,
+    statusFilter,
+    salesmanFilter,
+    dateFilter,
+    quotesData,
+    installationFilter,
+  ]);
+
   const COLUMNS = [
     {
       Header: "Sr.",
@@ -210,7 +252,7 @@ const Quote = () => {
       accessor: "date",
       Cell: ({ cell: { value } }) => (
         <span className="text-sm text-gray-600 dark:text-gray-400">
-          {formatDate(value)}
+          {value}
         </span>
       ),
     },
