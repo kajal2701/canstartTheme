@@ -68,11 +68,11 @@ const Quote = () => {
   const [installationFilter, setInstallationFilter] = useState("");
   const [futureRefModal, setFutureRefModal] = useState({
     open: false,
-    quoteId: null,
+    quote: null,
   });
   const [followUpModal, setFollowUpModal] = useState({
     open: false,
-    quoteId: null,
+    quote: null,
   });
 
   const loadQuotes = async () => {
@@ -275,7 +275,11 @@ const Quote = () => {
       ),
     },
     {
-      Header: "Future Reference",
+      Header: () => (
+        <div className="text-center">
+          Future <br /> Reference
+        </div>
+      ),
       accessor: "sanctionReason",
       Cell: ({ row }) => {
         const isSanctioned =
@@ -287,8 +291,11 @@ const Quote = () => {
 
         if (row.original.sanctionReason) {
           return (
-            <div className="w-[180px]">
-              <span className="inline-block text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 font-medium truncate max-w-[170px]">
+            <div className="w-[90px] text-center ">
+              <span
+                className="inline-block text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 font-medium truncate max-w-[80px]"
+                title={row.original.sanctionReason}
+              >
                 {row.original.sanctionReason}
               </span>
             </div>
@@ -296,27 +303,36 @@ const Quote = () => {
         }
 
         return (
-          <button
-            className="icon-btn hover:bg-blue-50"
-            type="button"
-            title="Future Reference"
-            onClick={() =>
-              setFutureRefModal({ open: true, quoteId: row.original.id })
-            }
-          >
-            <Icon icon="ph:note-pencil" />
-          </button>
+          <div className="flex justify-center">
+            <button
+              className="icon-btn hover:bg-blue-50 "
+              type="button"
+              title="Future Reference"
+              onClick={() =>
+                setFutureRefModal({
+                  open: true,
+                  quote: row.original,
+                })
+              }
+            >
+              <Icon icon="ph:note-pencil" />
+            </button>
+          </div>
         );
       },
     },
     {
-      Header: "Follow-Up Date",
+      Header: () => (
+        <div className="text-center">
+          Follow-Up <br /> Date
+        </div>
+      ),
       accessor: "followupDate",
       Cell: ({ row }) => {
         if (row.original.followupDate) {
           return (
-            <div className="w-[180px]">
-              <span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700 font-medium truncate max-w-[170px]">
+            <div className="w-[90px] text-center">
+              <span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700 font-medium truncate ">
                 {row.original.followupDate}{" "}
               </span>
             </div>
@@ -324,16 +340,18 @@ const Quote = () => {
         }
 
         return (
-          <button
-            className="icon-btn hover:bg-red-50"
-            type="button"
-            title="Set Follow-Up Date"
-            onClick={() =>
-              setFollowUpModal({ open: true, quoteId: row.original.id })
-            }
-          >
-            <Icon icon="ph:bell-ringing" />
-          </button>
+          <div className="flex justify-center">
+            <button
+              className="icon-btn hover:bg-red-50"
+              type="button"
+              title="Set Follow-Up Date"
+              onClick={() =>
+                setFollowUpModal({ open: true, quote: row.original })
+              }
+            >
+              <Icon icon="ph:bell-ringing" />
+            </button>
+          </div>
         );
       },
     },
@@ -416,15 +434,15 @@ const Quote = () => {
 
       <FutureReferenceModal
         activeModal={futureRefModal.open}
-        quoteId={futureRefModal.quoteId}
-        onClose={() => setFutureRefModal({ open: false, quoteId: null })}
+        quote={futureRefModal.quote}
+        onClose={() => setFutureRefModal({ open: false, quote: null })}
         onSuccess={fetchQuotes}
       />
 
       <FollowUpModal
         activeModal={followUpModal.open}
-        quoteId={followUpModal.quoteId}
-        onClose={() => setFollowUpModal({ open: false, quoteId: null })}
+        quote={followUpModal.quote}
+        onClose={() => setFollowUpModal({ open: false, quote: null })}
         onSuccess={fetchQuotes}
       />
     </>

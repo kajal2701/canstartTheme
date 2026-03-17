@@ -7,7 +7,7 @@ import Icon from "@/components/ui/Icon";
 import { toast } from "react-toastify";
 import { saveFollowUpDate } from "../../../services/quoteService";
 
-const FollowUpModal = ({ activeModal, onClose, quoteId, onSuccess }) => {
+const FollowUpModal = ({ activeModal, onClose, onSuccess, quote }) => {
   const [followUpDate, setFollowUpDate] = useState("");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,7 +34,7 @@ const FollowUpModal = ({ activeModal, onClose, quoteId, onSuccess }) => {
     setIsSubmitting(true);
     try {
       const payload = {
-        quote_id: quoteId,
+        quote_id: quote.id,
         followup_date: followUpDate,
       };
       await saveFollowUpDate(payload);
@@ -80,6 +80,21 @@ const FollowUpModal = ({ activeModal, onClose, quoteId, onSuccess }) => {
       }
     >
       <div className="space-y-4">
+        {/* Quote Info */}
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="font-semibold">Quote #:</span>{" "}
+            <span className="text-indigo-600">{quote?.srNumber}</span>
+          </p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+            <span className="font-semibold">Customer:</span>{" "}
+            {quote?.customerName}
+          </p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+            <span className="font-semibold">Email:</span> {quote?.email}
+          </p>
+        </div>
+
         {/* Follow-up Date Field */}
         <div>
           <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">

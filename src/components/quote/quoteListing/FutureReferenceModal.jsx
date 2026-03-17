@@ -5,12 +5,17 @@ import { toast } from "react-toastify";
 import { saveFutureReference } from "../../../services/quoteService";
 import { REASON_OPTIONS } from "../../../utils/constants";
 
-const FutureReferenceModal = ({ activeModal, onClose, quoteId, onSuccess }) => {
+const FutureReferenceModal = ({
+  activeModal,
+  onClose,
+
+  quote,
+  onSuccess,
+}) => {
   const [selectedReason, setSelectedReason] = useState("");
   const [otherText, setOtherText] = useState("");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   // Reset form when modal opens
   useEffect(() => {
     if (activeModal) {
@@ -37,7 +42,7 @@ const FutureReferenceModal = ({ activeModal, onClose, quoteId, onSuccess }) => {
     setIsSubmitting(true);
     try {
       const payload = {
-        quote_id: quoteId,
+        quote_id: quote.id,
         sanction_reason: selectedReason,
         sanction_notes: isOther ? otherText.trim() : "",
       };
@@ -61,6 +66,21 @@ const FutureReferenceModal = ({ activeModal, onClose, quoteId, onSuccess }) => {
       className="max-w-lg"
     >
       <div className="space-y-4">
+        {/* Quote Info */}
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="font-semibold">Quote #:</span>{" "}
+            <span className="text-indigo-600">{quote?.srNumber}</span>
+          </p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+            <span className="font-semibold">Customer:</span>{" "}
+            {quote?.customerName}
+          </p>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+            <span className="font-semibold">Email:</span> {quote?.email}
+          </p>
+        </div>
+
         {/* Reason Dropdown */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
