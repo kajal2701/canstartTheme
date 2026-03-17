@@ -16,6 +16,7 @@ import { quoteStatusList, SANCTION_REASON_LABELS } from "../../utils/constants";
 import { exportQuotesToExcel } from "../../utils/exportUtils";
 import { toast } from "react-toastify";
 import FutureReferenceModal from "../../components/quote/quoteListing/FutureReferenceModal";
+import FollowUpModal from "../../components/quote/quoteListing/FollowUpModal";
 
 const mapQuoteData = (quote) => {
   const stage = getQuoteStage(quote);
@@ -48,6 +49,8 @@ const mapQuoteData = (quote) => {
       ? quote.installation_date.split("T")[0]
       : "",
     installationDate: formatDate(quote.installation_date) || "",
+    followupDate: quote.followup_date ? formatDate(quote.followup_date) : "",
+
     installationSchedule: quote.installation_date
       ? formatDate(quote.installation_date)
       : "Not Scheduled",
@@ -64,6 +67,10 @@ const Quote = () => {
   const [loading, setLoading] = useState(false);
   const [installationFilter, setInstallationFilter] = useState("");
   const [futureRefModal, setFutureRefModal] = useState({
+    open: false,
+    quoteId: null,
+  });
+  const [followUpModal, setFollowUpModal] = useState({
     open: false,
     quoteId: null,
   });
@@ -303,16 +310,42 @@ const Quote = () => {
       },
     },
     {
+      Header: "Follow-Up Date",
+      accessor: "followupDate",
+      Cell: ({ row }) => {
+        if (row.original.followupDate) {
+          return (
+            <div className="w-[180px]">
+              <span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700 font-medium truncate max-w-[170px]">
+                {row.original.followupDate}{" "}
+              </span>
+            </div>
+          );
+        }
+
+        return (
+          <button
+            className="icon-btn hover:bg-red-50"
+            type="button"
+            title="Set Follow-Up Date"
+            onClick={() =>
+              setFollowUpModal({ open: true, quoteId: row.original.id })
+            }
+          >
+            <Icon icon="ph:bell-ringing" />
+          </button>
+        );
+      },
+    },
+    {
       Header: "Action",
       accessor: "id",
-      Cell: (
-        { cell: { value }, row }, // ✅ add row here
-      ) => (
+      Cell: ({ cell: { value }, row }) => (
         <QuoteActionButtons
           id={value}
           navigate={navigate}
           fetchQuotes={fetchQuotes}
-          rowData={row.original} // ✅ pass full row data
+          rowData={row.original}
         />
       ),
     },
@@ -385,6 +418,13 @@ const Quote = () => {
         activeModal={futureRefModal.open}
         quoteId={futureRefModal.quoteId}
         onClose={() => setFutureRefModal({ open: false, quoteId: null })}
+        onSuccess={fetchQuotes}
+      />
+
+      <FollowUpModal
+        activeModal={followUpModal.open}
+        quoteId={followUpModal.quoteId}
+        onClose={() => setFollowUpModal({ open: false, quoteId: null })}
         onSuccess={fetchQuotes}
       />
     </>

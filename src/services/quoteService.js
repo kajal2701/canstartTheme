@@ -310,3 +310,25 @@ export const saveFutureReference = async (payload) => {
 
   return data;
 };
+
+
+export const saveFollowUpDate = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/saveFollowupDate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      quote_id: payload.quote_id,
+      followup_date: payload.followup_date
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Failed to save follow up date.");
+  }
+
+  return data;
+};

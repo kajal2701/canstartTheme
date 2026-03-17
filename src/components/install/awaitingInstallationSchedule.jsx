@@ -1,17 +1,17 @@
-import React, { useMemo, useState } from "react"; // ✅ added useState
+import React, { useMemo, useState } from "react";
 import Icon from "@/components/ui/Icon";
 import DataTable from "@/components/ui/DataTable";
 import { AddressCell, addressAccessor } from "@/utils/mappers";
 import { formatDateLong } from "@/utils/formatters";
 import { useNavigate } from "react-router-dom";
 import { getQuoteStage } from "../../utils/mappers";
-import ScheduleInstallationModal from "@/components/quote/quotelisting/ScheduleInstallationModal"; // ✅ added
-import { toast } from "react-toastify"; // ✅ added
+import ScheduleInstallationModal from "@/components/quote/quotelisting/ScheduleInstallationModal"; 
+import { toast } from "react-toastify"; 
 
 const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
   const navigate = useNavigate();
-  const [showScheduleModal, setShowScheduleModal] = useState(false); // ✅ added
-  const [selectedJob, setSelectedJob] = useState(null); // ✅ added
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
 
   const mappedJobs = useMemo(() => {
     return jobs.map((job) => {
