@@ -17,7 +17,7 @@ const Earnings = ({ height = 335 }) => {
     legend: {
       position: "bottom",
       fontSize: "12px",
-      fontFamily: "Inter",
+      fontFamily: "Sans",
       fontWeight: 400,
       labels: {
         colors: isDark ? "#CBD5E1" : "#475569",

@@ -424,7 +424,7 @@ const Quote = () => {
           </Card>
 
           <DataTable
-            title="Quotes"
+            title="Quote List"
             columns={columns}
             data={data}
             loading={loading}

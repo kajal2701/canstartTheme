@@ -161,7 +161,7 @@ const ViewQuoteAdmin = () => {
             <Icon icon="ph:arrow-left" className="text-lg" />
           </button>
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight font-inter">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight font-sans">
               {quote?.quoteNumber || quote?.quote_no}
             </h2>
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">

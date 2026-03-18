@@ -153,7 +153,7 @@ const Product = () => {
   return (
     <>
       <DataTable
-        title="Products List"
+        title="Product List"
         columns={columns}
         data={data}
         loading={loading}

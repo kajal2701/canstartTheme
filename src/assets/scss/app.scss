@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,7 +9,7 @@
     --primary-hover: #f77452;
   }
   body {
-    @apply h-full overflow-x-hidden dark:text-gray-300 text-gray-600 font-normal bg-[#FAFAFD];
+    @apply h-full overflow-x-hidden dark:text-gray-300 text-gray-600 font-normal bg-[#FAFAFD] font-sans;
 
     &.dark {
       @apply bg-[#0f172a] text-gray-300;

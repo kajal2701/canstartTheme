@@ -26,7 +26,7 @@ const OrderChart = ({ height = 220 }) => {
     legend: {
       position: "bottom",
       fontSize: "14px",
-      fontFamily: "Inter",
+      fontFamily: "Sans",
       fontWeight: 400,
       labels: {
         colors: isDark
@@ -44,14 +44,14 @@ const OrderChart = ({ height = 220 }) => {
               show: true,
               fontSize: "10px",
               fontWeight: "bold",
-              fontFamily: "Inter",
+              fontFamily: "Sans",
               color: isDark
                 ? themeConfig.colors.chart_text_dark
                 : themeConfig.colors.chart_text_light,
             },
             value: {
               show: true,
-              fontFamily: "Inter",
+              fontFamily: "Sans",
               color: isDark
                 ? themeConfig.colors.chart_text_dark
                 : themeConfig.colors.chart_text_light,

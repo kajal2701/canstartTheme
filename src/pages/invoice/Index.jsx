@@ -122,7 +122,7 @@ const Invoice = () => {
 
   return (
     <DataTable
-      title="Invoice"
+      title="Invoice List"
       columns={columns}
       data={data}
       loading={loading}

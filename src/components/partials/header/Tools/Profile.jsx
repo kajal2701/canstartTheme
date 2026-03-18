@@ -6,10 +6,11 @@ import { Menu, Transition } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/store/auth/authSlice";
+import { mapUserRole } from "@/utils/mappers";
 import clsx from "clsx";
 import UserAvatar from "@/assets/images/avatar/avatar.jpg";
 
-const ProfileLabel = ({ sticky }) => {
+const ProfileLabel = ({ sticky, user }) => {
   return (
     <div
       className={clsx(" rounded-full transition-all duration-300", {
@@ -18,7 +19,7 @@ const ProfileLabel = ({ sticky }) => {
       })}
     >
       <img
-        src={UserAvatar}
+        src={user?.avatar || UserAvatar}
         alt=""
         className="block w-full h-full object-cover rounded-full ring-1 ring-indigo-700 ring-offset-4 dark:ring-offset-gray-700"
       />
@@ -29,40 +30,19 @@ const ProfileLabel = ({ sticky }) => {
 const Profile = ({ sticky }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
 
   const ProfileMenu = [
     {
-      label: "Profile",
+      label: "My Profile",
+      subLabel: "Account Settings",
       icon: "ph:user-circle-light",
       status: "green",
       action: () => {
         navigate("/profile");
       },
     },
-    {
-      label: "Reports",
-      icon: "ph:chart-bar-light",
-      status: "blue",
-      action: () => {
-        navigate("/chats");
-      },
-    },
-    {
-      label: "Settings",
-      icon: "ph:gear-light",
-      status: "yellow",
-      action: () => {
-        navigate("/todos");
-      },
-    },
-    {
-      label: "Get Help",
-      icon: "ph:question-light",
-      status: "cyan",
-      action: () => {
-        navigate("/settings");
-      },
-    },
+   
   ];
 
   const handleLogout = () => {
@@ -72,23 +52,28 @@ const Profile = ({ sticky }) => {
   };
   return (
     <Dropdown
-      label={<ProfileLabel sticky={sticky} />}
+      label={<ProfileLabel sticky={sticky} user={user} />}
       classMenuItems="w-[220px] top-[58px]  "
     >
       <div className="flex items-center px-4 py-3 border-b border-gray-10 mb-3">
         <div className="flex-none ltr:mr-[10px] rtl:ml-[10px]">
           <div className="h-[46px] w-[46px] rounded-full">
             <img
-              src={UserAvatar}
+              src={user?.avatar || UserAvatar}
               alt=""
               className="block w-full h-full object-cover rounded-full"
             />
           </div>
         </div>
         <div className="flex-1 text-gray-700 dark:text-white text-sm font-semibold  ">
-          <span className=" truncate w-full block">Faruk Ahamed</span>
-          <span className="block font-light text-xs   capitalize">
-            supper admin
+          <span className=" truncate w-full block">
+            {user?.fname && user?.lname 
+              ? `${user.fname} ${user.lname}` 
+              : user?.name || 'User'
+            }
+          </span>
+          <span className="block font-light text-xs">
+            {mapUserRole(user?.role)}
           </span>
         </div>
       </div>
@@ -118,7 +103,14 @@ const Profile = ({ sticky }) => {
                     >
                       <Icon icon={item.icon} />
                     </span>
-                    <span className="block text-sm">{item.label}</span>
+                    <div className="block text-sm">
+                      <div className="font-medium">{item.label}</div>
+                      {item.subLabel && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {item.subLabel}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

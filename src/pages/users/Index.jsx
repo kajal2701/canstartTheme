@@ -137,7 +137,7 @@ const Users = () => {
   return (
     <>
       <DataTable
-        title="Users List"
+        title="User List"
         columns={columns}
         data={data}
         loading={loading}

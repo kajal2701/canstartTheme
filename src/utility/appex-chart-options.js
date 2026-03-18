@@ -33,7 +33,7 @@ export const getLabel = (isDark) => ({
     colors: isDark
       ? themeConfig.colors.chart_text_dark
       : themeConfig.colors.chart_text_light,
-    fontFamily: "Inter",
+    fontFamily: "Sans",
   },
 });
 

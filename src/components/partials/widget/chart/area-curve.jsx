@@ -58,7 +58,7 @@ const AreaCurve = ({ height = 170 }) => {
     },
     legend: {
       labels: getLabel(isDark),
-      fontFamily: "Inter",
+      fontFamily: "Sans",
     },
     tooltip: {
       x: {
