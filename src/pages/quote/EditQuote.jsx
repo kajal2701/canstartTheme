@@ -558,12 +558,12 @@ const EditQuote = () => {
       (section.files || []).forEach((f, jIdx) => {
         // drawnLines — only if new base64
         if (f.lineSaved && !isRemoteUrl(f.lineSaved)) {
-          const drawn = dataUrlToFile(f.lineSaved, `preview_${N}_${jIdx}.png`);
+          const drawn = dataUrlToFile(f.lineSaved, `preview_${N}_${jIdx}.jpg`);
           if (drawn) formData.append(`preview-image_${N}_${jIdx}`, drawn);
         }
         // fullyEdited — only if new base64
         if (f.textSaved && !isRemoteUrl(f.textSaved)) {
-          const edited = dataUrlToFile(f.textSaved, `edited_${N}_${jIdx}.png`);
+          const edited = dataUrlToFile(f.textSaved, `edited_${N}_${jIdx}.jpg`);
           if (edited)
             formData.append(`preview-image-edit_${N}_${jIdx}`, edited);
         }

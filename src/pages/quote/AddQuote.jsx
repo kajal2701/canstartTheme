@@ -426,14 +426,14 @@ const AddQuote = () => {
       (section.files || []).forEach((f, jIdx) => {
         const drawn =
           typeof f?.lineSaved === "string"
-            ? dataUrlToFile(f.lineSaved, `preview_${N}_${jIdx}.png`)
+            ? dataUrlToFile(f.lineSaved, `preview_${N}_${jIdx}.jpg`)
             : null;
         if (drawn) {
           formData.append(`preview-image_${N}_${jIdx}`, drawn);
         }
         const edited =
           typeof f?.textSaved === "string"
-            ? dataUrlToFile(f.textSaved, `edited_${N}_${jIdx}.png`)
+            ? dataUrlToFile(f.textSaved, `edited_${N}_${jIdx}.jpg`)
             : null;
         if (edited) {
           formData.append(`preview-image-edit_${N}_${jIdx}`, edited);

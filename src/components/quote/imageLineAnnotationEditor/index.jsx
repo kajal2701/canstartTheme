@@ -108,7 +108,7 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
         ctx.stroke();
       });
 
-      const finalImageUrl = canvas.toDataURL("image/png");
+      const finalImageUrl = canvas.toDataURL("image/webp", 0.92);
 
       // Send back to parent
       if (onSave) onSave(finalImageUrl);
@@ -180,22 +180,31 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
 
       {/* ================= IMAGE + SVG ================= */}
       <div
-        ref={containerRef}
         style={{
+          flex: 1,
+          overflow: "auto",
           position: "relative",
-          display: "inline-block",
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
+          background: "#e5e7eb",
+          minHeight: "400px",
         }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
       >
-        <img
-          src={image}
-          alt="sample"
-          style={{ width: "100%", display: "block" }}
-        />
+        <div
+          ref={containerRef}
+          style={{
+            position: "relative",
+            display: "inline-block",
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        >
+          <img
+            src={image}
+            alt="sample"
+            style={{ width: "100%", display: "block" }}
+          />
 
         <svg
           style={{
@@ -229,6 +238,7 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
             />
           )}
         </svg>
+        </div>
       </div>
     </div>
   );

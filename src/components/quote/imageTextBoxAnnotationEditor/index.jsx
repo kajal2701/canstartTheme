@@ -134,7 +134,7 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
         sum += parseInt(box.value) || 0;
       });
 
-      const finalImageUrl = canvas.toDataURL("image/png");
+      const finalImageUrl = canvas.toDataURL("image/webp", 0.92)
 
       // Send image + sum back to parent
       if (onSave) onSave(finalImageUrl, sum);
@@ -202,22 +202,31 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
 
       {/* ================= IMAGE CONTAINER ================= */}
       <div
-        ref={containerRef}
         style={{
+          flex: 1,
+          overflow: "auto",
           position: "relative",
-          display: "inline-block",
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
-          cursor: "crosshair",
+          background: "#e5e7eb",
+          minHeight: "400px",
         }}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
       >
-        <img
-          src={image}
-          alt="sample"
-          style={{ width: "100%", display: "block" }}
-        />
+        <div
+          ref={containerRef}
+          style={{
+            position: "relative",
+            display: "inline-block",
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            cursor: "crosshair",
+          }}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        >
+          <img
+            src={image}
+            alt="sample"
+            style={{ width: "100%", display: "block" }}
+          />
 
         <svg
           style={{
@@ -283,6 +292,7 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
             </foreignObject>
           ))}
         </svg>
+        </div>
       </div>
     </div>
   );

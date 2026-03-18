@@ -286,7 +286,11 @@ const Quote = () => {
           row.original.status === "Confirmed - Awaiting Payment";
 
         if (!isSanctioned) {
-          return <span className="text-gray-400 text-sm">—</span>;
+          return (
+            <div className="w-full flex justify-center items-center">
+              <span className="text-gray-400 text-sm">—</span>
+            </div>
+          );
         }
 
         if (row.original.sanctionReason) {
