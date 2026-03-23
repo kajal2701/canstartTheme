@@ -64,6 +64,13 @@ export const menuItems = [
     link: "invoice",
     roles: [1], // admin only
   },
+  {
+    title: "Inventory",
+    isHide: true,
+    icon: "ph:package",
+    link: "inventory",
+    roles: [1], // admin only
+  },
 ];
 
 export const topMenu = [
