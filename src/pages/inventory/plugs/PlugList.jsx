@@ -63,7 +63,7 @@ const PlugList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"

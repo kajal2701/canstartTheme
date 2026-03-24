@@ -26,12 +26,32 @@ const JumperList = () => {
         // --- Remove this dummy block when API is ready ---
         await new Promise((r) => setTimeout(r, 600)); // simulate delay
         setData([
-          { id: 1, type: "LED Jumpers", quantity: "1000", notes: "Standard LED connectors", cost: "0.50", price: "1.00" },
-          { id: 2, type: "RGB Jumpers", quantity: "800", notes: "RGB LED connectors", cost: "0.75", price: "1.50" },
-          { id: 3, type: "Extension Jumpers", quantity: "500", notes: "Extension cables", cost: "1.00", price: "2.00" },
+          {
+            id: 1,
+            type: "LED Jumpers",
+            quantity: "1000",
+            notes: "Standard LED connectors",
+            cost: "0.50",
+            price: "1.00",
+          },
+          {
+            id: 2,
+            type: "RGB Jumpers",
+            quantity: "800",
+            notes: "RGB LED connectors",
+            cost: "0.75",
+            price: "1.50",
+          },
+          {
+            id: 3,
+            type: "Extension Jumpers",
+            quantity: "500",
+            notes: "Extension cables",
+            cost: "1.00",
+            price: "2.00",
+          },
         ]);
         // --- End dummy block ---
-
       } catch (err) {
         setError("Failed to load jumpers. Please try again.");
       } finally {
@@ -63,11 +83,13 @@ const JumperList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"
-            onClick={() => navigate(`/inventory/jumpers/edit/${row.original.id}`)}
+            onClick={() =>
+              navigate(`/inventory/jumpers/edit/${row.original.id}`)
+            }
           />
           <Button
             icon="ph:trash"
@@ -93,7 +115,10 @@ const JumperList = () => {
           </button>
           <span className="text-gray-300">/</span>
           <div className="flex items-center gap-2">
-            <Icon icon="ph:arrows-horizontal" className="text-xl text-indigo-600" />
+            <Icon
+              icon="ph:arrows-horizontal"
+              className="text-xl text-indigo-600"
+            />
             <h1 className="text-xl font-bold">Jumpers</h1>
           </div>
         </div>
@@ -107,8 +132,6 @@ const JumperList = () => {
 
       {/* Table Card */}
       <Card className="overflow-hidden">
-    
-
         {error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-red-500">
             <Icon icon="ph:warning-circle" className="text-3xl" />
@@ -119,7 +142,7 @@ const JumperList = () => {
               onClick={() => window.location.reload()}
             />
           </div>
-        ): (
+        ) : (
           <div className="overflow-x-auto">
             <DataTable
               title="Jumpers List"

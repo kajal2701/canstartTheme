@@ -26,12 +26,29 @@ const ScrewList = () => {
         // --- Remove this dummy block when API is ready ---
         await new Promise((r) => setTimeout(r, 600)); // simulate delay
         setData([
-          { id: 1, color: "Silver", quantity: "1000", cost: "0.10", price: "0.25" },
-          { id: 2, color: "Black", quantity: "800", cost: "0.12", price: "0.30" },
-          { id: 3, color: "Gold", quantity: "500", cost: "0.15", price: "0.35" },
+          {
+            id: 1,
+            color: "Silver",
+            quantity: "1000",
+            cost: "0.10",
+            price: "0.25",
+          },
+          {
+            id: 2,
+            color: "Black",
+            quantity: "800",
+            cost: "0.12",
+            price: "0.30",
+          },
+          {
+            id: 3,
+            color: "Gold",
+            quantity: "500",
+            cost: "0.15",
+            price: "0.35",
+          },
         ]);
         // --- End dummy block ---
-
       } catch (err) {
         setError("Failed to load screws. Please try again.");
       } finally {
@@ -62,11 +79,13 @@ const ScrewList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"
-            onClick={() => navigate(`/inventory/screws/edit/${row.original.id}`)}
+            onClick={() =>
+              navigate(`/inventory/screws/edit/${row.original.id}`)
+            }
           />
           <Button
             icon="ph:trash"
@@ -106,8 +125,6 @@ const ScrewList = () => {
 
       {/* Table Card */}
       <Card className="overflow-hidden">
-
-
         {error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-red-500">
             <Icon icon="ph:warning-circle" className="text-3xl" />
@@ -118,21 +135,17 @@ const ScrewList = () => {
               onClick={() => window.location.reload()}
             />
           </div>
-        )
-          :
-
-          (
-            <div className="overflow-x-auto">
-              <DataTable
-                title="Screws List"
-                columns={columns}
-                data={data}
-                loading={loading}
-                className="min-w-[600px]"
-              />
-            </div>
-          )
-        }
+        ) : (
+          <div className="overflow-x-auto">
+            <DataTable
+              title="Screws List"
+              columns={columns}
+              data={data}
+              loading={loading}
+              className="min-w-[600px]"
+            />
+          </div>
+        )}
       </Card>
     </>
   );

@@ -26,11 +26,26 @@ const LightList = () => {
         // --- Remove this dummy block when API is ready ---
         await new Promise((r) => setTimeout(r, 600)); // simulate delay
         setData([
-          { id: 1, type: "LED Strip", cost: "8.00", price: "15.00", quantity: 200, purchaseInfo: "Supplier A - Bulk Order", notes: "Warm white LED" },
-          { id: 2, type: "Spot Light", cost: "12.00", price: "22.00", quantity: 100, purchaseInfo: "Supplier B - Premium", notes: "Adjustable spotlight" },
+          {
+            id: 1,
+            type: "LED Strip",
+            cost: "8.00",
+            price: "15.00",
+            quantity: 200,
+            purchaseInfo: "Supplier A - Bulk Order",
+            notes: "Warm white LED",
+          },
+          {
+            id: 2,
+            type: "Spot Light",
+            cost: "12.00",
+            price: "22.00",
+            quantity: 100,
+            purchaseInfo: "Supplier B - Premium",
+            notes: "Adjustable spotlight",
+          },
         ]);
         // --- End dummy block ---
-
       } catch (err) {
         setError("Failed to load lights. Please try again.");
       } finally {
@@ -63,11 +78,13 @@ const LightList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"
-            onClick={() => navigate(`/inventory/lights/edit/${row.original.id}`)}
+            onClick={() =>
+              navigate(`/inventory/lights/edit/${row.original.id}`)
+            }
           />
           <Button
             icon="ph:trash"
@@ -107,9 +124,7 @@ const LightList = () => {
 
       {/* Table Card */}
       <Card className="overflow-hidden">
-       
-
-        { error ? (
+        {error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-red-500">
             <Icon icon="ph:warning-circle" className="text-3xl" />
             <p className="text-sm">{error}</p>
@@ -119,8 +134,7 @@ const LightList = () => {
               onClick={() => window.location.reload()}
             />
           </div>
-        ):
- (
+        ) : (
           <div className="overflow-x-auto">
             <DataTable
               title="Lights List"

@@ -26,12 +26,32 @@ const PowerCordList = () => {
         // --- Remove this dummy block when API is ready ---
         await new Promise((r) => setTimeout(r, 600)); // simulate delay
         setData([
-          { id: 1, type: "6-Foot Cord", quantity: "300", notes: "Standard 6-foot power cords", cost: "3.00", price: "6.00" },
-          { id: 2, type: "10-Foot Cord", quantity: "200", notes: "Extended 10-foot cords", cost: "4.50", price: "8.00" },
-          { id: 3, type: "12-Foot Cord", quantity: "150", notes: "Long 12-foot cords", cost: "5.00", price: "9.00" },
+          {
+            id: 1,
+            type: "6-Foot Cord",
+            quantity: "300",
+            notes: "Standard 6-foot power cords",
+            cost: "3.00",
+            price: "6.00",
+          },
+          {
+            id: 2,
+            type: "10-Foot Cord",
+            quantity: "200",
+            notes: "Extended 10-foot cords",
+            cost: "4.50",
+            price: "8.00",
+          },
+          {
+            id: 3,
+            type: "12-Foot Cord",
+            quantity: "150",
+            notes: "Long 12-foot cords",
+            cost: "5.00",
+            price: "9.00",
+          },
         ]);
         // --- End dummy block ---
-
       } catch (err) {
         setError("Failed to load power cords. Please try again.");
       } finally {
@@ -43,7 +63,8 @@ const PowerCordList = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this power cord?")) return;
+    if (!window.confirm("Are you sure you want to delete this power cord?"))
+      return;
     try {
       // await deletePowerCord(id);
       setData((prev) => prev.filter((item) => item.id !== id));
@@ -63,11 +84,13 @@ const PowerCordList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"
-            onClick={() => navigate(`/inventory/powercord/edit/${row.original.id}`)}
+            onClick={() =>
+              navigate(`/inventory/powercord/edit/${row.original.id}`)
+            }
           />
           <Button
             icon="ph:trash"
@@ -107,8 +130,6 @@ const PowerCordList = () => {
 
       {/* Table Card */}
       <Card className="overflow-hidden">
-
-
         {error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-red-500">
             <Icon icon="ph:warning-circle" className="text-3xl" />
@@ -119,20 +140,17 @@ const PowerCordList = () => {
               onClick={() => window.location.reload()}
             />
           </div>
-        ) :
-
-          (
-            <div className="overflow-x-auto">
-              <DataTable
-                title="Power Cord List"
-                columns={columns}
-                data={data}
-                loading={loading}
-                className="min-w-[600px]"
-              />
-            </div>
-          )}
-
+        ) : (
+          <div className="overflow-x-auto">
+            <DataTable
+              title="Power Cord List"
+              columns={columns}
+              data={data}
+              loading={loading}
+              className="min-w-[600px]"
+            />
+          </div>
+        )}
       </Card>
     </>
   );

@@ -30,7 +30,6 @@ const BoostBoxList = () => {
           { id: 2, cost: "18.00", price: "32.00", quantity: 120 },
         ]);
         // --- End dummy block ---
-
       } catch (err) {
         setError("Failed to load boost boxes. Please try again.");
       } finally {
@@ -42,7 +41,8 @@ const BoostBoxList = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this boost box?")) return;
+    if (!window.confirm("Are you sure you want to delete this boost box?"))
+      return;
     try {
       // await deleteBoostBox(id);
       setData((prev) => prev.filter((item) => item.id !== id));
@@ -60,7 +60,7 @@ const BoostBoxList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1">
+        <div className="flex gap-1 items-center">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"
@@ -104,8 +104,6 @@ const BoostBoxList = () => {
 
       {/* Table Card */}
       <Card className="overflow-hidden">
-      
-
         {error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-red-500">
             <Icon icon="ph:warning-circle" className="text-3xl" />
@@ -116,7 +114,7 @@ const BoostBoxList = () => {
               onClick={() => window.location.reload()}
             />
           </div>
-        ): (
+        ) : (
           <div className="overflow-x-auto">
             <DataTable
               title="Boost Box List"

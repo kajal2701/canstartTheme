@@ -30,7 +30,6 @@ const ControllerList = () => {
           { id: 2, type: "600W", cost: "35.00", price: "65.00", quantity: 80 },
         ]);
         // --- End dummy block ---
-
       } catch (err) {
         setError("Failed to load controllers. Please try again.");
       } finally {
@@ -42,7 +41,8 @@ const ControllerList = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this controller?")) return;
+    if (!window.confirm("Are you sure you want to delete this controller?"))
+      return;
     try {
       // await deleteController(id);
       setData((prev) => prev.filter((item) => item.id !== id));
@@ -61,11 +61,13 @@ const ControllerList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1">
+        <div className="flex gap-1 items-center">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"
-            onClick={() => navigate(`/inventory/controllers/edit/${row.original.id}`)}
+            onClick={() =>
+              navigate(`/inventory/controllers/edit/${row.original.id}`)
+            }
           />
           <Button
             icon="ph:trash"
@@ -105,8 +107,6 @@ const ControllerList = () => {
 
       {/* Table Card */}
       <Card className="overflow-hidden">
-        
-
         {error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-red-500">
             <Icon icon="ph:warning-circle" className="text-3xl" />
@@ -117,7 +117,7 @@ const ControllerList = () => {
               onClick={() => window.location.reload()}
             />
           </div>
-        ): (
+        ) : (
           <div className="overflow-x-auto">
             <DataTable
               title="Controllers List"

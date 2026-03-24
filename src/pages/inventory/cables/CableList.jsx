@@ -26,12 +26,32 @@ const CableList = () => {
         // --- Remove this dummy block when API is ready ---
         await new Promise((r) => setTimeout(r, 600)); // simulate delay
         setData([
-          { id: 1, type: "Coaxial Cable", quantity: "500", notes: "Various lengths and colors", cost: "2.50", price: "4.00" },
-          { id: 2, type: "Ethernet Cable", quantity: "300", notes: "Cat6 standard cables", cost: "3.00", price: "5.50" },
-          { id: 3, type: "Power Cable", quantity: "200", notes: "16AWG power cables", cost: "4.00", price: "7.00" },
+          {
+            id: 1,
+            type: "Coaxial Cable",
+            quantity: "500",
+            notes: "Various lengths and colors",
+            cost: "2.50",
+            price: "4.00",
+          },
+          {
+            id: 2,
+            type: "Ethernet Cable",
+            quantity: "300",
+            notes: "Cat6 standard cables",
+            cost: "3.00",
+            price: "5.50",
+          },
+          {
+            id: 3,
+            type: "Power Cable",
+            quantity: "200",
+            notes: "16AWG power cables",
+            cost: "4.00",
+            price: "7.00",
+          },
         ]);
         // --- End dummy block ---
-
       } catch (err) {
         setError("Failed to load cables. Please try again.");
       } finally {
@@ -63,11 +83,13 @@ const CableList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1">
+        <div className="flex gap-1 items-center">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"
-            onClick={() => navigate(`/inventory/cables/edit/${row.original.id}`)}
+            onClick={() =>
+              navigate(`/inventory/cables/edit/${row.original.id}`)
+            }
           />
           <Button
             icon="ph:trash"
@@ -107,9 +129,7 @@ const CableList = () => {
 
       {/* Table Card */}
       <Card className="overflow-hidden">
-      
-
-        { error ? (
+        {error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-red-500">
             <Icon icon="ph:warning-circle" className="text-3xl" />
             <p className="text-sm">{error}</p>
@@ -119,7 +139,7 @@ const CableList = () => {
               onClick={() => window.location.reload()}
             />
           </div>
-        ): (
+        ) : (
           <div className="overflow-x-auto">
             <DataTable
               title="Cables List"

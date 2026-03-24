@@ -26,13 +26,36 @@ const ConnectorList = () => {
         // --- Remove this dummy block when API is ready ---
         await new Promise((r) => setTimeout(r, 600)); // simulate delay
         setData([
-          { id: 1, name: "T-Connector", cost: "2.50", price: "5.00", notes: "Standard T connector" },
-          { id: 2, name: "Y-Connector", cost: "3.00", price: "6.00", notes: "Y-split connector" },
-          { id: 3, name: "Male Connector", cost: "1.50", price: "3.00", notes: "Male end connector" },
-          { id: 4, name: "2x2 Connector", cost: "4.00", price: "8.00", notes: "2x2 grid connector" },
+          {
+            id: 1,
+            name: "T-Connector",
+            cost: "2.50",
+            price: "5.00",
+            notes: "Standard T connector",
+          },
+          {
+            id: 2,
+            name: "Y-Connector",
+            cost: "3.00",
+            price: "6.00",
+            notes: "Y-split connector",
+          },
+          {
+            id: 3,
+            name: "Male Connector",
+            cost: "1.50",
+            price: "3.00",
+            notes: "Male end connector",
+          },
+          {
+            id: 4,
+            name: "2x2 Connector",
+            cost: "4.00",
+            price: "8.00",
+            notes: "2x2 grid connector",
+          },
         ]);
         // --- End dummy block ---
-
       } catch (err) {
         setError("Failed to load connectors. Please try again.");
       } finally {
@@ -44,7 +67,8 @@ const ConnectorList = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this connector?")) return;
+    if (!window.confirm("Are you sure you want to delete this connector?"))
+      return;
     try {
       // await deleteConnector(id);
       setData((prev) => prev.filter((item) => item.id !== id));
@@ -63,11 +87,13 @@ const ConnectorList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1">
+        <div className="flex gap-1 items-center">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"
-            onClick={() => navigate(`/inventory/connectors/edit/${row.original.id}`)}
+            onClick={() =>
+              navigate(`/inventory/connectors/edit/${row.original.id}`)
+            }
           />
           <Button
             icon="ph:trash"
@@ -107,8 +133,7 @@ const ConnectorList = () => {
 
       {/* Table Card */}
       <Card className="overflow-hidden">
-       
-        { error ? (
+        {error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-red-500">
             <Icon icon="ph:warning-circle" className="text-3xl" />
             <p className="text-sm">{error}</p>
@@ -118,7 +143,7 @@ const ConnectorList = () => {
               onClick={() => window.location.reload()}
             />
           </div>
-        ): (
+        ) : (
           <div className="overflow-x-auto">
             <DataTable
               title="Connectors List"

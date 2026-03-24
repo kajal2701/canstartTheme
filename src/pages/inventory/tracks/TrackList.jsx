@@ -25,12 +25,38 @@ const TrackList = () => {
         // --- Remove this dummy block when API is ready ---
         await new Promise((r) => setTimeout(r, 600)); // simulate delay
         setData([
-          { id: 1, color: "White",  supplier: "Track Supplier A", totalLength: "1000", size: "1 meter", cost: "5.50",  price: "8.50",  quantity: 500 },
-          { id: 2, color: "Black",  supplier: "Track Supplier B", totalLength: "800",  size: "4 feet",  cost: "12.00", price: "18.00", quantity: 300 },
-          { id: 3, color: "Silver", supplier: "Track Supplier A", totalLength: "600",  size: "6 feet",  cost: "18.00", price: "25.00", quantity: 200 },
+          {
+            id: 1,
+            color: "White",
+            supplier: "Track Supplier A",
+            totalLength: "1000",
+            size: "1 meter",
+            cost: "5.50",
+            price: "8.50",
+            quantity: 500,
+          },
+          {
+            id: 2,
+            color: "Black",
+            supplier: "Track Supplier B",
+            totalLength: "800",
+            size: "4 feet",
+            cost: "12.00",
+            price: "18.00",
+            quantity: 300,
+          },
+          {
+            id: 3,
+            color: "Silver",
+            supplier: "Track Supplier A",
+            totalLength: "600",
+            size: "6 feet",
+            cost: "18.00",
+            price: "25.00",
+            quantity: 200,
+          },
         ]);
         // --- End dummy block ---
-
       } catch (err) {
         setError("Failed to load tracks. Please try again.");
       } finally {
@@ -53,26 +79,28 @@ const TrackList = () => {
   };
 
   const columns = [
-    { Header: "Color",        accessor: "color" },
-    { Header: "Supplier",     accessor: "supplier" },
+    { Header: "Color", accessor: "color" },
+    { Header: "Supplier", accessor: "supplier" },
     { Header: "Total Length", accessor: "totalLength" },
-    { Header: "Size",         accessor: "size" },
-    { Header: "Cost",         accessor: "cost" },
-    { Header: "Price",        accessor: "price" },
-    { Header: "Quantity",     accessor: "quantity" },
+    { Header: "Size", accessor: "size" },
+    { Header: "Cost", accessor: "cost" },
+    { Header: "Price", accessor: "price" },
+    { Header: "Quantity", accessor: "quantity" },
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
         <div className="flex gap-2">
           <Button
-            text="Edit"
-            className="btn-xs btn-primary"
-            onClick={() => navigate(`/inventory/tracks/edit/${row.original.id}`)}
+            icon="ph:pencil-simple"
+            className="btn-warning h-9 w-9 p-0"
+            onClick={() =>
+              navigate(`/inventory/tracks/edit/${row.original.id}`)
+            }
           />
           <Button
-            text="Delete"
-            className="btn-xs btn-danger"
+            icon="ph:trash"
+            className="btn-danger h-9 w-9 p-0"
             onClick={() => handleDelete(row.original.id)}
           />
         </div>
@@ -84,7 +112,7 @@ const TrackList = () => {
     <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => navigate("/inventory")}
             className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"
