@@ -28,31 +28,45 @@ const ConnectorList = () => {
         setData([
           {
             id: 1,
-            name: "T-Connector",
+            name: "Standard Connector",
+            type: "T",
             cost: "2.50",
-            price: "5.00",
             notes: "Standard T connector",
           },
           {
             id: 2,
-            name: "Y-Connector",
+            name: "Split Connector",
+            type: "Y",
             cost: "3.00",
-            price: "6.00",
             notes: "Y-split connector",
           },
           {
             id: 3,
-            name: "Male Connector",
+            name: "End Connector",
+            type: "Male",
             cost: "1.50",
-            price: "3.00",
             notes: "Male end connector",
           },
           {
             id: 4,
-            name: "2x2 Connector",
+            name: "Grid Connector",
+            type: "2x2",
             cost: "4.00",
-            price: "8.00",
             notes: "2x2 grid connector",
+          },
+          {
+            id: 5,
+            name: "Large Grid Connector",
+            type: "3x3",
+            cost: "6.00",
+            notes: "3x3 grid connector",
+          },
+          {
+            id: 6,
+            name: "Extra Large Grid Connector",
+            type: "4x4",
+            cost: "8.00",
+            notes: "4x4 grid connector",
           },
         ]);
         // --- End dummy block ---
@@ -80,14 +94,14 @@ const ConnectorList = () => {
 
   const columns = [
     { Header: "Name", accessor: "name" },
+    { Header: "Type", accessor: "type" },
     { Header: "Cost", accessor: "cost" },
-    { Header: "Price", accessor: "price" },
     { Header: "Notes", accessor: "notes" },
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1 items-center">
+        <div className="flex items-center justify-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"

@@ -30,25 +30,25 @@ const JumperList = () => {
             id: 1,
             type: "LED Jumpers",
             quantity: "1000",
-            notes: "Standard LED connectors",
-            cost: "0.50",
-            price: "1.00",
+            notes: "Various colors and lengths",
           },
           {
             id: 2,
             type: "RGB Jumpers",
-            quantity: "800",
-            notes: "RGB LED connectors",
-            cost: "0.75",
-            price: "1.50",
+            quantity: "500",
+            notes: "Male to female connectors",
           },
           {
             id: 3,
-            type: "Extension Jumpers",
-            quantity: "500",
-            notes: "Extension cables",
-            cost: "1.00",
-            price: "2.00",
+            type: "Connector Jumpers",
+            quantity: "300",
+            notes: "Standard breadboard jumpers",
+          },
+          {
+            id: 4,
+            type: "Adapter Jumpers",
+            quantity: "200",
+            notes: "Various adapter types",
           },
         ]);
         // --- End dummy block ---
@@ -76,14 +76,12 @@ const JumperList = () => {
   const columns = [
     { Header: "Type", accessor: "type" },
     { Header: "Quantity", accessor: "quantity" },
-    { Header: "Cost", accessor: "cost" },
-    { Header: "Price", accessor: "price" },
     { Header: "Notes", accessor: "notes" },
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"

@@ -16,7 +16,7 @@ const CommonControllerForm = ({ isEdit = false, initialData = {}, onSubmit, onCa
   const [formData, setFormData] = useState(() => {
     const initial = {
       type: "",
-      quantity: "",
+      boostBox: "",
       cost: "",
       price: "",
     };
@@ -34,8 +34,8 @@ const CommonControllerForm = ({ isEdit = false, initialData = {}, onSubmit, onCa
 
   // Dummy data for editing
   const dummyControllerData = {
-    1: { type: "350W", quantity: "100", cost: "25.00", price: "45.00" },
-    2: { type: "600W", quantity: "80", cost: "35.00", price: "65.00" },
+    1: { type: "350W", boostBox: "100", cost: "25.00", price: "45.00" },
+    2: { type: "600W", boostBox: "80", cost: "35.00", price: "65.00" },
   };
 
   useEffect(() => {
@@ -81,7 +81,7 @@ const CommonControllerForm = ({ isEdit = false, initialData = {}, onSubmit, onCa
     const newErrors = {};
 
     if (!formData.type) newErrors.type = "Controller type is required";
-    if (!formData.quantity) newErrors.quantity = "Quantity is required";
+    if (!formData.boostBox) newErrors.boostBox = "Boost Box is required";
     if (!formData.cost) newErrors.cost = "Cost is required";
     if (!formData.price) newErrors.price = "Price is required";
 
@@ -163,17 +163,17 @@ const CommonControllerForm = ({ isEdit = false, initialData = {}, onSubmit, onCa
               )}
             </div>
 
-            {/* Quantity */}
+            {/* Boost Box */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quantity <span className="text-red-500">*</span>
+                Boost Box <span className="text-red-500">*</span>
               </label>
               <Textinput
                 type="number"
-                value={formData.quantity}
-                onChange={(e) => handleInputChange("quantity", e.target.value)}
-                placeholder="Enter quantity"
-                error={errors.quantity}
+                value={formData.boostBox}
+                onChange={(e) => handleInputChange("boostBox", e.target.value)}
+                placeholder="Enter boost box quantity"
+                error={errors.boostBox}
               />
             </div>
 

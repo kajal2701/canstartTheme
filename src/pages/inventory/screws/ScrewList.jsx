@@ -79,7 +79,7 @@ const ScrewList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"

@@ -26,9 +26,30 @@ const PlugList = () => {
         // --- Remove this dummy block when API is ready ---
         await new Promise((r) => setTimeout(r, 600)); // simulate delay
         setData([
-          { id: 1, type: "3-Pin Plug", quantity: "800", notes: "Standard 3-pin connectors", cost: "1.50", price: "3.00" },
-          { id: 2, type: "4-Pin Plug", quantity: "600", notes: "4-pin RGB connectors", cost: "2.00", price: "4.00" },
-          { id: 3, type: "USB Plug", quantity: "400", notes: "USB power connectors", cost: "2.50", price: "5.00" },
+          {
+            id: 1,
+            type: "3-Pin Plug",
+            quantity: "200",
+            notes: "Standard 3-pin connectors",
+          },
+          {
+            id: 2,
+            type: "4-Pin Plug",
+            quantity: "150",
+            notes: "4-pin audio connectors",
+          },
+          {
+            id: 3,
+            type: "DC Plug",
+            quantity: "100",
+            notes: "Various DC connector sizes",
+          },
+          {
+            id: 4,
+            type: "Audio Plug",
+            quantity: "300",
+            notes: "3.5mm and 6.35mm audio plugs",
+          },
         ]);
         // --- End dummy block ---
 
@@ -56,14 +77,12 @@ const PlugList = () => {
   const columns = [
     { Header: "Type", accessor: "type" },
     { Header: "Quantity", accessor: "quantity" },
-    { Header: "Cost", accessor: "cost" },
-    { Header: "Price", accessor: "price" },
     { Header: "Notes", accessor: "notes" },
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"

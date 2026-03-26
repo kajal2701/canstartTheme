@@ -16,8 +16,8 @@ const CommonConnectorForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
   const [formData, setFormData] = useState(() => {
     const initial = {
       name: "",
+      type: "",
       cost: "",
-      price: "",
       notes: "",
     };
     return { ...initial, ...initialData };
@@ -25,11 +25,21 @@ const CommonConnectorForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
 
   const [errors, setErrors] = useState({});
 
+  // Connector type options
+  const connectorTypes = [
+    { value: "T", label: "T" },
+    { value: "Y", label: "Y" },
+    { value: "Male", label: "Male" },
+    { value: "2x2", label: "2x2" },
+    { value: "3x3", label: "3x3" },
+    { value: "4x4", label: "4x4" },
+  ];
+
   // Dummy data for editing
   const dummyConnectorData = {
-    1: { name: "T-Connector", cost: "2.50", price: "5.00", notes: "Standard T connector" },
-    2: { name: "Y-Connector", cost: "3.00", price: "6.00", notes: "Y-split connector" },
-    3: { name: "Male Connector", cost: "1.50", price: "3.00", notes: "Male end connector" },
+    1: { name: "Standard Connector", type: "T", cost: "2.50", notes: "Standard T connector" },
+    2: { name: "Split Connector", type: "Y", cost: "3.00", notes: "Y-split connector" },
+    3: { name: "End Connector", type: "Male", cost: "1.50", notes: "Male end connector" },
   };
 
   useEffect(() => {
@@ -75,8 +85,8 @@ const CommonConnectorForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
     const newErrors = {};
 
     if (!formData.name) newErrors.name = "Name is required";
+    if (!formData.type) newErrors.type = "Connector type is required";
     if (!formData.cost) newErrors.cost = "Cost is required";
-    if (!formData.price) newErrors.price = "Price is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -168,19 +178,21 @@ const CommonConnectorForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
               />
             </div>
 
-            {/* Price */}
+            {/* Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price ($)<span className="text-red-500">*</span>
+                Connector Type <span className="text-red-500">*</span>
               </label>
-              <Textinput
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => handleInputChange("price", e.target.value)}
-                placeholder="Enter selling price"
-                error={errors.price}
+              <Select
+                value={connectorTypes.find(option => option.value === formData.type)}
+                onChange={(selected) => handleInputChange("type", selected?.value || "")}
+                options={connectorTypes}
+                placeholder="Select Connector Type"
+                className={errors.type ? "border-red-500" : ""}
               />
+              {errors.type && (
+                <p className="text-red-500 text-xs mt-1">{errors.type}</p>
+              )}
             </div>
 
             {/* Notes */}

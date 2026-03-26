@@ -30,7 +30,6 @@ const LightList = () => {
             id: 1,
             type: "LED Strip",
             cost: "8.00",
-            price: "15.00",
             quantity: 200,
             purchaseInfo: "Supplier A - Bulk Order",
             notes: "Warm white LED",
@@ -39,10 +38,25 @@ const LightList = () => {
             id: 2,
             type: "Spot Light",
             cost: "12.00",
-            price: "22.00",
             quantity: 100,
             purchaseInfo: "Supplier B - Premium",
-            notes: "Adjustable spotlight",
+            notes: "Cool white spot light",
+          },
+          {
+            id: 3,
+            type: "Panel Light",
+            cost: "18.00",
+            quantity: 150,
+            purchaseInfo: "Supplier C - Standard",
+            notes: "RGB panel light",
+          },
+          {
+            id: 4,
+            type: "Flood Light",
+            cost: "25.00",
+            quantity: 80,
+            purchaseInfo: "Supplier D - Industrial",
+            notes: "High power flood light",
           },
         ]);
         // --- End dummy block ---
@@ -70,7 +84,6 @@ const LightList = () => {
   const columns = [
     { Header: "Type", accessor: "type" },
     { Header: "Cost", accessor: "cost" },
-    { Header: "Price", accessor: "price" },
     { Header: "Quantity", accessor: "quantity" },
     { Header: "Purchase Info", accessor: "purchaseInfo" },
     { Header: "Notes", accessor: "notes" },
@@ -78,7 +91,7 @@ const LightList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"

@@ -32,7 +32,6 @@ const Inventory = lazy(() => import("./pages/inventory/Index"));
 const TrackList = lazy(() => import("./pages/inventory/tracks/TrackList"));
 const ScrewList = lazy(() => import("./pages/inventory/screws/ScrewList"));
 const ControllerList = lazy(() => import("./pages/inventory/controllers/ControllerList"));
-const BoostBoxList = lazy(() => import("./pages/inventory/boost/BoostBoxList"));
 const ConnectorList = lazy(() => import("./pages/inventory/connectors/ConnectorList"));
 const LightList = lazy(() => import("./pages/inventory/lights/LightList"));
 const CableList = lazy(() => import("./pages/inventory/cables/CableList"));
@@ -45,8 +44,6 @@ const AddScrew = lazy(() => import("./pages/inventory/screws/AddScrew"));
 const EditScrew = lazy(() => import("./pages/inventory/screws/EditScrew"));
 const AddController = lazy(() => import("./pages/inventory/controllers/AddController"));
 const EditController = lazy(() => import("./pages/inventory/controllers/EditController"));
-const AddBoostBox = lazy(() => import("./pages/inventory/boost/AddBoostBox"));
-const EditBoostBox = lazy(() => import("./pages/inventory/boost/EditBoostBox"));
 const AddConnector = lazy(() => import("./pages/inventory/connectors/AddConnector"));
 const EditConnector = lazy(() => import("./pages/inventory/connectors/EditConnector"));
 const AddLight = lazy(() => import("./pages/inventory/lights/AddLight"));
@@ -309,30 +306,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="boost"
-                element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                    <BoostBoxList />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="boost/add"
-                element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                    <AddBoostBox />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="boost/edit/:id"
-                element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                    <EditBoostBox />
-                  </ProtectedRoute>
-                }
-              />
+             
               <Route
                 path="connectors"
                 element={

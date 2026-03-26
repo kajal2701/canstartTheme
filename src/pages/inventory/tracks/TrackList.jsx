@@ -90,7 +90,7 @@ const TrackList = () => {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-2">
+        <div className="flex items-center justify-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"
@@ -112,7 +112,7 @@ const TrackList = () => {
     <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-center gap-1">
           <button
             onClick={() => navigate("/inventory")}
             className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"

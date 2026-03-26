@@ -31,24 +31,30 @@ const CableList = () => {
             type: "Coaxial Cable",
             quantity: "500",
             notes: "Various lengths and colors",
-            cost: "2.50",
-            price: "4.00",
           },
           {
             id: 2,
             type: "Ethernet Cable",
             quantity: "300",
             notes: "Cat6 standard cables",
-            cost: "3.00",
-            price: "5.50",
           },
           {
             id: 3,
             type: "Power Cable",
             quantity: "200",
-            notes: "16AWG power cables",
-            cost: "4.00",
-            price: "7.00",
+            notes: "Different gauge sizes available",
+          },
+          {
+            id: 4,
+            type: "Fiber Optic Cable",
+            quantity: "150",
+            notes: "Single and multi-mode fibers",
+          },
+          {
+            id: 5,
+            type: "Audio Cable",
+            quantity: "400",
+            notes: "Various connector types",
           },
         ]);
         // --- End dummy block ---
@@ -76,14 +82,12 @@ const CableList = () => {
   const columns = [
     { Header: "Type", accessor: "type" },
     { Header: "Quantity", accessor: "quantity" },
-    { Header: "Cost", accessor: "cost" },
-    { Header: "Price", accessor: "price" },
     { Header: "Notes", accessor: "notes" },
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1 items-center">
+        <div className="flex items-center justify-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"

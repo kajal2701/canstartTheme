@@ -17,7 +17,6 @@ const CommonLightForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
     const initial = {
       type: "",
       cost: "",
-      price: "",
       quantity: "",
       purchaseInfo: "",
       notes: "",
@@ -36,8 +35,9 @@ const CommonLightForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
 
   // Dummy data for editing
   const dummyLightData = {
-    1: { type: "led_strip", cost: "8.00", price: "15.00", quantity: "200", purchaseInfo: "Supplier A - Bulk Order", notes: "Warm white LED" },
-    2: { type: "spot_light", cost: "12.00", price: "22.00", quantity: "100", purchaseInfo: "Supplier B - Premium", notes: "Adjustable spotlight" },
+    1: { type: "led_strip", cost: "8.00", quantity: "200", purchaseInfo: "Supplier A - Bulk Order", notes: "Warm white LED" },
+    2: { type: "spot_light", cost: "12.00", quantity: "150", purchaseInfo: "Supplier B - Standard Order", notes: "Cool white spot light" },
+    3: { type: "panel_light", cost: "18.00", quantity: "100", purchaseInfo: "Supplier C - Premium Order", notes: "RGB panel light" },
   };
 
   useEffect(() => {
@@ -84,7 +84,6 @@ const CommonLightForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
 
     if (!formData.type) newErrors.type = "Light type is required";
     if (!formData.cost) newErrors.cost = "Cost is required";
-    if (!formData.price) newErrors.price = "Price is required";
     if (!formData.quantity) newErrors.quantity = "Quantity is required";
 
     setErrors(newErrors);
@@ -194,20 +193,7 @@ const CommonLightForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
               />
             </div>
 
-            {/* Price */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price ($)<span className="text-red-500">*</span>
-              </label>
-              <Textinput
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => handleInputChange("price", e.target.value)}
-                placeholder="Enter selling price"
-                error={errors.price}
-              />
-            </div>
+          
 
             {/* Purchase Info */}
             <div className="md:col-span-2">

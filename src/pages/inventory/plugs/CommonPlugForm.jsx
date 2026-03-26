@@ -17,8 +17,6 @@ const CommonPlugForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, 
     const initial = {
       type: "",
       quantity: "",
-      cost: "",
-      price: "",
       notes: "",
     };
     return { ...initial, ...initialData };
@@ -36,9 +34,9 @@ const CommonPlugForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, 
 
   // Dummy data for editing
   const dummyPlugData = {
-    1: { type: "3_pin", quantity: "800", notes: "Standard 3-pin connectors", cost: "1.50", price: "3.00" },
-    2: { type: "4_pin", quantity: "600", notes: "4-pin RGB connectors", cost: "2.00", price: "4.00" },
-    3: { type: "usb", quantity: "400", notes: "USB power connectors", cost: "2.50", price: "5.00" },
+    1: { type: "usb_plug", quantity: "200", notes: "Various USB types" },
+    2: { type: "audio_plug", quantity: "150", notes: "3.5mm and 6.35mm plugs" },
+    3: { type: "power_plug", quantity: "100", notes: "Different voltage ratings" },
   };
 
   useEffect(() => {
@@ -85,8 +83,6 @@ const CommonPlugForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, 
 
     if (!formData.type) newErrors.type = "Type is required";
     if (!formData.quantity) newErrors.quantity = "Quantity is required";
-    if (!formData.cost) newErrors.cost = "Cost is required";
-    if (!formData.price) newErrors.price = "Price is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -177,36 +173,6 @@ const CommonPlugForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, 
                 onChange={(e) => handleInputChange("quantity", e.target.value)}
                 placeholder="Enter quantity"
                 error={errors.quantity}
-              />
-            </div>
-
-            {/* Cost */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cost ($)<span className="text-red-500">*</span>
-              </label>
-              <Textinput
-                type="number"
-                step="0.01"
-                value={formData.cost}
-                onChange={(e) => handleInputChange("cost", e.target.value)}
-                placeholder="Enter cost per unit"
-                error={errors.cost}
-              />
-            </div>
-
-            {/* Price */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price ($)<span className="text-red-500">*</span>
-              </label>
-              <Textinput
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => handleInputChange("price", e.target.value)}
-                placeholder="Enter selling price"
-                error={errors.price}
               />
             </div>
 

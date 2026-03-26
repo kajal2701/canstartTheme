@@ -17,8 +17,6 @@ const CommonPowerCordForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
     const initial = {
       type: "",
       quantity: "",
-      cost: "",
-      price: "",
       notes: "",
     };
     return { ...initial, ...initialData };
@@ -36,9 +34,9 @@ const CommonPowerCordForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
 
   // Dummy data for editing
   const dummyPowerCordData = {
-    1: { type: "6_foot", quantity: "300", notes: "Standard 6-foot power cords", cost: "3.00", price: "6.00" },
-    2: { type: "10_foot", quantity: "200", notes: "Extended 10-foot cords", cost: "4.50", price: "8.00" },
-    3: { type: "12_foot", quantity: "150", notes: "Long 12-foot cords", cost: "5.00", price: "9.00" },
+    1: { type: "extension_cord", quantity: "50", notes: "Various lengths available" },
+    2: { type: "computer_cord", quantity: "100", notes: "Standard computer power cords" },
+    3: { type: "appliance_cord", quantity: "75", notes: "Home appliance cords" },
   };
 
   useEffect(() => {
@@ -85,8 +83,6 @@ const CommonPowerCordForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
 
     if (!formData.type) newErrors.type = "Type is required";
     if (!formData.quantity) newErrors.quantity = "Quantity is required";
-    if (!formData.cost) newErrors.cost = "Cost is required";
-    if (!formData.price) newErrors.price = "Price is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -177,36 +173,6 @@ const CommonPowerCordForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
                 onChange={(e) => handleInputChange("quantity", e.target.value)}
                 placeholder="Enter quantity"
                 error={errors.quantity}
-              />
-            </div>
-
-            {/* Cost */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cost ($)<span className="text-red-500">*</span>
-              </label>
-              <Textinput
-                type="number"
-                step="0.01"
-                value={formData.cost}
-                onChange={(e) => handleInputChange("cost", e.target.value)}
-                placeholder="Enter cost per unit"
-                error={errors.cost}
-              />
-            </div>
-
-            {/* Price */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price ($)<span className="text-red-500">*</span>
-              </label>
-              <Textinput
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => handleInputChange("price", e.target.value)}
-                placeholder="Enter selling price"
-                error={errors.price}
               />
             </div>
 

@@ -263,7 +263,7 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
             </div>
 
             {/* Quantity */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Quantity <span className="text-red-500">*</span>
               </label>
@@ -274,7 +274,7 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
                 placeholder="Enter quantity"
                 error={errors.quantity}
               />
-            </div>
+            </div> */}
           </div>
 
           <div className="flex justify-end space-x-3 mt-8">

@@ -29,26 +29,26 @@ const PowerCordList = () => {
           {
             id: 1,
             type: "6-Foot Cord",
-            quantity: "300",
-            notes: "Standard 6-foot power cords",
-            cost: "3.00",
-            price: "6.00",
+            quantity: "50",
+            notes: "Standard 6-foot extension cords",
           },
           {
             id: 2,
             type: "10-Foot Cord",
-            quantity: "200",
-            notes: "Extended 10-foot cords",
-            cost: "4.50",
-            price: "8.00",
+            quantity: "75",
+            notes: "Medium length extension cords",
           },
           {
             id: 3,
-            type: "12-Foot Cord",
-            quantity: "150",
-            notes: "Long 12-foot cords",
-            cost: "5.00",
-            price: "9.00",
+            type: "15-Foot Cord",
+            quantity: "40",
+            notes: "Long extension cords for outdoor use",
+          },
+          {
+            id: 4,
+            type: "20-Foot Cord",
+            quantity: "30",
+            notes: "Extra long heavy-duty cords",
           },
         ]);
         // --- End dummy block ---
@@ -77,14 +77,12 @@ const PowerCordList = () => {
   const columns = [
     { Header: "Type", accessor: "type" },
     { Header: "Quantity", accessor: "quantity" },
-    { Header: "Cost", accessor: "cost" },
-    { Header: "Price", accessor: "price" },
     { Header: "Notes", accessor: "notes" },
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"

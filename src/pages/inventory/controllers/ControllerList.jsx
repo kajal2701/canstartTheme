@@ -26,8 +26,8 @@ const ControllerList = () => {
         // --- Remove this dummy block when API is ready ---
         await new Promise((r) => setTimeout(r, 600)); // simulate delay
         setData([
-          { id: 1, type: "350W", cost: "25.00", price: "45.00", quantity: 100 },
-          { id: 2, type: "600W", cost: "35.00", price: "65.00", quantity: 80 },
+          { id: 1, type: "350W", cost: "25.00", price: "45.00", boostBox: 100 },
+          { id: 2, type: "600W", cost: "35.00", price: "65.00", boostBox: 80 },
         ]);
         // --- End dummy block ---
       } catch (err) {
@@ -56,12 +56,12 @@ const ControllerList = () => {
     { Header: "Type", accessor: "type" },
     { Header: "Cost", accessor: "cost" },
     { Header: "Price", accessor: "price" },
-    { Header: "Quantity", accessor: "quantity" },
+    { Header: "Boost Box", accessor: "boostBox" },
     {
       Header: "Actions",
       accessor: "actions",
       Cell: ({ row }) => (
-        <div className="flex gap-1 items-center">
+        <div className="flex items-center justify-center gap-1">
           <Button
             icon="ph:pencil-simple"
             className="btn-warning h-9 w-9 p-0"
