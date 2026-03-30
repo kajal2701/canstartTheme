@@ -2,18 +2,32 @@ import React from "react";
 import CommonTrackForm from "./CommonTrackForm";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { addTrack } from "@/services/inventoryService";
 
 const AddTrack = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (formData) => {
     try {
-      // In real implementation, call the API:
-      // await addTrack(formData);
-      
-      toast.success("Track added successfully!");
-      navigate("/inventory?tab=tracks");
+      const payload = {
+        color: formData.color,
+        supplier: formData.supplier,
+        totalLength: formData.totalLength,
+        size: formData.size,
+        cost: parseFloat(formData.cost),
+        price: parseFloat(formData.price),
+        quantity: parseInt(formData.quantity, 10),
+      };
+
+      const result = await addTrack(payload);
+      if (result?.success) {
+        toast.success("Track added successfully!");
+        navigate("/inventory/tracks");
+      } else {
+        toast.error(result?.message || "Failed to add track.");
+      }
     } catch (error) {
+      toast.error("Failed to add track.");
       throw error;
     }
   };

@@ -2,73 +2,37 @@ import React, { useState, useEffect } from "react";
 import CommonPlugForm from "./CommonPlugForm";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getPlugs, editPlug } from "@/services/inventoryService";
 
 const EditPlug = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
-
-  // Dummy data for editing
-  const dummyPlugData = {
-    1: { type: "3_pin", quantity: "800", notes: "Standard 3-pin connectors", cost: "1.50", price: "3.00" },
-    2: { type: "4_pin", quantity: "600", notes: "4-pin RGB connectors", cost: "2.00", price: "4.00" },
-    3: { type: "usb", quantity: "400", notes: "USB power connectors", cost: "2.50", price: "5.00" },
-  };
+  const [initialData, setInitialData] = useState(null);
 
   useEffect(() => {
-    // Simulate fetching plug data
-    const fetchPlugData = async () => {
+    const fetchData = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const plugData = dummyPlugData[id];
-        if (plugData) {
-          // Data will be handled by CommonPlugForm
-        } else {
-          toast.error("Plug not found");
-          navigate("/inventory");
-        }
-      } catch (error) {
-        toast.error("Failed to load plug data");
-        navigate("/inventory");
-      } finally {
-        setLoading(false);
-      }
+        const items = await getPlugs();
+        const item = items.find(i => i.plug_id === parseInt(id, 10));
+        if (item) setInitialData({ type: item.type || "", quantity: String(item.quantity || ""), notes: item.notes || "" });
+        else { toast.error("Plug not found"); navigate("/inventory/plugs", { replace: true }); }
+      } catch { toast.error("Failed to load data"); navigate("/inventory/plugs", { replace: true }); }
+      finally { setLoading(false); }
     };
-
-    fetchPlugData();
+    fetchData();
   }, [id, navigate]);
 
   const handleSubmit = async (formData) => {
-    try {
-      // In real implementation, call the API:
-      // await updatePlug(id, formData);
-      
-      toast.success("Plug updated successfully!");
-      navigate("/inventory?tab=plugs");
-    } catch (error) {
-      throw error;
-    }
+    const payload = { plug_id: parseInt(id, 10), type: formData.type, quantity: parseInt(formData.quantity, 10), notes: formData.notes || null };
+    const result = await editPlug(payload);
+    if (result?.success) { toast.success("Plug updated!"); navigate("/inventory/plugs"); }
+    else toast.error(result?.message || "Failed to update.");
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
-
-  const initialData = dummyPlugData[id] || {};
-
-  return (
-    <CommonPlugForm
-      isEdit={true}
-      title="Edit Plug"
-      initialData={initialData}
-      onSubmit={handleSubmit}
-    />
-  );
+  if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div></div>;
+  if (!initialData) return null;
+  return <CommonPlugForm isEdit={true} title="Edit Plug" initialData={initialData} onSubmit={handleSubmit} />;
 };
 
 export default EditPlug;

@@ -2,73 +2,37 @@ import React, { useState, useEffect } from "react";
 import CommonJumperForm from "./CommonJumperForm";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getJumpers, editJumper } from "@/services/inventoryService";
 
 const EditJumper = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
-
-  // Dummy data for editing
-  const dummyJumperData = {
-    1: { type: "led", quantity: "1000", notes: "Standard LED connectors", cost: "0.50", price: "1.00" },
-    2: { type: "rgb", quantity: "800", notes: "RGB LED connectors", cost: "0.75", price: "1.50" },
-    3: { type: "extension", quantity: "500", notes: "Extension cables", cost: "1.00", price: "2.00" },
-  };
+  const [initialData, setInitialData] = useState(null);
 
   useEffect(() => {
-    // Simulate fetching jumper data
-    const fetchJumperData = async () => {
+    const fetchData = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const jumperData = dummyJumperData[id];
-        if (jumperData) {
-          // Data will be handled by CommonJumperForm
-        } else {
-          toast.error("Jumper not found");
-          navigate("/inventory");
-        }
-      } catch (error) {
-        toast.error("Failed to load jumper data");
-        navigate("/inventory");
-      } finally {
-        setLoading(false);
-      }
+        const items = await getJumpers();
+        const item = items.find(i => i.jumper_id === parseInt(id, 10));
+        if (item) setInitialData({ type: item.type || "", quantity: String(item.quantity || ""), notes: item.notes || "" });
+        else { toast.error("Jumper not found"); navigate("/inventory/jumpers", { replace: true }); }
+      } catch { toast.error("Failed to load data"); navigate("/inventory/jumpers", { replace: true }); }
+      finally { setLoading(false); }
     };
-
-    fetchJumperData();
+    fetchData();
   }, [id, navigate]);
 
   const handleSubmit = async (formData) => {
-    try {
-      // In real implementation, call the API:
-      // await updateJumper(id, formData);
-      
-      toast.success("Jumper updated successfully!");
-      navigate("/inventory?tab=jumpers");
-    } catch (error) {
-      throw error;
-    }
+    const payload = { jumper_id: parseInt(id, 10), type: formData.type, quantity: parseInt(formData.quantity, 10), notes: formData.notes || null };
+    const result = await editJumper(payload);
+    if (result?.success) { toast.success("Jumper updated!"); navigate("/inventory/jumpers"); }
+    else toast.error(result?.message || "Failed to update.");
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
-
-  const initialData = dummyJumperData[id] || {};
-
-  return (
-    <CommonJumperForm
-      isEdit={true}
-      title="Edit Jumper"
-      initialData={initialData}
-      onSubmit={handleSubmit}
-    />
-  );
+  if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div></div>;
+  if (!initialData) return null;
+  return <CommonJumperForm isEdit={true} title="Edit Jumper" initialData={initialData} onSubmit={handleSubmit} />;
 };
 
 export default EditJumper;

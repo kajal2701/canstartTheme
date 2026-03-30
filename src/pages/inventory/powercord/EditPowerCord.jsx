@@ -2,73 +2,37 @@ import React, { useState, useEffect } from "react";
 import CommonPowerCordForm from "./CommonPowerCordForm";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getPowercords, editPowercord } from "@/services/inventoryService";
 
 const EditPowerCord = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
-
-  // Dummy data for editing
-  const dummyPowerCordData = {
-    1: { type: "6_foot", quantity: "300", notes: "Standard 6-foot power cords", cost: "3.00", price: "6.00" },
-    2: { type: "10_foot", quantity: "200", notes: "Extended 10-foot cords", cost: "4.50", price: "8.00" },
-    3: { type: "12_foot", quantity: "150", notes: "Long 12-foot cords", cost: "5.00", price: "9.00" },
-  };
+  const [initialData, setInitialData] = useState(null);
 
   useEffect(() => {
-    // Simulate fetching power cord data
-    const fetchPowerCordData = async () => {
+    const fetchData = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const powerCordData = dummyPowerCordData[id];
-        if (powerCordData) {
-          // Data will be handled by CommonPowerCordForm
-        } else {
-          toast.error("Power Cord not found");
-          navigate("/inventory");
-        }
-      } catch (error) {
-        toast.error("Failed to load power cord data");
-        navigate("/inventory");
-      } finally {
-        setLoading(false);
-      }
+        const items = await getPowercords();
+        const item = items.find(i => i.powercord_id === parseInt(id, 10));
+        if (item) setInitialData({ type: item.type || "", quantity: String(item.quantity || ""), notes: item.notes || "" });
+        else { toast.error("Power cord not found"); navigate("/inventory/powercord", { replace: true }); }
+      } catch { toast.error("Failed to load data"); navigate("/inventory/powercord", { replace: true }); }
+      finally { setLoading(false); }
     };
-
-    fetchPowerCordData();
+    fetchData();
   }, [id, navigate]);
 
   const handleSubmit = async (formData) => {
-    try {
-      // In real implementation, call the API:
-      // await updatePowerCord(id, formData);
-      
-      toast.success("Power Cord updated successfully!");
-      navigate("/inventory?tab=powercord");
-    } catch (error) {
-      throw error;
-    }
+    const payload = { powercord_id: parseInt(id, 10), type: formData.type, quantity: parseInt(formData.quantity, 10), notes: formData.notes || null };
+    const result = await editPowercord(payload);
+    if (result?.success) { toast.success("Power cord updated!"); navigate("/inventory/powercord"); }
+    else toast.error(result?.message || "Failed to update.");
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
-
-  const initialData = dummyPowerCordData[id] || {};
-
-  return (
-    <CommonPowerCordForm
-      isEdit={true}
-      title="Edit Power Cord"
-      initialData={initialData}
-      onSubmit={handleSubmit}
-    />
-  );
+  if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div></div>;
+  if (!initialData) return null;
+  return <CommonPowerCordForm isEdit={true} title="Edit Power Cord" initialData={initialData} onSubmit={handleSubmit} />;
 };
 
 export default EditPowerCord;

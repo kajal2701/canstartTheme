@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Card from "@/components/ui/Card";
 import Textinput from "@/components/ui/Textinput";
-import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
-import Textarea from "@/components/ui/Textarea";
-import { useNavigate, useParams } from "react-router-dom";
+import Button from "@/components/ui/Button";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
   const navigate = useNavigate();
-  const { id } = useParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loading, setLoading] = useState(isEdit);
 
   const [formData, setFormData] = useState(() => {
     const initial = {
@@ -29,68 +26,40 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
   const [errors, setErrors] = useState({});
 
   const colors = [
-    { value: "white", label: "White" },
-    { value: "black", label: "Black" },
-    { value: "silver", label: "Silver" },
-    { value: "gold", label: "Gold" },
-    { value: "bronze", label: "Bronze" },
-  ];
-
-  const suppliers = [
-    { value: "supplier_a", label: "Track Supplier A" },
-    { value: "supplier_b", label: "Track Supplier B" },
-    { value: "supplier_c", label: "Track Supplier C" },
+    { value: "White", label: "White" },
+    { value: "Black", label: "Black" },
+    { value: "Silver", label: "Silver" },
+    { value: "Gold", label: "Gold" },
+    { value: "Bronze", label: "Bronze" },
+    { value: "Grey", label: "Grey" },
+    { value: "Red", label: "Red" },
+    { value: "Blue", label: "Blue" },
   ];
 
   const sizes = [
-    { value: "1_meter", label: "1 meter" },
-    { value: "4_feet", label: "4 feet" },
-    { value: "6_feet", label: "6 feet" },
-    { value: "other", label: "Other" },
+    { value: "1 inch", label: "1 inch" },
+    { value: "1.5 inch", label: "1.5 inch" },
+    { value: "2 inch", label: "2 inch" },
+    { value: "2.5 inch", label: "2.5 inch" },
+    { value: "3 inch", label: "3 inch" },
   ];
 
-  // Dummy data for editing
-  const dummyTrackData = {
-    1: { color: "white", supplier: "supplier_a", totalLength: "1000", size: "1_meter", cost: "5.50", price: "8.50", quantity: "500" },
-    2: { color: "black", supplier: "supplier_b", totalLength: "800", size: "4_feet", cost: "12.00", price: "18.00", quantity: "300" },
-    3: { color: "silver", supplier: "supplier_a", totalLength: "600", size: "6_feet", cost: "18.00", price: "25.00", quantity: "200" },
-  };
-
-  useEffect(() => {
-    if (isEdit && id) {
-      const fetchTrackData = async () => {
-        try {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          const trackData = dummyTrackData[id];
-          if (trackData) {
-            setFormData(trackData);
-          } else {
-            toast.error("Track not found");
-            navigate("/inventory");
-          }
-        } catch (error) {
-          toast.error("Failed to load track data");
-          navigate("/inventory");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchTrackData();
-    }
-  }, [isEdit, id, navigate]);
+  const suppliers = [
+    { value: "Track Supplier A", label: "Track Supplier A" },
+    { value: "Track Supplier B", label: "Track Supplier B" },
+    { value: "Track Supplier C", label: "Track Supplier C" },
+  ];
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
-        [field]: ""
+        [field]: "",
       }));
     }
   };
@@ -100,11 +69,14 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
 
     if (!formData.color) newErrors.color = "Color is required";
     if (!formData.supplier) newErrors.supplier = "Supplier is required";
-    if (!formData.totalLength) newErrors.totalLength = "Total length is required";
+    if (!formData.totalLength.trim()) newErrors.totalLength = "Total length is required";
     if (!formData.size) newErrors.size = "Size is required";
     if (!formData.cost) newErrors.cost = "Cost is required";
+    else if (isNaN(formData.cost) || parseFloat(formData.cost) < 0) newErrors.cost = "Enter a valid cost";
     if (!formData.price) newErrors.price = "Price is required";
+    else if (isNaN(formData.price) || parseFloat(formData.price) < 0) newErrors.price = "Enter a valid price";
     if (!formData.quantity) newErrors.quantity = "Quantity is required";
+    else if (isNaN(formData.quantity) || parseInt(formData.quantity, 10) < 0) newErrors.quantity = "Enter a valid quantity";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -112,24 +84,21 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
-      toast.error("Please fill all required fields");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       if (onSubmit) {
         await onSubmit(formData);
       } else {
-        toast.success(`Track ${isEdit ? 'updated' : 'added'} successfully!`);
-        navigate("/inventory");
+        toast.success(`Track ${isEdit ? "updated" : "added"} successfully!`);
+        navigate("/inventory/tracks");
       }
     } catch (error) {
-      toast.error(`Failed to ${isEdit ? 'update' : 'add'} track`);
+      toast.error(`Failed to ${isEdit ? "update" : "add"} track`);
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -140,24 +109,16 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
     if (onCancel) {
       onCancel();
     } else {
-      navigate("/inventory");
+      navigate("/inventory/tracks");
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
 
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <Button
-          text="Back to Inventory"
+          text="Back to Tracks"
           icon="ph:arrow-left"
           className="btn-outline-primary"
           onClick={handleCancel}
@@ -173,15 +134,12 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
                 Color <span className="text-red-500">*</span>
               </label>
               <Select
-                value={colors.find(c => c.value === formData.color)}
-                onChange={(selected) => handleInputChange("color", selected?.value || "")}
+                value={formData.color}
+                onChange={(e) => handleInputChange("color", e.target.value)}
                 options={colors}
                 placeholder="Select Color"
-                className={errors.color ? "border-red-500" : ""}
+                error={errors.color}
               />
-              {errors.color && (
-                <p className="text-red-500 text-xs mt-1">{errors.color}</p>
-              )}
             </div>
 
             {/* Supplier */}
@@ -190,15 +148,12 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
                 Supplier <span className="text-red-500">*</span>
               </label>
               <Select
-                value={suppliers.find(s => s.value === formData.supplier)}
-                onChange={(selected) => handleInputChange("supplier", selected?.value || "")}
+                value={formData.supplier}
+                onChange={(e) => handleInputChange("supplier", e.target.value)}
                 options={suppliers}
                 placeholder="Select Supplier"
-                className={errors.supplier ? "border-red-500" : ""}
+                error={errors.supplier}
               />
-              {errors.supplier && (
-                <p className="text-red-500 text-xs mt-1">{errors.supplier}</p>
-              )}
             </div>
 
             {/* Total Length */}
@@ -210,7 +165,7 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
                 type="text"
                 value={formData.totalLength}
                 onChange={(e) => handleInputChange("totalLength", e.target.value)}
-                placeholder="Enter total length"
+                placeholder="Enter total length (e.g. 50m)"
                 error={errors.totalLength}
               />
             </div>
@@ -221,15 +176,12 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
                 Size <span className="text-red-500">*</span>
               </label>
               <Select
-                value={sizes.find(s => s.value === formData.size)}
-                onChange={(selected) => handleInputChange("size", selected?.value || "")}
+                value={formData.size}
+                onChange={(e) => handleInputChange("size", e.target.value)}
                 options={sizes}
                 placeholder="Select Size"
-                className={errors.size ? "border-red-500" : ""}
+                error={errors.size}
               />
-              {errors.size && (
-                <p className="text-red-500 text-xs mt-1">{errors.size}</p>
-              )}
             </div>
 
             {/* Cost */}
@@ -263,7 +215,7 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
             </div>
 
             {/* Quantity */}
-            {/* <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Quantity <span className="text-red-500">*</span>
               </label>
@@ -274,7 +226,7 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
                 placeholder="Enter quantity"
                 error={errors.quantity}
               />
-            </div> */}
+            </div>
           </div>
 
           <div className="flex justify-end space-x-3 mt-8">

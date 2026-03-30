@@ -2,35 +2,36 @@ import React, { useState, useEffect } from "react";
 import CommonTrackForm from "./CommonTrackForm";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getTracks, editTrack } from "@/services/inventoryService";
 
 const EditTrack = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
-
-  // Dummy data for editing
-  const dummyTrackData = {
-    1: { color: "white", supplier: "supplier_a", totalLength: "1000", size: "1_meter", cost: "5.50", price: "8.50", quantity: "500" },
-    2: { color: "black", supplier: "supplier_b", totalLength: "800", size: "4_feet", cost: "12.00", price: "18.00", quantity: "300" },
-    3: { color: "silver", supplier: "supplier_a", totalLength: "600", size: "6_feet", cost: "18.00", price: "25.00", quantity: "200" },
-  };
+  const [initialData, setInitialData] = useState(null);
 
   useEffect(() => {
-    // Simulate fetching track data
     const fetchTrackData = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const trackData = dummyTrackData[id];
-        if (trackData) {
-          // Data will be handled by CommonTrackForm
+        const tracks = await getTracks();
+        const track = tracks.find((t) => t.track_id === parseInt(id, 10));
+        if (track) {
+          setInitialData({
+            color: track.color || "",
+            supplier: track.supplier || "",
+            totalLength: track.totalLength || "",
+            size: track.size || "",
+            cost: track.cost || "",
+            price: track.price || "",
+            quantity: String(track.quantity || ""),
+          });
         } else {
           toast.error("Track not found");
-          navigate("/inventory");
+          navigate("/inventory/tracks", { replace: true });
         }
       } catch (error) {
         toast.error("Failed to load track data");
-        navigate("/inventory");
+        navigate("/inventory/tracks", { replace: true });
       } finally {
         setLoading(false);
       }
@@ -41,12 +42,26 @@ const EditTrack = () => {
 
   const handleSubmit = async (formData) => {
     try {
-      // In real implementation, call the API:
-      // await updateTrack(id, formData);
-      
-      toast.success("Track updated successfully!");
-      navigate("/inventory?tab=tracks");
+      const payload = {
+        track_id: parseInt(id, 10),
+        color: formData.color,
+        supplier: formData.supplier,
+        totalLength: formData.totalLength,
+        size: formData.size,
+        cost: parseFloat(formData.cost),
+        price: parseFloat(formData.price),
+        quantity: parseInt(formData.quantity, 10),
+      };
+
+      const result = await editTrack(payload);
+      if (result?.success) {
+        toast.success("Track updated successfully!");
+        navigate("/inventory/tracks");
+      } else {
+        toast.error(result?.message || "Failed to update track.");
+      }
     } catch (error) {
+      toast.error("Failed to update track.");
       throw error;
     }
   };
@@ -59,7 +74,7 @@ const EditTrack = () => {
     );
   }
 
-  const initialData = dummyTrackData[id] || {};
+  if (!initialData) return null;
 
   return (
     <CommonTrackForm

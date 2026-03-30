@@ -87,7 +87,7 @@ const Textarea = ({
       </div>
       {/* error and success message*/}
       {error && (
-        <div className="mt-2 text-red-600 block text-sm">{error.message}</div>
+        <div className="mt-1 text-red-500 block text-xs">{typeof error === "object" ? error.message : error}</div>
       )}
       {/* validated and success message*/}
       {validate && (

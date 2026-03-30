@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
 import DataTable from "@/components/ui/DataTable";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getTracks, deleteTrack } from "@/services/inventoryService";
 
 const TrackList = () => {
   const navigate = useNavigate();
@@ -12,101 +14,103 @@ const TrackList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchTracks = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Replace with your real API call:
-        // const response = await fetch("/api/inventory/tracks");
-        // const result = await response.json();
-        // setData(result.data);
+  // Delete modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTrackId, setDeleteTrackId] = useState(null);
+  const [deleteTrackName, setDeleteTrackName] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
-        // --- Remove this dummy block when API is ready ---
-        await new Promise((r) => setTimeout(r, 600)); // simulate delay
-        setData([
-          {
-            id: 1,
-            color: "White",
-            supplier: "Track Supplier A",
-            totalLength: "1000",
-            size: "1 meter",
-            cost: "5.50",
-            price: "8.50",
-            quantity: 500,
-          },
-          {
-            id: 2,
-            color: "Black",
-            supplier: "Track Supplier B",
-            totalLength: "800",
-            size: "4 feet",
-            cost: "12.00",
-            price: "18.00",
-            quantity: 300,
-          },
-          {
-            id: 3,
-            color: "Silver",
-            supplier: "Track Supplier A",
-            totalLength: "600",
-            size: "6 feet",
-            cost: "18.00",
-            price: "25.00",
-            quantity: 200,
-          },
-        ]);
-        // --- End dummy block ---
-      } catch (err) {
-        setError("Failed to load tracks. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTracks();
-  }, []);
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this track?")) return;
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      // await deleteTrack(id);
-      setData((prev) => prev.filter((item) => item.id !== id));
-      toast.success("Track deleted successfully!");
+      const tracks = await getTracks();
+      setData(tracks);
     } catch (err) {
-      toast.error("Failed to delete track.");
+      setError("Failed to load tracks. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const columns = [
-    { Header: "Color", accessor: "color" },
-    { Header: "Supplier", accessor: "supplier" },
-    { Header: "Total Length", accessor: "totalLength" },
-    { Header: "Size", accessor: "size" },
-    { Header: "Cost", accessor: "cost" },
-    { Header: "Price", accessor: "price" },
-    { Header: "Quantity", accessor: "quantity" },
-    {
-      Header: "Actions",
-      accessor: "actions",
-      Cell: ({ row }) => (
-        <div className="flex items-center justify-center gap-1">
-          <Button
-            icon="ph:pencil-simple"
-            className="btn-warning h-9 w-9 p-0"
-            onClick={() =>
-              navigate(`/inventory/tracks/edit/${row.original.id}`)
-            }
-          />
-          <Button
-            icon="ph:trash"
-            className="btn-danger h-9 w-9 p-0"
-            onClick={() => handleDelete(row.original.id)}
-          />
-        </div>
-      ),
-    },
-  ];
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Open confirmation modal
+  const openDeleteModal = (track) => {
+    setDeleteTrackId(track.track_id);
+    setDeleteTrackName(`${track.color} - ${track.size}`);
+    setDeleteModalOpen(true);
+  };
+
+  // Close confirmation modal
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setDeleteTrackId(null);
+    setDeleteTrackName("");
+  };
+
+  // Confirm delete
+  const handleConfirmDelete = async () => {
+    if (!deleteTrackId) return;
+    setIsDeleting(true);
+    try {
+      const result = await deleteTrack(deleteTrackId);
+      if (result?.success) {
+        toast.success("Track deleted successfully!");
+        await fetchData();
+      } else {
+        toast.error(result?.message || "Failed to delete track.");
+      }
+    } catch (err) {
+      toast.error("Failed to delete track.");
+    } finally {
+      setIsDeleting(false);
+      closeDeleteModal();
+    }
+  };
+
+  const columns = useMemo(
+    () => [
+      { Header: "Color", accessor: "color" },
+      { Header: "Supplier", accessor: "supplier" },
+      { Header: "Total Length", accessor: "totalLength" },
+      { Header: "Size", accessor: "size" },
+      {
+        Header: "Cost",
+        accessor: "cost",
+        Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}`,
+      },
+      {
+        Header: "Price",
+        accessor: "price",
+        Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}`,
+      },
+      { Header: "Quantity", accessor: "quantity" },
+      {
+        Header: "Actions",
+        accessor: "actions",
+        Cell: ({ row }) => (
+          <div className="flex items-center justify-center gap-1">
+            <Button
+              icon="ph:pencil-simple"
+              className="btn-warning h-9 w-9 p-0"
+              onClick={() =>
+                navigate(`/inventory/tracks/edit/${row.original.track_id}`)
+              }
+            />
+            <Button
+              icon="ph:trash"
+              className="btn-danger h-9 w-9 p-0"
+              onClick={() => openDeleteModal(row.original)}
+            />
+          </div>
+        ),
+      },
+    ],
+    [navigate]
+  );
 
   return (
     <>
@@ -143,7 +147,7 @@ const TrackList = () => {
             <Button
               text="Retry"
               className="btn-sm btn-outline"
-              onClick={() => window.location.reload()}
+              onClick={fetchData}
             />
           </div>
         ) : (
@@ -158,6 +162,15 @@ const TrackList = () => {
           </div>
         )}
       </Card>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        activeModal={deleteModalOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleConfirmDelete}
+        itemName={deleteTrackName}
+        isLoading={isDeleting}
+      />
     </>
   );
 };

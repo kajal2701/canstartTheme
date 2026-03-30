@@ -1,135 +1,69 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
-import LoadingIcon from "@/components/LoadingIcon";
 import DataTable from "@/components/ui/DataTable";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getConnectors, deleteConnector } from "@/services/inventoryService";
 
 const ConnectorList = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleteName, setDeleteName] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    const fetchConnectors = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Replace with your real API call:
-        // const response = await fetch("/api/inventory/connectors");
-        // const result = await response.json();
-        // setData(result.data);
+  const fetchData = async () => {
+    setLoading(true); setError(null);
+    try { setData(await getConnectors()); }
+    catch { setError("Failed to load connectors. Please try again."); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { fetchData(); }, []);
 
-        // --- Remove this dummy block when API is ready ---
-        await new Promise((r) => setTimeout(r, 600)); // simulate delay
-        setData([
-          {
-            id: 1,
-            name: "Standard Connector",
-            type: "T",
-            cost: "2.50",
-            notes: "Standard T connector",
-          },
-          {
-            id: 2,
-            name: "Split Connector",
-            type: "Y",
-            cost: "3.00",
-            notes: "Y-split connector",
-          },
-          {
-            id: 3,
-            name: "End Connector",
-            type: "Male",
-            cost: "1.50",
-            notes: "Male end connector",
-          },
-          {
-            id: 4,
-            name: "Grid Connector",
-            type: "2x2",
-            cost: "4.00",
-            notes: "2x2 grid connector",
-          },
-          {
-            id: 5,
-            name: "Large Grid Connector",
-            type: "3x3",
-            cost: "6.00",
-            notes: "3x3 grid connector",
-          },
-          {
-            id: 6,
-            name: "Extra Large Grid Connector",
-            type: "4x4",
-            cost: "8.00",
-            notes: "4x4 grid connector",
-          },
-        ]);
-        // --- End dummy block ---
-      } catch (err) {
-        setError("Failed to load connectors. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const openDeleteModal = (item) => { setDeleteId(item.connector_id); setDeleteName(`${item.name} (${item.type})`); setDeleteModalOpen(true); };
+  const closeDeleteModal = () => { setDeleteModalOpen(false); setDeleteId(null); setDeleteName(""); };
 
-    fetchConnectors();
-  }, []);
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this connector?"))
-      return;
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
     try {
-      // await deleteConnector(id);
-      setData((prev) => prev.filter((item) => item.id !== id));
-      toast.success("Connector deleted successfully!");
-    } catch (err) {
-      toast.error("Failed to delete connector.");
-    }
+      const result = await deleteConnector(deleteId);
+      if (result?.success) { toast.success("Connector deleted!"); await fetchData(); }
+      else toast.error(result?.message || "Failed to delete.");
+    } catch { toast.error("Failed to delete connector."); }
+    finally { setIsDeleting(false); closeDeleteModal(); }
   };
 
-  const columns = [
+  const columns = useMemo(() => [
     { Header: "Name", accessor: "name" },
     { Header: "Type", accessor: "type" },
-    { Header: "Cost", accessor: "cost" },
-    { Header: "Notes", accessor: "notes" },
+    { Header: "Cost", accessor: "cost", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
+    { Header: "Notes", accessor: "notes", Cell: ({ value }) => value || "—" },
     {
-      Header: "Actions",
-      accessor: "actions",
+      Header: "Actions", accessor: "actions",
       Cell: ({ row }) => (
         <div className="flex items-center justify-center gap-1">
-          <Button
-            icon="ph:pencil-simple"
-            className="btn-warning h-9 w-9 p-0"
-            onClick={() =>
-              navigate(`/inventory/connectors/edit/${row.original.id}`)
-            }
-          />
-          <Button
-            icon="ph:trash"
-            className="btn-danger h-9 w-9 p-0"
-            onClick={() => handleDelete(row.original.id)}
-          />
+          <Button icon="ph:pencil-simple" className="btn-warning h-9 w-9 p-0"
+            onClick={() => navigate(`/inventory/connectors/edit/${row.original.connector_id}`)} />
+          <Button icon="ph:trash" className="btn-danger h-9 w-9 p-0"
+            onClick={() => openDeleteModal(row.original)} />
         </div>
       ),
     },
-  ];
+  ], [navigate]);
 
   return (
     <>
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/inventory")}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"
-          >
-            <Icon icon="ph:arrow-left" />
-            <span>All Categories</span>
+          <button onClick={() => navigate("/inventory")} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors">
+            <Icon icon="ph:arrow-left" /><span>All Categories</span>
           </button>
           <span className="text-gray-300">/</span>
           <div className="flex items-center gap-2">
@@ -137,38 +71,23 @@ const ConnectorList = () => {
             <h1 className="text-xl font-bold">Connectors</h1>
           </div>
         </div>
-        <Button
-          text="Add Connector"
-          icon="ph:plus"
-          className="btn-primary w-full sm:w-auto"
-          onClick={() => navigate("/inventory/connectors/add")}
-        />
+        <Button text="Add Connector" icon="ph:plus" className="btn-primary w-full sm:w-auto"
+          onClick={() => navigate("/inventory/connectors/add")} />
       </div>
-
-      {/* Table Card */}
       <Card className="overflow-hidden">
         {error ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-red-500">
-            <Icon icon="ph:warning-circle" className="text-3xl" />
-            <p className="text-sm">{error}</p>
-            <Button
-              text="Retry"
-              className="btn-sm btn-outline"
-              onClick={() => window.location.reload()}
-            />
+            <Icon icon="ph:warning-circle" className="text-3xl" /><p className="text-sm">{error}</p>
+            <Button text="Retry" className="btn-sm btn-outline" onClick={fetchData} />
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <DataTable
-              title="Connectors List"
-              columns={columns}
-              data={data}
-              loading={loading}
-              className="min-w-[600px]"
-            />
+            <DataTable title="Connectors List" columns={columns} data={data} loading={loading} className="min-w-[600px]" />
           </div>
         )}
       </Card>
+      <ConfirmModal activeModal={deleteModalOpen} onClose={closeDeleteModal}
+        onConfirm={handleConfirmDelete} itemName={deleteName} isLoading={isDeleting} />
     </>
   );
 };
