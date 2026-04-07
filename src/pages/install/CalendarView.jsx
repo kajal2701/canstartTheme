@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import { DUMMY_CALENDAR_JOBS, DUMMY_INSTALLERS } from "@/mocks/installMocks";
 import AssignInstallerModal from "@/components/install/AssignInstallerModal";
+import { getInstalls } from "@/services/installService";
 
 // ── Helpers ──
 const MONTH_NAMES = [
@@ -41,7 +41,42 @@ const CalendarView = () => {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [viewMode, setViewMode] = useState("month"); // month | list
-  const [allJobs, setAllJobs] = useState(DUMMY_CALENDAR_JOBS);
+  const [allJobs, setAllJobs] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // ── Fetch Installations ──
+  useEffect(() => {
+    const fetchJobs = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getInstalls(userId || "", userRole || "");
+        // Use upcoming installations for the calendar
+        const upcoming = data?.upcoming_installations || [];
+        
+        // Ensure installation_date is just YYYY-MM-DD to match the calendar grid grouping
+        const formattedJobs = upcoming.map(job => {
+          let dateStr = job.installation_date || "";
+          // Strip time part if present (e.g. "2026-04-10 14:30:00" -> "2026-04-10")
+          if (dateStr.includes(" ")) dateStr = dateStr.split(" ")[0];
+          if (dateStr.includes("T")) dateStr = dateStr.split("T")[0];
+          
+          return {
+            ...job,
+            installation_date: dateStr,
+            status: job.status || "upcoming" // Default to upcoming
+          };
+        });
+        
+        setAllJobs(formattedJobs);
+      } catch (error) {
+        console.error("Failed to load jobs", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, [userId, userRole]);
 
   // ── Role-based filtering: Admin sees all, Installer sees only their assigned jobs ──
   const jobs = useMemo(() => {
@@ -418,11 +453,11 @@ const CalendarView = () => {
                               {job.fname} {job.lname}
                             </span>
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${style.bg} ${style.text}`}>
-                              {job.status.replace("_", " ")}
+                              {String(job.status || "upcoming").replace("_", " ")}
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {job.quote_no} • {job.address}, {job.city} • {job.linear_feet} ft
+                            {job.quote_no || `#${job.quote_id}`} • {job.address}, {job.city} • {job.linear_feet || job.total_numerical_box || 0} ft
                           </p>
                           <p className="text-xs text-gray-400 mt-0.5">
                             Installer: {job.installer_name || (

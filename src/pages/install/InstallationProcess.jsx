@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import { DUMMY_CALENDAR_JOBS, PROCESS_STEPS, getDefaultProcessState } from "@/mocks/installMocks";
+import { PROCESS_STEPS, getDefaultProcessState } from "@/mocks/installMocks";
+import { getInstalls } from "@/services/installService";
 
 import PrepStage from "@/components/install/process/PrepStage";
 import OnTheWay from "@/components/install/process/OnTheWay";
@@ -17,15 +19,44 @@ import CompletionStep from "@/components/install/process/CompletionStep";
 const InstallationProcess = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
 
-  // Find the job from dummy data
-  const job = useMemo(
-    () => DUMMY_CALENDAR_JOBS.find((j) => String(j.quote_id) === String(id)),
-    [id]
-  );
-
+  const [job, setJob] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
-  const [processState, setProcessState] = useState(() => getDefaultProcessState(job));
+  const [processState, setProcessState] = useState(null);
+
+  // ── Fetch job from API ──
+  useEffect(() => {
+    const fetchJob = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getInstalls(user?.user_id || "", user?.role || "");
+        const allJobs = data?.upcoming_installations || [];
+        const found = allJobs.find((j) => String(j.quote_id) === String(id));
+
+        if (found) {
+          setJob(found);
+          setProcessState(getDefaultProcessState(found));
+        }
+      } catch (err) {
+        console.error("Failed to load job:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJob();
+  }, [id, user]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <Icon icon="ph:spinner" className="text-4xl text-indigo-500 animate-spin mb-4" />
+        <p className="text-sm text-gray-500">Loading installation details...</p>
+      </div>
+    );
+  }
 
   if (!job) {
     return (
