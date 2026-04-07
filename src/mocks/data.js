@@ -43,8 +43,19 @@ export const menuItems = [
     title: "Install",
     isHide: true,
     icon: "ph:calendar-plus",
-    link: "install",
-    roles: [1], // admin only
+    link: "#",
+    roles: [1], // admin only — sees Dashboard + Calendar
+    child: [
+      { childtitle: "Dashboard", childlink: "install" },
+      { childtitle: "Calendar", childlink: "install/calendar" },
+    ],
+  },
+  {
+    title: "Install",
+    isHide: true,
+    icon: "ph:calendar-plus",
+    link: "install/calendar",
+    roles: [2], // installer only — direct link to Calendar (no Dashboard)
   },
   {
     title: "Product",

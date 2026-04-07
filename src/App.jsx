@@ -21,6 +21,8 @@ const ViewQuoteAdmin = lazy(() => import("./pages/quote/ViewQuoteAdmin"));
 const QuoteView = lazy(() => import("./pages/quote/QuoteView"));
 const TermsAndConditions = lazy(() => import("./pages/termsAndConditions"));
 const Install = lazy(() => import("./pages/install/Index"));
+const CalendarView = lazy(() => import("./pages/install/CalendarView"));
+const InstallationProcess = lazy(() => import("./pages/install/InstallationProcess"));
 const Product = lazy(() => import("./pages/product/Index"));
 const AddProduct = lazy(() => import("./pages/product/AddProduct"));
 const EditProduct = lazy(() => import("./pages/product/EditProduct"));
@@ -65,6 +67,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 const ADMIN_ONLY = [1];
 const SALES_AND_ADMIN = [1, 4];
+const ADMIN_AND_INSTALLER = [1, 2];
 
 function App() {
   return (
@@ -170,14 +173,32 @@ function App() {
               />
             </Route>
 
-            <Route
-              path="install"
-              element={
-                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
-                  <Install />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="install">
+              <Route
+                index
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <Install />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="calendar"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_AND_INSTALLER}>
+                    <CalendarView />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="process/:id"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_AND_INSTALLER}>
+                    <InstallationProcess />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
 
             <Route path="product">
               <Route
