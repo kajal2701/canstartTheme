@@ -1,5 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import Icon from "@/components/ui/Icon";
+import confirmAction from "../../../utils/confirmAction";
 import Card from "@/components/ui/Card";
 import { SectionHeader } from "../../../utils/helperFunctions";
 import QuoteButton from "./QuoteButton";
@@ -16,6 +18,7 @@ import {
   resendQuote,
   sendFinalQuote,
   sendForApprove, // status = 3
+  sendForApproval,
   setPaymentOption,
   updateQuoteSend,
   paymentReceive, // confirm deposit
@@ -23,10 +26,14 @@ import {
 } from "../../../services/quoteService";
 
 const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user?.role === 1;
+
   const handlePrint = () => window.print();
 
   // ── Loading states ──
   const [isSendingInvoice, setIsSendingInvoice] = useState(false);
+  const [isSendingApproval, setIsSendingApproval] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSettingPayment, setIsSettingPayment] = useState(false);
@@ -164,6 +171,13 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   // ── Handlers ──
   const handlePaymentSubmit = async () => {
     if (!validatePayment()) return;
+
+    const ok = await confirmAction({
+      text: "Do you want to save this payment option?",
+      confirmButtonText: "Yes, save it!",
+    });
+    if (!ok) return;
+
     const selectedMethods = [
       methods.creditCard && "credit_card",
       methods.eTransfer && "etransfer",
@@ -199,8 +213,34 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
     }
   };
 
+  // Send for Approval → status = 2
+  const handleSendForApproval = async () => {
+    const ok = await confirmAction({
+      text: "Do you want to send this quote for approval?",
+      confirmButtonText: "Yes, send it!",
+    });
+    if (!ok) return;
+
+    try {
+      setIsSendingApproval(true);
+      const result = await sendForApproval({ quote_id: quote?.quote_id });
+      toast.success(result.message);
+      onSubmitSuccess?.();
+    } catch (err) {
+      toast.error(err.message || "An error occurred.");
+    } finally {
+      setIsSendingApproval(false);
+    }
+  };
+
   // Approve → status = 3
   const handleApprove = async () => {
+    const ok = await confirmAction({
+      text: "Do you want to approve this quote?",
+      confirmButtonText: "Yes, approve it!",
+    });
+    if (!ok) return;
+
     try {
       setIsApprovingSend(true);
       const result = await sendForApprove({ quote_id: quote?.quote_id });
@@ -215,6 +255,12 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
 
   // Payment Receive → confirm deposit
   const handlePaymentReceive = async (row, idx) => {
+    const ok = await confirmAction({
+      text: "Do you want to confirm this payment receipt?",
+      confirmButtonText: "Yes, confirm it!",
+    });
+    if (!ok) return;
+
     try {
       setIsReceivingPayment(idx);
       const result = await paymentReceive({
@@ -254,6 +300,12 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   };
 
   const handleSendFinalInvoice = async () => {
+    const ok = await confirmAction({
+      text: "Do you want to send the final invoice?",
+      confirmButtonText: "Yes, send it!",
+    });
+    if (!ok) return;
+
     try {
       setIsSendingInvoice(true);
       const result = await sendFinalQuote({ quote_id: quote?.quote_id });
@@ -269,6 +321,12 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   };
 
   const handleResendQuote = async () => {
+    const ok = await confirmAction({
+      text: "Do you want to resend this quote?",
+      confirmButtonText: "Yes, resend it!",
+    });
+    if (!ok) return;
+
     try {
       setIsResending(true);
       const result = await resendQuote({ quote_id: quote?.quote_id });
@@ -283,6 +341,12 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   };
 
   const handleUpdateQuote = async () => {
+    const ok = await confirmAction({
+      text: "Do you want to send the updated quote?",
+      confirmButtonText: "Yes, update it!",
+    });
+    if (!ok) return;
+
     try {
       setIsUpdating(true);
       const result = await updateQuoteSend({ quote_id: quote?.quote_id });
@@ -422,26 +486,30 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       {/* ── Top action buttons ── */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-3">
-          <QuoteButton
-            icon={BUTTON_ICONS.resend}
-            variant="primary"
-            onClick={handleResendQuote}
-            disabled={isResending}
-          >
-            {isResending ? "Sending..." : "Resend Quote"}
-          </QuoteButton>
-          <QuoteButton
-            icon={BUTTON_ICONS.update}
-            variant="secondary"
-            onClick={handleUpdateQuote}
-            disabled={isUpdating}
-          >
-            {isUpdating ? "Sending..." : "Updated Quote"}
-          </QuoteButton>
+          {isAdmin && quoteStatus >= 3 && (
+            <>
+              <QuoteButton
+                icon={BUTTON_ICONS.resend}
+                variant="primary"
+                onClick={handleResendQuote}
+                disabled={isResending}
+              >
+                {isResending ? "Sending..." : "Resend Quote"}
+              </QuoteButton>
+              <QuoteButton
+                icon={BUTTON_ICONS.update}
+                variant="secondary"
+                onClick={handleUpdateQuote}
+                disabled={isUpdating}
+              >
+                {isUpdating ? "Sending..." : "Updated Quote"}
+              </QuoteButton>
+            </>
+          )}
         </div>
         <div className="flex flex-wrap gap-3">
           {/* Stage 2 — Approve button */}
-          {showApprove && (
+          {showApprove && isAdmin && (
             <QuoteButton
               icon={BUTTON_ICONS.approve}
               variant="success"
@@ -455,6 +523,19 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
                   : "Approve"}
             </QuoteButton>
           )}
+
+          {/* Send for Approval button (for non-admins on draft quotes) */}
+          {!isAdmin && quoteStatus === 1 && (
+            <QuoteButton
+              icon="ph:paper-plane-tilt"
+              variant="primary"
+              onClick={handleSendForApproval}
+              disabled={isSendingApproval}
+            >
+              {isSendingApproval ? "Sending..." : "Send for Approval"}
+            </QuoteButton>
+          )}
+
           <QuoteButton
             icon={BUTTON_ICONS.print}
             variant="warning"
@@ -465,34 +546,38 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
         </div>
       </div>
 
-      <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
+      {isAdmin && <div className="my-5 border-t border-slate-100 dark:border-slate-700" />}
 
       {/* ── Payment section ──
            Case 1: No payment → show form
            Case 2: Payment exists, not editing → show PaymentInfo + edit button
            Case 3: Editing → show form with Cancel
       */}
-      {showPaymentForm ? (
-        PaymentForm
-      ) : !editingPayment ? (
-        <div className="flex flex-wrap items-center gap-4">
-          <PaymentInfo quote={quote} />
-          {canEditPayment && (
-            <button
-              onClick={handleEditPayment}
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-white transition-all shadow-sm flex-shrink-0 bg-orange-400 hover:bg-orange-500"
-              title="Edit payment"
-            >
-              <Icon icon={BUTTON_ICONS.edit} className="text-base" />
-            </button>
+      {isAdmin && (
+        <>
+          {showPaymentForm ? (
+            PaymentForm
+          ) : !editingPayment ? (
+            <div className="flex flex-wrap items-center gap-4">
+              <PaymentInfo quote={quote} />
+              {canEditPayment && (
+                <button
+                  onClick={handleEditPayment}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-white transition-all shadow-sm flex-shrink-0 bg-orange-400 hover:bg-orange-500"
+                  title="Edit payment"
+                >
+                  <Icon icon={BUTTON_ICONS.edit} className="text-base" />
+                </button>
+              )}
+            </div>
+          ) : (
+            PaymentForm
           )}
-        </div>
-      ) : (
-        PaymentForm
+        </>
       )}
 
       {/* ── Stage 3 & 4: Payment Receive Cards ── */}
-      {showPaymentReceiveCards && (
+      {showPaymentReceiveCards && isAdmin && (
         <>
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -541,11 +626,10 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
                     onClick={() =>
                       !isConfirmed && handlePaymentReceive(row, idx)
                     }
-                    className={`mt-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all ${
-                      isConfirmed
-                        ? "bg-green-500 opacity-60 cursor-not-allowed"
-                        : "bg-blue-500 hover:bg-blue-600"
-                    }`}
+                    className={`mt-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all ${isConfirmed
+                      ? "bg-green-500 opacity-60 cursor-not-allowed"
+                      : "bg-blue-500 hover:bg-blue-600"
+                      }`}
                   >
                     {isConfirmed
                       ? "Payment Received"
@@ -561,7 +645,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       )}
 
       {/* ── Stage 5: Schedule Installation ── */}
-      {showScheduleInstallation && (
+      {showScheduleInstallation && isAdmin && (
         <>
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
@@ -586,7 +670,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       )}
 
       {/* ── Stage 6: Send Final Invoice ── */}
-      {showSendInvoice && (
+      {showSendInvoice && isAdmin && (
         <>
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <QuoteButton
@@ -603,7 +687,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       )}
 
       {/* ── Stage 7: Awaiting Full Payment ── */}
-      {showAwaitingFullPayment && (
+      {showAwaitingFullPayment && isAdmin && (
         <>
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700">
@@ -619,7 +703,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       )}
 
       {/* ── Stage 8: Fully Paid ── */}
-      {showFullyPaid && (
+      {showFullyPaid && isAdmin && (
         <>
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">

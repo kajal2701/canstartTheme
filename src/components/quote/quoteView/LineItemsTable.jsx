@@ -11,6 +11,8 @@ import Button from "@/components/ui/Button";
 import { getImgSrc } from "../../../utils/formatters";
 import { addExtraWork } from "../../../services/quoteService";
 import { toast } from "react-toastify";
+import confirmAction from "../../../utils/confirmAction";
+import { useSelector } from "react-redux";
 
 // ─── Validation helper ────────────────────────────────────────────────────────
 const validateExtraRows = (rows) => {
@@ -38,6 +40,9 @@ const LineItemsTable = ({
   existingExtraWork = [],
   onSubmitSuccess,
 }) => {
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user?.role === 1;
+
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState(null);
   const [extraRows, setExtraRows] = useState([]);
@@ -139,6 +144,12 @@ const LineItemsTable = ({
       setRowErrors(errors);
       return;
     }
+
+    const ok = await confirmAction({
+      text: "Do you want to submit this extra work?",
+      confirmButtonText: "Yes, submit it!",
+    });
+    if (!ok) return;
 
     const totalExtraWork = extraRows.reduce(
       (sum, r) => sum + (parseFloat(r.total) || 0),
@@ -261,22 +272,67 @@ const LineItemsTable = ({
                     </td>
                   </tr>
                 ))}
+
+                {/* Extra work rows for non-admins */}
+                {!isAdmin &&
+                  extraRows.map((item, index) => {
+                    const rowQty = parseFloat(item.quantity) || 0;
+                    const rowUnit = parseFloat(item.unitCost) || 0;
+                    const rowTotal = rowQty * rowUnit;
+                    return (
+                      <tr
+                        key={`extra-${index}`}
+                        className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors bg-orange-50/30 dark:bg-orange-900/10"
+                      >
+                        <td className="py-4 px-5">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-semibold text-slate-600 dark:text-slate-300">
+                            {formattedItems.length + index + 1}
+                          </div>
+                        </td>
+                        <td className="py-4 px-3">
+                          <div className="text-sm text-slate-700 dark:text-slate-300 pr-4 whitespace-pre-wrap">
+                            {item.description}
+                          </div>
+                        </td>
+                        <td className="py-4 px-3 text-center">
+                          <span className="text-slate-300 dark:text-slate-600">
+                            —
+                          </span>
+                        </td>
+                        <td className="py-4 px-3 text-right">
+                          <span className="inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700/60 text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            {item.quantity}
+                          </span>
+                        </td>
+                        <td className="py-4 px-3 text-right text-sm text-slate-600 dark:text-slate-400">
+                          ${item.unitCost}
+                        </td>
+                        <td className="py-4 px-5 text-right">
+                          <span className="text-sm font-bold text-slate-900 dark:text-white">
+                            ${rowTotal.toFixed(2)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
 
-          {/* Extra rows */}
-          {extraRows.map((row, idx) => (
+          {/* Extra rows (Admin only editable section) */}
+          {isAdmin && extraRows.map((row, idx) => (
             <div key={row.id} className="space-y-1 mt-4">
               <div className="grid grid-cols-12 gap-3 items-start">
                 {/* Remove */}
                 <div className="col-span-2 md:col-span-1 flex md:justify-start">
-                  <Button
-                    text="Remove"
-                    className="btn-danger btn-sm h-[42px] rounded-r-none"
-                    type="button"
-                    onClick={() => removeExtraRow(idx)}
-                  />
+                  {isAdmin && (
+                    <Button
+                      text="Remove"
+                      className="btn-danger btn-sm h-[42px] rounded-r-none"
+                      type="button"
+                      onClick={() => removeExtraRow(idx)}
+                    />
+                  )}
                 </div>
 
                 {/* Description */}
@@ -286,6 +342,7 @@ const LineItemsTable = ({
                     row={1}
                     value={row.description} // ← value not defaultValue
                     className="h-[42px] rounded-l-none"
+                    disabled={!isAdmin}
                     onChange={(e) =>
                       handleExtraChange(idx, "description", e.target.value)
                     }
@@ -304,6 +361,7 @@ const LineItemsTable = ({
                     placeholder="Qty"
                     className="h-[42px]"
                     value={row.quantity} // ← value not defaultValue
+                    disabled={!isAdmin}
                     onChange={(e) =>
                       handleExtraChange(
                         idx,
@@ -326,6 +384,7 @@ const LineItemsTable = ({
                     placeholder="Unit Price"
                     className="h-[42px]"
                     value={row.unitCost} // ← value not defaultValue
+                    disabled={!isAdmin}
                     onChange={(e) =>
                       handleExtraChange(
                         idx,
@@ -357,23 +416,25 @@ const LineItemsTable = ({
           ))}
 
           {/* Action buttons */}
-          <div className="flex gap-3 mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
-            <QuoteButton
-              icon={BUTTON_ICONS.add}
-              variant="outline"
-              onClick={addExtraRow}
-            >
-              Add Extra Work
-            </QuoteButton>
-            <QuoteButton
-              icon={BUTTON_ICONS.submit}
-              variant="outlineOrange"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Submit"}
-            </QuoteButton>
-          </div>
+          {isAdmin && (
+            <div className="flex gap-3 mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
+              <QuoteButton
+                icon={BUTTON_ICONS.add}
+                variant="outline"
+                onClick={addExtraRow}
+              >
+                Add Extra Work
+              </QuoteButton>
+              <QuoteButton
+                icon={BUTTON_ICONS.submit}
+                variant="outlineOrange"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </QuoteButton>
+            </div>
+          )}
 
           {/* Image Preview Modal */}
           <Modal

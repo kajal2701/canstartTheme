@@ -3,7 +3,7 @@ import Button from "@/components/ui/Button";
 import CanstarLogo from "@/assets/images/logo/new-canstar-logo.jpg";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getQuote } from "../../services/quoteService";
+import { getQuote, getQuoteByToken } from "../../services/quoteService";
 import Modal from "@/components/ui/Modal";
 import {
   BASE_URL,
@@ -50,11 +50,14 @@ export default function InvoiceView() {
       try {
         setLoading(true);
         const decodedId = decodeId(id);
-        if (!decodedId) {
-          setError("Invalid invoice ID");
-          return;
+        let data;
+        if (decodedId && /^\d+$/.test(decodedId)) {
+          // Internal navigation — double-Base64 encoded quote_id
+          data = await getQuote(decodedId);
+        } else {
+          // Email link — AES-encrypted token
+          data = await getQuoteByToken(id);
         }
-        const data = await getQuote(decodedId);
         setQuote(data);
       } catch (e) {
         console.error(e);
@@ -65,6 +68,14 @@ export default function InvoiceView() {
     };
     if (id) load();
   }, [id]);
+
+  const isPayButtonHidden = () => {
+    if (!quote?.payment_details) return false;
+    const pd = quote.payment_details;
+    if (Number(pd.pending_payment_amount) <= 0) return true; // Fully paid
+    if (pd.payment_status === 0 || pd.payment_status === "0") return true; // Processing
+    return false;
+  };
 
   const handleDownloadInvoice = async () => {
     try {
@@ -314,12 +325,14 @@ export default function InvoiceView() {
       </div>
 
       {/* Action Buttons */}
-      {quote.payment_details?.pending_payment_amount > 0 && (
+      {!isPayButtonHidden() && (
         <div className="w-full max-w-[1120px] mt-6 md:mt-8 flex flex-col sm:flex-row justify-center gap-3 md:gap-4 no-print px-3 md:px-4">
           <Button
             size="lg"
-            className="bg-[#ee5d59] hover:bg-[#ee5d59]/90 text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg"
+            title={!quote?.payment_details ? "Waiting for admin to set payment options" : ""}
+            disabled={!termsChecked || !quote?.payment_details}
             onClick={() => setPayModalOpen(true)}
+            className={`text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg transition-all ${(termsChecked && quote?.payment_details) ? "bg-[#ee5d59] hover:bg-[#ee5d59]/90 cursor-pointer" : "bg-[#ee5d59]/40 cursor-not-allowed opacity-60"}`}
           >
             Confirm And Pay
           </Button>
@@ -332,6 +345,20 @@ export default function InvoiceView() {
             Download Invoice
           </Button>
         </div>
+      )}
+
+      {/* If waiting for admin confirmation, still show download button but hide pay button */}
+      {isPayButtonHidden() && Number(quote.payment_details?.pending_payment_amount) > 0 && (
+         <div className="w-full max-w-[1120px] mt-6 md:mt-8 flex flex-col sm:flex-row justify-center gap-3 md:gap-4 no-print px-3 md:px-4">
+           <Button
+             size="lg"
+             className="bg-[#2563eb] hover:bg-blue-700 text-white font-semibold px-6 py-2 md:py-3 rounded-full shadow-lg gap-2"
+             onClick={handleDownloadInvoice}
+           >
+             <Download className="w-4 md:w-5 h-4 md:h-5" />
+             Download Invoice
+           </Button>
+         </div>
       )}
 
       <Modal

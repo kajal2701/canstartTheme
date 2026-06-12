@@ -2,6 +2,7 @@ import React from "react";
 import Icon from "@/components/ui/Icon";
 import { COMPANY_INFO } from "./constants";
 import CanstarLogo from "@/assets/images/logo/canstar-logo-white.png";
+import { formatDate } from "../../../utils/formatters";
 
 const CompanyInfo = ({ quote }) => {
   return (
@@ -75,7 +76,7 @@ const CompanyInfo = ({ quote }) => {
                 className="text-slate-400 text-sm"
               />
               <span className="text-xs text-slate-400 dark:text-slate-500">
-                Quote Date : {quote.created_at}
+                Quote Date : {formatDate(quote.created_at)}
               </span>
             </div>
           </div>

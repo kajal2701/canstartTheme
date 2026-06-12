@@ -11,6 +11,7 @@ import CustomProductRow from "@/components/quote/CustomProductRow";
 import AnnotationImagePreview from "@/components/quote/AnnotationImagePreview";
 import PriceSummary from "@/components/quote/PriceSummary";
 import ImageUploadWithToggle from "../../components/quote/imageUploadWithToggle/Index";
+import DiscountInput from "@/components/quote/DiscountInput";
 import { editQuote, getEditQuote } from "../../services/quoteService";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -754,22 +755,12 @@ const EditQuote = () => {
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <div className="w-full md:w-64">
-              <label className="block text-sm font-medium mb-2 text-right">
-                Enter Discount (%):
-              </label>
-              <Textinput
-                type="text"
-                placeholder="0"
-                value={discountPercent}
-                onChange={(e) =>
-                  setDiscountPercent(e.target.value.replace(/[^0-9.]/g, ""))
-                }
-                className="text-right"
-              />
-            </div>
-          </div>
+          {/* ==================== DISCOUNT ==================== */}
+          <DiscountInput
+            discountPercent={discountPercent}
+            setDiscountPercent={setDiscountPercent}
+            subtotal={totalControllerPrice + totalLinearFeetPrice}
+          />
 
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <Button

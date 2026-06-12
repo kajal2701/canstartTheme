@@ -4,9 +4,13 @@ import { deleteQuote } from "../../../services/quoteService";
 import { useState } from "react";
 import { encodeId } from "../../../utils/mappers";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import ScheduleInstallationModal from "./ScheduleInstallationModal";
 
 const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user?.role === 1;
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -77,20 +81,22 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
           <Icon icon="ph:trash" />
         </button>
 
-        {/* ✅ Schedule button */}
-        <button
-          className="icon-btn hover:bg-indigo-50 dark:hover:bg-indigo-900"
-          type="button"
-          title={
-            canSchedule
-              ? "Schedule Installation"
-              : `Cannot schedule — current status: ${rowData?.status}`
-          }
-          onClick={() => canSchedule && setShowScheduleModal(true)}
-          disabled={!canSchedule}
-        >
-          <Icon icon="ph:calendar-check" />
-        </button>
+        {/* ✅ Schedule button (Admin only) */}
+        {isAdmin && (
+          <button
+            className="icon-btn hover:bg-indigo-50 dark:hover:bg-indigo-900"
+            type="button"
+            title={
+              canSchedule
+                ? "Schedule Installation"
+                : `Cannot schedule — current status: ${rowData?.status}`
+            }
+            onClick={() => canSchedule && setShowScheduleModal(true)}
+            disabled={!canSchedule}
+          >
+            <Icon icon="ph:calendar-check" />
+          </button>
+        )}
       </div>
 
       <ConfirmModal
@@ -106,6 +112,7 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
         onClose={() => setShowScheduleModal(false)}
         quoteData={rowData}
         onScheduled={handleScheduled}
+        prefillDate={rowData?.installationDate ?? null}
       />
     </>
   );

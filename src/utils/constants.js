@@ -71,3 +71,16 @@ export const SANCTION_REASON_LABELS = {
     3: "Better price from competitor",
     4: "Other",
 };
+
+export const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+export const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+export const STATUS_STYLES = {
+  upcoming:    { bg: "bg-indigo-100 dark:bg-indigo-900/30", text: "text-indigo-700 dark:text-indigo-300", dot: "bg-indigo-500" },
+  in_progress: { bg: "bg-amber-100 dark:bg-amber-900/30",  text: "text-amber-700 dark:text-amber-300",   dot: "bg-amber-500" },
+  completed:   { bg: "bg-green-100 dark:bg-green-900/30",   text: "text-green-700 dark:text-green-300",   dot: "bg-green-500" },
+};

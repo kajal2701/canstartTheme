@@ -3,7 +3,7 @@ import Button from "@/components/ui/Button";
 import CanstarLogo from "@/assets/images/logo/new-canstar-logo.jpg";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getQuote } from "../../services/quoteService";
+import { getQuote, getQuoteByToken } from "../../services/quoteService";
 import Modal from "@/components/ui/Modal";
 import {
   BASE_URL,
@@ -49,11 +49,14 @@ export default function QuoteView() {
       try {
         setLoading(true);
         const decodedId = decodeId(id);
-        if (!decodedId) {
-          setError("Invalid invoice ID");
-          return;
+        let data;
+        if (decodedId && /^\d+$/.test(decodedId)) {
+          // Internal navigation — double-Base64 encoded quote_id
+          data = await getQuote(decodedId);
+        } else {
+          // Email link — AES-encrypted token
+          data = await getQuoteByToken(id);
         }
-        const data = await getQuote(decodedId);
         setQuote(data);
         if (data?.payment_details) {
           const ps = data.payment_details.status;
@@ -169,7 +172,7 @@ export default function QuoteView() {
                 <span>
                   {formatDateLong(
                     quote.created_at?.split("T")[0] ||
-                      new Date().toISOString().split("T")[0],
+                    new Date().toISOString().split("T")[0],
                   )}
                 </span>
               </div>
@@ -268,7 +271,7 @@ export default function QuoteView() {
               <span>
                 {formatCurrency(
                   parseFloat(quote.total_feet_price) +
-                    parseFloat(quote.total_controller_price),
+                  parseFloat(quote.total_controller_price),
                 )}
               </span>
             </div>
@@ -283,10 +286,10 @@ export default function QuoteView() {
               <span>
                 {formatCurrency(
                   quote.discount_amount ||
-                    ((parseFloat(quote.total_feet_price) +
-                      parseFloat(quote.total_controller_price)) *
-                      parseFloat(quote.discount_percentage)) /
-                      100,
+                  ((parseFloat(quote.total_feet_price) +
+                    parseFloat(quote.total_controller_price)) *
+                    parseFloat(quote.discount_percentage)) /
+                  100,
                 )}
               </span>
             </div>
@@ -338,9 +341,10 @@ export default function QuoteView() {
         {!isPayButtonHidden() && (
           <Button
             size="lg"
-            disabled={!termsChecked}
+            title={!quote?.payment_details ? "Waiting for admin to set payment options" : ""}
+            disabled={!termsChecked || !quote?.payment_details}
             onClick={() => setPayModalOpen(true)}
-            className={`text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg transition-all ${termsChecked ? "bg-[#ee5d59] hover:bg-[#ee5d59]/90 cursor-pointer" : "bg-[#ee5d59]/40 cursor-not-allowed opacity-60"}`}
+            className={`text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg transition-all ${(termsChecked && quote?.payment_details) ? "bg-[#ee5d59] hover:bg-[#ee5d59]/90 cursor-pointer" : "bg-[#ee5d59]/40 cursor-not-allowed opacity-60"}`}
           >
             Confirm And Pay
           </Button>

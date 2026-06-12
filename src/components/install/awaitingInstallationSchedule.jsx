@@ -5,8 +5,8 @@ import { AddressCell, addressAccessor } from "@/utils/mappers";
 import { formatDateLong } from "@/utils/formatters";
 import { useNavigate } from "react-router-dom";
 import { getQuoteStage } from "../../utils/mappers";
-import ScheduleInstallationModal from "@/components/quote/quotelisting/ScheduleInstallationModal"; 
-import { toast } from "react-toastify"; 
+import ScheduleInstallationModal from "@/components/quote/quotelisting/ScheduleInstallationModal";
+import { toast } from "react-toastify";
 
 const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
   const navigate = useNavigate();
@@ -32,6 +32,7 @@ const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
       srNumber: jobRow.quote_no,
       customerName: `${jobRow.fname || ""} ${jobRow.lname || ""}`,
       email: jobRow.email,
+      installation_date: jobRow.installation_date,
     };
     setSelectedJob(quote);
     setShowScheduleModal(true);
@@ -137,11 +138,10 @@ const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
           <div className="flex gap-2 justify-center">
             {/* ✅ Schedule button with modal */}
             <button
-              className={`icon-btn transition-colors ${
-                canSchedule
+              className={`icon-btn transition-colors ${canSchedule
                   ? "hover:bg-indigo-50 dark:hover:bg-indigo-900 text-indigo-600 cursor-pointer"
                   : "opacity-40 cursor-not-allowed text-gray-400"
-              }`}
+                }`}
               type="button"
               title={
                 canSchedule
@@ -196,6 +196,7 @@ const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
         onClose={() => setShowScheduleModal(false)}
         quoteData={selectedJob}
         onScheduled={handleScheduled}
+        prefillDate={selectedJob?.installation_date ?? null}
       />
     </>
   );

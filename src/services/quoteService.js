@@ -38,6 +38,25 @@ export const getQuote = async (quoteId) => {
   }
 };
 
+// Fetch quote by AES-encrypted token from email links
+export const getQuoteByToken = async (token) => {
+  if (!token) return null;
+  try {
+    const res = await fetch(`${BASE_URL}/quote/view_quote_by_token/${encodeURIComponent(token)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    const result = await res.json();
+    if (res.ok && result?.success) {
+      return result.data || null;
+    }
+    throw new Error(result.message || "Failed to fetch quote");
+  } catch (e) {
+    console.error("getQuoteByToken error", e);
+    throw e;
+  }
+};
+
 export const getProductsData = async () => {
   try {
     const res = await fetch(

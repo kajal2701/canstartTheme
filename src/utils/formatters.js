@@ -1,4 +1,5 @@
 export const BASE_URL = import.meta.env.VITE_BASE_URL || "";
+import { MONTH_NAMES } from "./constants";
 
 export const formatCurrency = (v) => {
   if (v == null || v === "") return "-";
@@ -30,14 +31,9 @@ export const formatDateLong = (dateString) => {
   const datePart = dateString.split("T")[0];
   const [year, month, day] = datePart.split("-");
 
-  // Month names
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
 
   // Return in "Month DD, YYYY" format
-  return `${monthNames[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
+  return `${MONTH_NAMES[parseInt(month) - 1]} ${parseInt(day)}, ${year}`;
 };
 
 // Safe image URL generator
@@ -46,4 +42,10 @@ export const getImgSrc = (url) => {
   if (url.startsWith("http")) return url;
   return `${BASE_URL}/${url.replace(/^\/+/, "")}`;
 };
+export const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+export const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
 
+export const formatDateKey = (y, m, d) =>
+  `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+export const isToday = (dateStr) => dateStr === new Date().toISOString().split("T")[0];

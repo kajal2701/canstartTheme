@@ -44,6 +44,7 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
       srNumber: jobRow.quote_no,
       customerName: `${jobRow.fname || ""} ${jobRow.lname || ""}`,
       email: jobRow.email,
+      installation_date: jobRow.installation_date,
     };
     setSelectedJob(quote);
     setShowScheduleModal(true);
@@ -265,6 +266,7 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
         onClose={() => setShowScheduleModal(false)}
         quoteData={selectedJob}
         onScheduled={handleScheduled}
+        prefillDate={selectedJob?.installation_date ?? null}
       />
     </>
   );
