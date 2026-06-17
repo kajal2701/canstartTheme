@@ -35,6 +35,7 @@ const UpcomingInstallations = ({ jobs = [], loading, onRefresh }) => {
       customerName: `${jobRow.fname || ""} ${jobRow.lname || ""}`.trim(),
       email: jobRow.email,
       installation_date: jobRow.installation_date, // ✅ existing date for prefill
+      installer_id: jobRow.installer_id, // ✅ existing installer for prefill
     });
     setShowRescheduleModal(true);
   };
@@ -85,6 +86,15 @@ const UpcomingInstallations = ({ jobs = [], loading, onRefresh }) => {
       Cell: ({ cell: { value } }) => (
         <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
           {value}
+        </span>
+      ),
+    },
+    {
+      Header: "Installer",
+      accessor: "installer_name",
+      Cell: ({ cell: { value } }) => (
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+          {value || <span className="text-gray-400 italic">—</span>}
         </span>
       ),
     },
@@ -220,6 +230,7 @@ const UpcomingInstallations = ({ jobs = [], loading, onRefresh }) => {
         quoteData={selectedJob}
         onScheduled={handleRescheduled}
         prefillDate={selectedJob?.installation_date ?? null} // ✅ prefill existing date
+        prefillInstallerId={selectedJob?.installer_id ?? null} // ✅ prefill existing installer
       />
     </>
   );

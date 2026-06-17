@@ -205,6 +205,9 @@ const LineItemsTable = ({
                     Description
                   </th>
                   <th className="py-3 px-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 w-24">
+                    Type
+                  </th>
+                  <th className="py-3 px-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 w-24">
                     Images
                   </th>
                   <th className="py-3 px-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 w-24">
@@ -231,6 +234,9 @@ const LineItemsTable = ({
                     </td>
                     <td className="py-4 px-3 text-slate-700 dark:text-slate-300 leading-6 max-w-sm pr-6">
                       <RichDescription text={item.description} />
+                    </td>
+                    <td className="py-4 px-3 text-sm text-slate-600 dark:text-slate-400 font-medium">
+                      {item.type}
                     </td>
                     <td className="py-4 px-3">
                       <div className="flex flex-wrap gap-2">
@@ -294,7 +300,12 @@ const LineItemsTable = ({
                             {item.description}
                           </div>
                         </td>
-                        <td className="py-4 px-3 text-center">
+                        <td className="py-4 px-3 text-left">
+                          <span className="text-slate-300 dark:text-slate-600">
+                            —
+                          </span>
+                        </td>
+                        <td className="py-4 px-3 text-left">
                           <span className="text-slate-300 dark:text-slate-600">
                             —
                           </span>

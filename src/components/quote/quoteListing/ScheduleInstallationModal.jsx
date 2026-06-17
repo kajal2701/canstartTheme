@@ -1,23 +1,49 @@
 // src/components/quote/quotelisting/ScheduleInstallationModal.jsx
 
-import React, { useState, useEffect } from "react"; // ✅ added useEffect
+import React, { useState, useEffect } from "react";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import { scheduleInstallation } from "../../../services/quoteService";
+import { getUsers } from "@/services/usersService";
 
 const ScheduleInstallationModal = ({
   activeModal,
   onClose,
   quoteData,
   onScheduled,
-  prefillDate = null, // ✅ NEW optional prop — for reschedule, pass existing date
+  prefillDate = null,
+  prefillInstallerId = null,
 }) => {
   const [installationDate, setInstallationDate] = useState("");
+  const [installerId, setInstallerId] = useState("");
+  const [installers, setInstallers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingInstallers, setIsFetchingInstallers] = useState(false);
 
-  // ✅ When modal opens, prefill date if provided (reschedule)
-  // If no prefillDate, reset to empty (new schedule)
+  useEffect(() => {
+    if (activeModal && installers.length === 0) {
+      const fetchInstallers = async () => {
+        setIsFetchingInstallers(true);
+        try {
+          const usersResponse = await getUsers();
+          const installersList = usersResponse.filter(user => Number(user.role) === 2).map((u) => ({
+            id: u.id || u.user_id,
+            name: `${u.fname || ""} ${u.lname || ""}`.trim() || u.name || "Unknown",
+            email: u.email || "",
+            phone: u.phone || "No phone",
+          }));
+          setInstallers(installersList);
+        } catch (error) {
+          console.error("Failed to fetch installers:", error);
+        } finally {
+          setIsFetchingInstallers(false);
+        }
+      };
+      fetchInstallers();
+    }
+  }, [activeModal]);
+
   useEffect(() => {
     if (activeModal) {
       if (prefillDate) {
@@ -25,21 +51,28 @@ const ScheduleInstallationModal = ({
       } else {
         setInstallationDate("");
       }
+      if (prefillInstallerId) {
+        setInstallerId(prefillInstallerId);
+      } else {
+        setInstallerId("");
+      }
     }
-  }, [activeModal, prefillDate]);
+  }, [activeModal, prefillDate, prefillInstallerId]);
 
   const handleSchedule = async () => {
-    if (!installationDate) return;
+    if (!installationDate || !installerId) return;
 
     try {
       setIsLoading(true);
       await scheduleInstallation({
         quote_id: quoteData?.id,
         installation_date: installationDate,
+        installer_id: installerId,
       });
       onScheduled();
       onClose();
       setInstallationDate("");
+      setInstallerId("");
     } catch (error) {
       console.error("Schedule failed:", error);
     } finally {
@@ -50,6 +83,7 @@ const ScheduleInstallationModal = ({
   const handleClose = () => {
     if (!isLoading) {
       setInstallationDate("");
+      setInstallerId("");
       onClose();
     }
   };
@@ -73,12 +107,12 @@ const ScheduleInstallationModal = ({
           <Button
             // ✅ Button text changes based on reschedule or new schedule
             text={
-              prefillDate ? "Reschedule & Send Email" : "Schedule & Send Email"
+              prefillDate ? "Reschedule" : "Schedule"
             }
             icon="ph:paper-plane-tilt"
             className="btn-primary"
             onClick={handleSchedule}
-            disabled={!installationDate || isLoading}
+            disabled={!installationDate || !installerId || isLoading}
             isLoading={isLoading}
           />
         </>
@@ -100,7 +134,7 @@ const ScheduleInstallationModal = ({
       </div>
 
       {/* Date Field */}
-      <div>
+      <div className="mb-4">
         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           <Icon icon="ph:calendar" />
           {prefillDate
@@ -116,11 +150,35 @@ const ScheduleInstallationModal = ({
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           required
         />
+      </div>
+
+      {/* Installer Field */}
+      <div>
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <Icon icon="ph:user-list" />
+          Assign Installer <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={installerId}
+          onChange={(e) => setInstallerId(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          required
+          disabled={isFetchingInstallers}
+        >
+          <option value="" disabled>
+            {isFetchingInstallers ? "Loading installers..." : "Select an installer"}
+          </option>
+          {installers.map((inst) => (
+            <option key={inst.id} value={inst.id}>
+              {inst.name}
+            </option>
+          ))}
+        </select>
         {/* ✅ Different helper text for reschedule */}
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-500 mt-2">
           {prefillDate
-            ? "The customer will receive an email with the updated installation date."
-            : "The customer will receive an email notification with the scheduled date."}
+            ? "The customer and installer will receive an email with the updated details."
+            : "The customer and installer will receive an email notification with the scheduled date."}
         </p>
       </div>
     </Modal>

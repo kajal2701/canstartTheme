@@ -103,11 +103,10 @@ export const renderReviews = (reviewIdx, setReviewIdx) => (
             <button
               key={i}
               onClick={() => setReviewIdx(i)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === reviewIdx
+              className={`w-2 h-2 rounded-full transition-all ${i === reviewIdx
                   ? "bg-[#ee5d59] w-6"
                   : "bg-gray-300 hover:bg-gray-400"
-              }`}
+                }`}
             />
           ))}
         </div>
@@ -321,4 +320,108 @@ export const buildQuoteItems = (quote, options = {}) => {
   }
 
   return items;
+};
+
+// ── Auto Calculate Quantities ────────────────────────────────────
+export const calculateAutoQuantities = (linearFeet) => {
+  const lf = Number(linearFeet) || 0;
+  return {
+    numberOfLights: Math.ceil(lf * 1.5),
+    numberOfTracks: Math.ceil(lf * 1),
+    numberOfScrews: Math.ceil(lf * 1),
+  };
+};
+
+export const blockInvalidNumberKeys = (e) => {
+  if (["ArrowUp", "ArrowDown", "e", "E", "-", "+", "."].includes(e.key)) {
+    e.preventDefault();
+  }
+};
+
+// ── Parse products from quote JSON ────────────────────────────────
+export const parseQuoteProducts = (job) => {
+  let products = [];
+  try {
+    const pd = typeof job?.product_data === "string"
+      ? JSON.parse(job.product_data || "[]")
+      : (job?.product_data || []);
+    if (Array.isArray(pd)) {
+      pd.forEach((p) => {
+        if (Number(p.qty) > 0) {
+          products.push({ product: p.product || "", qty: p.qty || "0", picked: false });
+        }
+      });
+    }
+  } catch (e) { /* ignore parse errors */ }
+  try {
+    const cpd = typeof job?.custom_product_data === "string"
+      ? JSON.parse(job.custom_product_data || "[]")
+      : (job?.custom_product_data || []);
+    if (Array.isArray(cpd)) {
+      cpd.forEach((p) => {
+        if (Number(p.qty) > 0) {
+          products.push({ product: p.product || "", qty: p.qty || "0", picked: false });
+        }
+      });
+    }
+  } catch (e) { /* ignore parse errors */ }
+  return products;
+};
+
+// ── Default Process State per Job ────────────────────────────────
+export const getDefaultProcessState = (job) => {
+  const linearFeet = job?.linear_feet || job?.total_numerical_box || 0;
+  const { numberOfLights } = calculateAutoQuantities(linearFeet);
+
+  // Extract all products from quote
+  const quoteProducts = parseQuoteProducts(job);
+
+  return {
+    // Step 1 — Prep
+    prep: {
+      numberOfLights,
+      linearFeet,
+      trackType: "",
+      trackQty: 0,
+      quoteProducts,
+      screws: false,
+      conduit: false,
+      cableTie: false,
+      connectorsBag: false,
+      otherItems: [],
+    },
+    // Step 2 — On the Way
+    onTheWay: {
+      sent: false,
+      etaMinutes: 15,
+      sentAt: null,
+    },
+    // Step 3 — Controller Box
+    controllerBox: {
+      photo: null,
+      confirmWithCustomer: job?.controller_confirm_with_customer || false,
+      emailSent: false,
+      preAssessmentImages: [],
+      preAssessmentNotes: "",
+    },
+    // Step 4 — Post Installation
+    postInstall: {
+      checklist: {},
+      images: [],
+      notes: "",
+    },
+    // Step 5 — Supplies & Drop-off
+    dropOff: {
+      items: [],
+      travelTime: { hours: 0, minutes: 0 },
+      notes: "",
+    },
+    // Step 6 — Time Entry
+    timeEntry: {
+      totalTime: { hours: 0, minutes: 0 },
+      expenses: [],
+    },
+    // Step 7 — Completion
+    completed: false,
+  };
 };

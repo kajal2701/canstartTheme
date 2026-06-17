@@ -112,7 +112,8 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
         onClose={() => setShowScheduleModal(false)}
         quoteData={rowData}
         onScheduled={handleScheduled}
-        prefillDate={rowData?.installationDate ?? null}
+        prefillDate={rowData?.rawInstallationDate || null}
+        prefillInstallerId={rowData?.installerId || null}
       />
     </>
   );

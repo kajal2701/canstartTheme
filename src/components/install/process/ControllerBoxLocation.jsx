@@ -1,77 +1,116 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
+import StepHeader from "./StepHeader";
 import Button from "@/components/ui/Button";
 import { toast } from "react-toastify";
+import { sendControllerBoxEmailApi, sendPreAssessmentEmailApi } from "@/services/installService";
+import { getImgSrc } from "@/utils/formatters";
 
 const ControllerBoxLocation = ({ data, onChange, job }) => {
   const photoRef = useRef(null);
   const assessmentRef = useRef(null);
+  const [isSending, setIsSending] = useState(false);
 
   const update = (field, value) => {
     onChange({ ...data, [field]: value });
   };
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        update("photo", { name: file.name, preview: ev.target.result });
-      };
-      reader.readAsDataURL(file);
-    }
+  // Get display URL for an image (handles both local preview and uploaded filePath)
+  const getImageUrl = (img) => {
+    if (!img) return "";
+    if (img.preview) return img.preview; // local blob preview (not yet uploaded)
+    if (img.filePath) return getImgSrc(img.filePath); // already uploaded to server
+    return "";
   };
 
+  // Store local preview + File object (upload happens on Save)
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const preview = URL.createObjectURL(file);
+    update("photo", { name: file.name, preview, file });
+  };
+
+  // Store local previews + File objects for assessment images
   const handleAssessmentUpload = (e) => {
     const files = Array.from(e.target.files || []);
-    const newImages = [];
-    let loaded = 0;
+    if (files.length === 0) return;
 
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        newImages.push({ name: file.name, preview: ev.target.result });
-        loaded++;
-        if (loaded === files.length) {
-          update("preAssessmentImages", [...(data?.preAssessmentImages || []), ...newImages]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    const newImages = files.map((file) => ({
+      name: file.name,
+      preview: URL.createObjectURL(file),
+      file,
+    }));
+    update("preAssessmentImages", [...(data?.preAssessmentImages || []), ...newImages]);
   };
 
   const removeAssessmentImage = (index) => {
     const updated = [...(data?.preAssessmentImages || [])];
+    // Revoke blob URL if it's a local preview
+    if (updated[index]?.preview) URL.revokeObjectURL(updated[index].preview);
     updated.splice(index, 1);
     update("preAssessmentImages", updated);
   };
 
-  const handleSendEmail = (type) => {
-    update("emailSent", true);
-    toast.success(
-      type === "controllerBox"
-        ? "Controller box location photo sent to customer for confirmation! (dummy)"
-        : "Pre-installation assessment sent to customer! (dummy)"
-    );
+  const removePhoto = () => {
+    if (data?.photo?.preview) URL.revokeObjectURL(data.photo.preview);
+    update("photo", null);
+  };
+
+  const handleSendEmail = async (type) => {
+    // Check if images have been uploaded (saved) before sending email
+    if (type === "controllerBox" && data?.photo?.file) {
+      toast.error("Please save first before sending the email.");
+      return;
+    }
+    if (type === "assessment") {
+      const hasUnsaved = (data?.preAssessmentImages || []).some((img) => img.file);
+      if (hasUnsaved) {
+        toast.error("Please save first before sending the email.");
+        return;
+      }
+    }
+
+    setIsSending(true);
+    try {
+      if (type === "controllerBox") {
+        const photoUrl = getImgSrc(data?.photo?.filePath);
+        await sendControllerBoxEmailApi(job?.quote_id, photoUrl);
+        update("emailSent", true);
+        toast.success("Controller box location photo sent to customer for confirmation!");
+      } else {
+        const imageUrls = (data?.preAssessmentImages || []).map((img) => getImgSrc(img.filePath));
+        await sendPreAssessmentEmailApi(job?.quote_id, imageUrls, data?.preAssessmentNotes || "");
+        update("assessmentEmailSent", true);
+        toast.success("Pre-installation assessment sent to customer!");
+      }
+    } catch (error) {
+      console.error(`Failed to send ${type} email:`, error);
+      toast.error("Failed to send email. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const confirmWithCustomer = data?.confirmWithCustomer ?? job?.controller_confirm_with_customer ?? false;
   const hasAssessmentContent =
     (data?.preAssessmentImages?.length > 0) || (data?.preAssessmentNotes?.trim());
 
+  // Check if there are unsaved images (need to save before sending email)
+  const hasUnsavedPhoto = !!data?.photo?.file;
+  const hasUnsavedAssessment = (data?.preAssessmentImages || []).some((img) => img.file);
+
   return (
     <div className="space-y-6">
       {/* ── Header ── */}
-      <div className="bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-xl p-5 border border-violet-100 dark:border-violet-800">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
-          <Icon icon="ph:map-pin-area" className="text-violet-500 text-xl" />
-          Confirm Controller Box Location
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Take a picture of the controller box location and optionally send it to the customer for confirmation.
-        </p>
-      </div>
+      <StepHeader
+        icon="ph:cpu"
+        iconColorClass="text-violet-500"
+        title="Controller Box Location"
+        description="Determine and document where the controller box will be placed."
+        colorClass="from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border-violet-100 dark:border-violet-800"
+      />
 
       {/* ── Section A: Controller Box Photo ── */}
       <Card
@@ -105,16 +144,15 @@ const ControllerBoxLocation = ({ data, onChange, job }) => {
           {/* Upload area */}
           <div
             onClick={() => photoRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
-              data?.photo
+            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${data?.photo
                 ? "border-green-300 bg-green-50/50 dark:bg-green-900/10"
                 : "border-gray-200 dark:border-gray-600 hover:border-violet-300 hover:bg-violet-50/30"
-            }`}
+              }`}
           >
             {data?.photo ? (
               <div className="space-y-3">
                 <img
-                  src={data.photo.preview}
+                  src={getImageUrl(data.photo)}
                   alt="Controller box location"
                   className="max-h-48 mx-auto rounded-lg shadow-sm"
                 />
@@ -122,9 +160,12 @@ const ControllerBoxLocation = ({ data, onChange, job }) => {
                   <Icon icon="ph:check-circle" />
                   {data.photo.name}
                 </p>
+                {hasUnsavedPhoto && (
+                  <p className="text-xs text-amber-500">⚠ Not saved yet — click Save to upload</p>
+                )}
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); update("photo", null); }}
+                  onClick={(e) => { e.stopPropagation(); removePhoto(); }}
                   className="text-xs text-red-500 hover:text-red-700 underline"
                 >
                   Remove
@@ -147,13 +188,13 @@ const ControllerBoxLocation = ({ data, onChange, job }) => {
           />
 
           {/* Send button */}
-          {confirmWithCustomer && data?.photo && (
+          {confirmWithCustomer && data?.photo && !hasUnsavedPhoto && (
             <Button
-              text={data?.emailSent ? "Email Sent ✓" : "Send to Customer for Confirmation"}
-              icon={data?.emailSent ? "ph:check-circle" : "ph:paper-plane-tilt"}
+              text={data?.emailSent ? "Email Sent ✓" : isSending ? "Sending..." : "Send to Customer for Confirmation"}
+              icon={data?.emailSent ? "ph:check-circle" : isSending ? "ph:circle-notch" : "ph:paper-plane-tilt"}
               className={data?.emailSent ? "btn-success" : "btn-primary"}
               onClick={() => handleSendEmail("controllerBox")}
-              disabled={data?.emailSent}
+              disabled={data?.emailSent || isSending}
             />
           )}
         </div>
@@ -185,10 +226,15 @@ const ControllerBoxLocation = ({ data, onChange, job }) => {
                 {data.preAssessmentImages.map((img, idx) => (
                   <div key={idx} className="relative group">
                     <img
-                      src={img.preview}
+                      src={getImageUrl(img)}
                       alt={img.name}
                       className="w-full h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
                     />
+                    {img.file && (
+                      <span className="absolute bottom-1 left-1 bg-amber-500 text-white text-[8px] px-1 rounded">
+                        Unsaved
+                      </span>
+                    )}
                     <button
                       type="button"
                       onClick={() => removeAssessmentImage(idx)}
@@ -235,12 +281,13 @@ const ControllerBoxLocation = ({ data, onChange, job }) => {
           </div>
 
           {/* Send button */}
-          {hasAssessmentContent && (
+          {hasAssessmentContent && !hasUnsavedAssessment && (
             <Button
-              text="Send Assessment to Customer"
-              icon="ph:paper-plane-tilt"
-              className="btn-primary"
+              text={data?.assessmentEmailSent ? "Assessment Sent ✓" : isSending ? "Sending..." : "Send Assessment to Customer"}
+              icon={data?.assessmentEmailSent ? "ph:check-circle" : isSending ? "ph:circle-notch" : "ph:paper-plane-tilt"}
+              className={data?.assessmentEmailSent ? "btn-success" : "btn-primary"}
               onClick={() => handleSendEmail("assessment")}
+              disabled={data?.assessmentEmailSent || isSending}
             />
           )}
         </div>

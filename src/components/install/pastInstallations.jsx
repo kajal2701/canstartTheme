@@ -45,6 +45,7 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
       customerName: `${jobRow.fname || ""} ${jobRow.lname || ""}`,
       email: jobRow.email,
       installation_date: jobRow.installation_date,
+      installer_id: jobRow.installer_id,
     };
     setSelectedJob(quote);
     setShowScheduleModal(true);
@@ -130,6 +131,15 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
       ),
     },
     {
+      Header: "Installer",
+      accessor: "installer_name",
+      Cell: ({ cell: { value } }) => (
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+          {value || <span className="text-gray-400 italic">—</span>}
+        </span>
+      ),
+    },
+    {
       Header: "Phone",
       accessor: "phone",
       Cell: ({ cell: { value } }) => (
@@ -203,11 +213,10 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
             </button>
 
             <button
-              className={`icon-btn transition-colors ${
-                canSchedule
-                  ? "hover:bg-red-50 dark:hover:bg-red-900 cursor-pointer"
-                  : "opacity-40 cursor-not-allowed text-gray-400"
-              }`}
+              className={`icon-btn transition-colors ${canSchedule
+                ? "hover:bg-red-50 dark:hover:bg-red-900 cursor-pointer"
+                : "opacity-40 cursor-not-allowed text-gray-400"
+                }`}
               type="button"
               title={
                 canSchedule
@@ -267,6 +276,7 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
         quoteData={selectedJob}
         onScheduled={handleScheduled}
         prefillDate={selectedJob?.installation_date ?? null}
+        prefillInstallerId={selectedJob?.installer_id ?? null}
       />
     </>
   );

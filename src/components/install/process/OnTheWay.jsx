@@ -2,70 +2,81 @@ import React, { useState } from "react";
 import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import StepHeader from "./StepHeader";
 import { toast } from "react-toastify";
-
-const ETA_OPTIONS = [5, 10, 15, 20, 30, 45, 60];
+import { sendOnTheWayNotification } from "@/services/installService";
+import { HOUR_OPTIONS, MINUTE_OPTIONS } from "@/utils/constants";
+import { formatEta, formatTime } from "@/utils/formatters";
 
 const OnTheWay = ({ data, onChange, job }) => {
   const [showEtaPicker, setShowEtaPicker] = useState(false);
-  const [selectedEta, setSelectedEta] = useState(data?.etaMinutes || 15);
+  const [etaHours, setEtaHours] = useState(0);
+  const [etaMinutes, setEtaMinutes] = useState(15);
+  const [isSending, setIsSending] = useState(false);
 
-  const handleConfirm = () => {
-    const now = new Date();
-    onChange({
-      ...data,
-      sent: true,
-      etaMinutes: selectedEta,
-      sentAt: now.toISOString(),
-    });
-    setShowEtaPicker(false);
-    toast.success(
-      `Notification sent! ETA: ${selectedEta} minutes. (Email to customer & quote person — dummy)`
-    );
+  const totalEta = etaHours * 60 + etaMinutes;
+
+  const handleConfirm = async () => {
+    if (totalEta === 0) {
+      toast.error("Please select an ETA greater than 0.");
+      return;
+    }
+
+    setIsSending(true);
+    const etaFormatted = formatEta(etaHours, etaMinutes);
+    try {
+      await sendOnTheWayNotification(job?.quote_id, etaFormatted);
+
+      const now = new Date();
+      onChange({
+        ...data,
+        sent: true,
+        etaMinutes: etaFormatted,
+        sentAt: now.toISOString(),
+      });
+      setShowEtaPicker(false);
+      toast.success(
+        `Notification sent! ETA: ${etaFormatted}. Email sent to customer & quote person.`
+      );
+    } catch (error) {
+      console.error("Failed to send on-the-way notification:", error);
+      toast.error("Failed to send notification. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
   };
 
-  const formatTime = (iso) => {
-    if (!iso) return "";
-    const d = new Date(iso);
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
+
+
+  const selectClassName = "w-24 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white text-center text-lg font-semibold focus:ring-2 focus:ring-sky-500 focus:border-transparent appearance-none cursor-pointer";
 
   return (
     <div className="space-y-6">
       {/* ── Header ── */}
-      <div className="bg-gradient-to-r from-sky-50 to-cyan-50 dark:from-sky-900/20 dark:to-cyan-900/20 rounded-xl p-5 border border-sky-100 dark:border-sky-800">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
-          <Icon icon="ph:car" className="text-sky-500 text-xl" />
-          On the Way
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Let the customer and sales person know you're heading to the job site.
-        </p>
-      </div>
+      <StepHeader
+        icon="ph:car-profile"
+        iconColorClass="text-sky-500"
+        title="On The Way"
+        description="Notify the customer that you are en route to the installation site."
+        colorClass="from-sky-50 to-cyan-50 dark:from-sky-900/20 dark:to-cyan-900/20 border-sky-100 dark:border-sky-800"
+      />
 
       {/* ── Job Info ── */}
       <Card className="!shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Customer</p>
-            <p className="text-sm font-medium text-gray-800 dark:text-white">
-              {job?.fname} {job?.lname}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Address</p>
-            <p className="text-sm font-medium text-gray-800 dark:text-white">
-              {job?.address}, {job?.city}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Phone</p>
-            <p className="text-sm font-medium text-gray-800 dark:text-white">{job?.phone}</p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Quote #</p>
-            <p className="text-sm font-medium text-indigo-600">{job?.quote_no}</p>
-          </div>
+          {[
+            { label: "Customer", value: `${job?.fname} ${job?.lname}` },
+            { label: "Address", value: `${job?.address}, ${job?.city}` },
+            { label: "Phone", value: job?.phone },
+            { label: "Quote #", value: job?.quote_no, valueClass: "text-indigo-600" },
+          ].map((item, index) => (
+            <div key={index}>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{item.label}</p>
+              <p className={`text-sm font-medium ${item.valueClass || "text-gray-800 dark:text-white"}`}>
+                {item.value}
+              </p>
+            </div>
+          ))}
         </div>
       </Card>
 
@@ -79,22 +90,14 @@ const OnTheWay = ({ data, onChange, job }) => {
             Notification Sent!
           </h4>
           <p className="text-sm text-green-600 dark:text-green-500">
-            ETA: <span className="font-bold">{data.etaMinutes} minutes</span>
+            ETA: <span className="font-bold">{data.etaMinutes}</span>
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
             Sent at {formatTime(data.sentAt)}
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Email sent to the customer and the quote person (dummy)
+            Email sent to the customer and the quote person
           </p>
-
-          <button
-            type="button"
-            onClick={() => onChange({ ...data, sent: false, sentAt: null })}
-            className="mt-4 text-sm text-indigo-600 hover:text-indigo-800 underline"
-          >
-            Resend notification
-          </button>
         </div>
       ) : (
         <>
@@ -112,40 +115,63 @@ const OnTheWay = ({ data, onChange, job }) => {
             </div>
           ) : (
             <Card className="!shadow-sm border border-sky-100 dark:border-sky-800">
-              <div className="text-center mb-4">
+              <div className="text-center mb-5">
                 <Icon icon="ph:clock" className="text-3xl text-sky-500 mb-2" />
                 <h4 className="text-base font-semibold text-gray-800 dark:text-white">
                   How long until you arrive?
                 </h4>
               </div>
 
-              <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 mb-6">
-                {ETA_OPTIONS.map((mins) => (
-                  <button
-                    key={mins}
-                    type="button"
-                    onClick={() => setSelectedEta(mins)}
-                    className={`py-3 rounded-lg text-sm font-medium transition-all ${
-                      selectedEta === mins
-                        ? "bg-sky-500 text-white shadow-md"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-sky-100 dark:hover:bg-sky-900/30"
-                    }`}
+              {/* Hours + Minutes Dropdowns */}
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <div className="flex flex-col items-center">
+                  <label className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 font-medium">Hours</label>
+                  <select
+                    value={etaHours}
+                    onChange={(e) => setEtaHours(parseInt(e.target.value))}
+                    className={selectClassName}
                   >
-                    {mins} min
-                  </button>
-                ))}
+                    {HOUR_OPTIONS.map((h) => (
+                      <option key={h} value={h}>{h} hr</option>
+                    ))}
+                  </select>
+                </div>
+
+                <span className="text-2xl font-bold text-gray-400 dark:text-gray-500 mt-5">:</span>
+
+                <div className="flex flex-col items-center">
+                  <label className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 font-medium">Minutes</label>
+                  <select
+                    value={etaMinutes}
+                    onChange={(e) => setEtaMinutes(parseInt(e.target.value))}
+                    className={selectClassName}
+                  >
+                    {MINUTE_OPTIONS.map((m) => (
+                      <option key={m} value={m}>{m} min</option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              {/* Preview */}
+              {totalEta > 0 && (
+                <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-5">
+                  Customer will be notified: <span className="font-semibold text-sky-600 dark:text-sky-400">{formatEta(etaHours, etaMinutes)}</span>
+                </p>
+              )}
 
               <div className="flex justify-center gap-3">
                 <Button
                   text="Cancel"
                   className="btn-outline-secondary"
+                  disabled={isSending}
                   onClick={() => setShowEtaPicker(false)}
                 />
                 <Button
-                  text={`Confirm — ${selectedEta} min ETA`}
-                  icon="ph:paper-plane-tilt"
+                  text={isSending ? "Sending..." : `Confirm — ${formatEta(etaHours, etaMinutes)} ETA`}
+                  icon={isSending ? "ph:circle-notch" : "ph:paper-plane-tilt"}
                   className="btn-primary"
+                  disabled={isSending || totalEta === 0}
                   onClick={handleConfirm}
                 />
               </div>

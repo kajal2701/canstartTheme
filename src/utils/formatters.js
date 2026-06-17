@@ -1,5 +1,6 @@
-export const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 import { MONTH_NAMES } from "./constants";
+
+export const BASE_URL = import.meta.env.VITE_BASE_URL || "";
 
 export const formatCurrency = (v) => {
   if (v == null || v === "") return "-";
@@ -49,3 +50,15 @@ export const formatDateKey = (y, m, d) =>
   `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
 export const isToday = (dateStr) => dateStr === new Date().toISOString().split("T")[0];
+
+export const formatEta = (hours, minutes) => {
+  const h = String(hours).padStart(2, "0");
+  const m = String(minutes).padStart(2, "0");
+  return `${h}:${m}`;
+};
+
+export const formatTime = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};

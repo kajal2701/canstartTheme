@@ -84,3 +84,57 @@ export const STATUS_STYLES = {
   in_progress: { bg: "bg-amber-100 dark:bg-amber-900/30",  text: "text-amber-700 dark:text-amber-300",   dot: "bg-amber-500" },
   completed:   { bg: "bg-green-100 dark:bg-green-900/30",   text: "text-green-700 dark:text-green-300",   dot: "bg-green-500" },
 };
+
+export const HOUR_OPTIONS = [0, 1, 2, 3, 4, 5];
+export const MINUTE_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+export const PROCESS_STEPS = [
+  { id: 1, label: "Prep Stage",           icon: "ph:clipboard-text" },
+  { id: 2, label: "On the Way",           icon: "ph:car" },
+  { id: 3, label: "Controller Box",       icon: "ph:map-pin-area" },
+  { id: 4, label: "Post Installation",    icon: "ph:check-square" },
+  { id: 5, label: "Supplies & Drop-off",  icon: "ph:package" },
+  { id: 6, label: "Time Entry",           icon: "ph:clock" },
+  { id: 7, label: "Completion",           icon: "ph:flag-checkered" },
+];
+
+export const STEP_KEYS = {
+  1: "prep",
+  2: "onTheWay",
+  3: "controllerBox",
+  4: "postInstall",
+  5: "dropOff",
+  6: "timeEntry",
+};
+
+export const DB_COLUMN_MAP = {
+  1: "prep_data",
+  2: "on_the_way_data",
+  3: "controller_box_data",
+  4: "post_install_data",
+  5: "drop_off_data",
+  6: "time_entry_data",
+};
+
+// ── Track Types for Prep Checklist ───────────────────────────────
+export const TRACK_TYPES = ["5.33ft Track", "6ft Track", "6.67ft Track", "7ft Track"];
+
+// ── Jumper/Connector Sizes for Post-Install ──────────────────────
+export const JUMPER_SIZES = ["6 inch", "12 inch", "18 inch", "24 inch", "36 inch", "48 inch"];
+export const CONNECTOR_SIZES = ["2-pin", "3-pin", "4-pin", "6-pin"];
+
+// ── Post Installation Checklist Items ────────────────────────────────
+
+// Core items that are always shown (auto-calculated from prep)
+export const CORE_ITEMS = [
+  { key: "lights", label: "Lights", icon: "ph:lightbulb", calcKey: "numberOfLights" },
+  { key: "tracks", label: "Tracks", icon: "ph:arrow-line-down", calcKey: "numberOfTracks" },
+  { key: "screws", label: "Screws", icon: "ph:wrench", calcKey: "numberOfScrews" },
+];
+
+// Checkbox items from prep stage — only shown if selected in prep
+export const PREP_CHECKBOX_ITEMS = [
+  { key: "conduit", prepKey: "conduit", label: "Conduit", icon: "ph:pipe", qtyKey: "conduitQty" },
+  { key: "cableTie", prepKey: "cableTie", label: "Cable Tie", icon: "ph:link", qtyKey: "cableTieQty" },
+  { key: "connectorsBag", prepKey: "connectorsBag", label: "Connectors Bag", icon: "ph:plugs-connected", qtyKey: "connectorsBagQty" },
+];

@@ -1,47 +1,46 @@
-import React from "react";
+import React, { useCallback } from "react";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import StepHeader from "./StepHeader";
 
 const SuppliesDropOff = ({ data, onChange }) => {
   const items = data?.items || [];
   const travelTime = data?.travelTime || { hours: 0, minutes: 0 };
 
-  const updateField = (field, value) => {
+  const updateField = useCallback((field, value) => {
     onChange({ ...data, [field]: value });
-  };
+  }, [data, onChange]);
 
-  const addItem = () => {
+  const addItem = useCallback(() => {
     updateField("items", [
       ...items,
       { id: Date.now(), name: "", qtyReturned: "", notes: "" },
     ]);
-  };
+  }, [items, updateField]);
 
-  const updateItem = (index, field, value) => {
+  const updateItem = useCallback((index, field, value) => {
     const updated = [...items];
     updated[index] = { ...updated[index], [field]: value };
     updateField("items", updated);
-  };
+  }, [items, updateField]);
 
-  const removeItem = (index) => {
+  const removeItem = useCallback((index) => {
     const updated = [...items];
     updated.splice(index, 1);
     updateField("items", updated);
-  };
+  }, [items, updateField]);
 
   return (
     <div className="space-y-6">
       {/* ── Header ── */}
-      <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-xl p-5 border border-orange-100 dark:border-orange-800">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
-          <Icon icon="ph:package" className="text-orange-500 text-xl" />
-          Supplies Update & Drop-off
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Record any supplies being returned to inventory and travel time for this installation.
-        </p>
-      </div>
+      <StepHeader
+        icon="ph:package"
+        iconColorClass="text-orange-500"
+        title="Supplies Update & Drop-off"
+        description="Record any supplies being returned to inventory and travel time for this installation."
+        colorClass="from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-orange-100 dark:border-orange-800"
+      />
 
       {/* ── Return Items Table ── */}
       <Card
@@ -76,43 +75,45 @@ const SuppliesDropOff = ({ data, onChange }) => {
               <div className="col-span-1"></div>
             </div>
 
-            {items.map((item, idx) => (
-              <div
-                key={item.id}
-                className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-gray-50 dark:bg-gray-700/30 rounded-lg px-3 py-2"
-              >
-                <div className="col-span-4">
-                  <label className="sm:hidden text-[10px] text-gray-400 mb-0.5 block">Item</label>
-                  <input
-                    type="text"
-                    value={item.name}
-                    onChange={(e) => updateItem(idx, "name", e.target.value)}
-                    placeholder="Item name"
-                    className="w-full text-sm px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-1 focus:ring-orange-500"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="sm:hidden text-[10px] text-gray-400 mb-0.5 block">Qty</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={item.qtyReturned}
-                    onChange={(e) => updateItem(idx, "qtyReturned", e.target.value)}
-                    placeholder="0"
-                    className="w-full text-sm px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-1 focus:ring-orange-500"
-                  />
-                </div>
-                <div className="col-span-5">
-                  <label className="sm:hidden text-[10px] text-gray-400 mb-0.5 block">Notes</label>
-                  <input
-                    type="text"
-                    value={item.notes}
-                    onChange={(e) => updateItem(idx, "notes", e.target.value)}
-                    placeholder="Notes..."
-                    className="w-full text-sm px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-1 focus:ring-orange-500"
-                  />
-                </div>
-                <div className="col-span-1 flex justify-center">
+            {items.map((item, idx) => {
+              const inputClassName = "w-full text-sm px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-1 focus:ring-orange-500";
+              return (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center bg-gray-50 dark:bg-gray-700/30 rounded-lg px-3 py-2"
+                >
+                  <div className="sm:col-span-4">
+                    <label className="sm:hidden text-[10px] text-gray-400 mb-0.5 block">Item</label>
+                    <input
+                      type="text"
+                      value={item.name}
+                      onChange={(e) => updateItem(idx, "name", e.target.value)}
+                      placeholder="Item name"
+                      className={inputClassName}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="sm:hidden text-[10px] text-gray-400 mb-0.5 block">Qty</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={item.qtyReturned}
+                      onChange={(e) => updateItem(idx, "qtyReturned", e.target.value)}
+                      placeholder="0"
+                      className={inputClassName}
+                    />
+                  </div>
+                  <div className="sm:col-span-5">
+                    <label className="sm:hidden text-[10px] text-gray-400 mb-0.5 block">Notes</label>
+                    <input
+                      type="text"
+                      value={item.notes}
+                      onChange={(e) => updateItem(idx, "notes", e.target.value)}
+                      placeholder="Notes..."
+                      className={inputClassName}
+                    />
+                  </div>
+                  <div className="sm:col-span-1 flex justify-center">
                   <button
                     type="button"
                     onClick={() => removeItem(idx)}
@@ -122,7 +123,8 @@ const SuppliesDropOff = ({ data, onChange }) => {
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </Card>

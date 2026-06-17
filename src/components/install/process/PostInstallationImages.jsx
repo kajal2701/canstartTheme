@@ -1,51 +1,51 @@
 import React, { useRef } from "react";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
+import StepHeader from "./StepHeader";
 
 const PostInstallationImages = ({ data, onChange }) => {
   const fileRef = useRef(null);
 
   const handleUpload = (e) => {
     const files = Array.from(e.target.files || []);
-    const newImages = [];
-    let loaded = 0;
+    if (files.length === 0) return;
 
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        newImages.push({ name: file.name, preview: ev.target.result });
-        loaded++;
-        if (loaded === files.length) {
-          onChange({
-            ...data,
-            images: [...(data?.images || []), ...newImages],
-          });
-        }
-      };
-      reader.readAsDataURL(file);
+    const newImages = files.map((file) => ({
+      name: file.name,
+      preview: URL.createObjectURL(file),
+      file,
+    }));
+
+    onChange({
+      images: [...(data?.images || []), ...newImages],
     });
+
     // reset input so same file can be re-selected
     e.target.value = "";
   };
 
   const removeImage = (index) => {
     const updated = [...(data?.images || [])];
-    updated.splice(index, 1);
-    onChange({ ...data, images: updated });
+    const removed = updated.splice(index, 1)[0];
+    
+    // Revoke blob URL if it's a local preview to free up memory
+    if (removed?.preview && removed.preview.startsWith("blob:")) {
+      URL.revokeObjectURL(removed.preview);
+    }
+    
+    onChange({ images: updated });
   };
 
   return (
     <div className="space-y-6">
       {/* ── Header ── */}
-      <div className="bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 rounded-xl p-5 border border-rose-100 dark:border-rose-800">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
-          <Icon icon="ph:images" className="text-rose-500 text-xl" />
-          Post Installation Images & Notes
-        </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Upload photos of the completed installation and add any relevant notes.
-        </p>
-      </div>
+      <StepHeader
+        icon="ph:images"
+        iconColorClass="text-rose-500"
+        title="Post Installation Images & Notes"
+        description="Upload photos of the completed installation and add any relevant notes."
+        colorClass="from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 border-rose-100 dark:border-rose-800"
+      />
 
       {/* ── Image Upload ── */}
       <Card className="!shadow-sm border border-gray-100 dark:border-gray-700">
@@ -117,7 +117,7 @@ const PostInstallationImages = ({ data, onChange }) => {
       >
         <textarea
           value={data?.notes || ""}
-          onChange={(e) => onChange({ ...data, notes: e.target.value })}
+          onChange={(e) => onChange({ notes: e.target.value })}
           placeholder="Add any notes about the completed installation..."
           rows={4}
           className="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"

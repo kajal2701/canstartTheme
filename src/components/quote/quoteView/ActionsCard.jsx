@@ -24,6 +24,7 @@ import {
   paymentReceive, // confirm deposit
   scheduleInstallation,
 } from "../../../services/quoteService";
+import { getUsers } from "@/services/usersService";
 
 const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   const { user } = useSelector((state) => state.auth);
@@ -49,6 +50,9 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   const [installationDate, setInstallationDate] = useState(
     quote?.installation_date || "",
   );
+  const [installerId, setInstallerId] = useState("");
+  const [installers, setInstallers] = useState([]);
+  const [isFetchingInstallers, setIsFetchingInstallers] = useState(false);
 
   // ── Derived: payment_details ──
   const pd = quote?.payment_details ?? null;
@@ -77,6 +81,29 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   // Stage 5: deposit confirmed, no installation date yet → show schedule
   const showScheduleInstallation =
     quoteStatus === 3 && depositConfirmed && !quote?.installation_date;
+
+  useEffect(() => {
+    if (showScheduleInstallation && installers.length === 0) {
+      const fetchInstallers = async () => {
+        setIsFetchingInstallers(true);
+        try {
+          const usersResponse = await getUsers();
+          const installersList = usersResponse.filter(user => Number(user.role) === 2).map((u) => ({
+            id: u.id || u.user_id,
+            name: `${u.fname || ""} ${u.lname || ""}`.trim() || u.name || "Unknown",
+            email: u.email || "",
+            phone: u.phone || "No phone",
+          }));
+          setInstallers(installersList);
+        } catch (error) {
+          console.error("Failed to fetch installers:", error);
+        } finally {
+          setIsFetchingInstallers(false);
+        }
+      };
+      fetchInstallers();
+    }
+  }, [showScheduleInstallation]);
 
   // Stage 6: installation done, no invoice sent → show send final invoice
   const showSendInvoice =
@@ -284,11 +311,16 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       toast.error("Please select an installation date.");
       return;
     }
+    if (!installerId) {
+      toast.error("Please assign an installer.");
+      return;
+    }
     try {
       setIsScheduling(true);
       const result = await scheduleInstallation({
         quote_id: quote?.quote_id,
         installation_date: installationDate,
+        installer_id: installerId,
       });
       toast.success(result.message);
       onSubmitSuccess?.();
@@ -652,17 +684,40 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
             <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
               Schedule Installation
             </h4>
-            <Textinput
-              type="date"
-              label="Installation Date:"
-              value={installationDate}
-              onChange={(e) => setInstallationDate(e.target.value)}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Textinput
+                type="date"
+                label="Installation Date (*):"
+                value={installationDate}
+                onChange={(e) => setInstallationDate(e.target.value)}
+              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Assign Installer (*):
+                </label>
+                <select
+                  value={installerId}
+                  onChange={(e) => setInstallerId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  required
+                  disabled={isFetchingInstallers}
+                >
+                  <option value="" disabled>
+                    {isFetchingInstallers ? "Loading installers..." : "Select an installer"}
+                  </option>
+                  {installers.map((inst) => (
+                    <option key={inst.id} value={inst.id}>
+                      {inst.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
             <Button
               text={isScheduling ? "Scheduling..." : "Schedule Installation"}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
+              className="bg-blue-500 hover:bg-blue-600 text-white mt-3"
               type="button"
-              disabled={isScheduling}
+              disabled={isScheduling || !installationDate || !installerId}
               onClick={handleScheduleInstallation}
             />
           </div>

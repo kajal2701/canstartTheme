@@ -55,6 +55,7 @@ const ViewQuoteAdmin = () => {
         quantity: item.total_numerical_box,
         unitCost: Number(item.unit_price),
         total: Number(item.total_amount),
+        type: item.required === 'yes' ? 'Mandatory' : item.required === 'no' ? 'Optional' : '-',
       }),
     );
 
@@ -65,6 +66,7 @@ const ViewQuoteAdmin = () => {
       quantity: Number(product.qty),
       unitCost: Number(product.price),
       total: Number(product.amount),
+      type: product.required === 'yes' ? 'Mandatory' : product.required === 'no' ? 'Optional' : '-',
     }));
 
     const customItems = (quote.custom_product_data || []).map(
@@ -79,6 +81,7 @@ const ViewQuoteAdmin = () => {
         quantity: Number(item.qty),
         unitCost: Number(item.unit_price),
         total: Number(item.amount),
+        type: item.required === 'yes' ? 'Mandatory' : item.required === 'no' ? 'Optional' : '-',
       }),
     );
 

@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import { PROCESS_STEPS, getDefaultProcessState } from "@/mocks/installMocks";
-import { getInstalls } from "@/services/installService";
+import { toast } from "react-toastify";
+import { getDefaultProcessState } from "@/utils/helperFunctions";
+import { PROCESS_STEPS, STEP_KEYS, DB_COLUMN_MAP } from "@/utils/constants";
+import { getInstalls, getInstallProcess, saveInstallStep } from "@/services/installService";
 
 import PrepStage from "@/components/install/process/PrepStage";
 import OnTheWay from "@/components/install/process/OnTheWay";
@@ -15,6 +17,12 @@ import PostInstallationImages from "@/components/install/process/PostInstallatio
 import SuppliesDropOff from "@/components/install/process/SuppliesDropOff";
 import TimeEntry from "@/components/install/process/TimeEntry";
 import CompletionStep from "@/components/install/process/CompletionStep";
+import { validateStep } from "./validators";
+import InstallationTopBar from "./InstallationTopBar";
+import InstallationSidebar from "./InstallationSidebar";
+import InstallationNavigation from "./InstallationNavigation";
+
+
 
 const InstallationProcess = () => {
   const { id } = useParams();
@@ -25,19 +33,53 @@ const InstallationProcess = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
   const [processState, setProcessState] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [savedSteps, setSavedSteps] = useState({}); // track which steps have been saved
 
-  // ── Fetch job from API ──
+  // ── Fetch job + saved process state from API ──
   useEffect(() => {
-    const fetchJob = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       try {
+        // Fetch job data
         const data = await getInstalls(user?.user_id || "", user?.role || "");
         const allJobs = data?.upcoming_installations || [];
         const found = allJobs.find((j) => String(j.quote_id) === String(id));
 
         if (found) {
           setJob(found);
-          setProcessState(getDefaultProcessState(found));
+
+          // Fetch saved process state from DB
+          const savedProcess = await getInstallProcess(id);
+
+          if (savedProcess) {
+            // Restore saved state — merge with defaults to fill any missing fields
+            const defaults = getDefaultProcessState(found);
+            const restored = {
+              prep: savedProcess.prep_data || defaults.prep,
+              onTheWay: savedProcess.on_the_way_data || defaults.onTheWay,
+              controllerBox: savedProcess.controller_box_data || defaults.controllerBox,
+              postInstall: savedProcess.post_install_data || defaults.postInstall,
+              dropOff: savedProcess.drop_off_data || defaults.dropOff,
+              timeEntry: savedProcess.time_entry_data || defaults.timeEntry,
+              completed: savedProcess.status === "completed",
+            };
+            setProcessState(restored);
+            setCurrentStep(savedProcess.current_step || 1);
+
+            // Mark steps that have saved data
+            const saved = {};
+            for (let step = 1; step <= 6; step++) {
+              if (savedProcess[DB_COLUMN_MAP[step]]) {
+                saved[step] = true;
+              }
+            }
+            if (savedProcess.status === "completed") saved[7] = true;
+            setSavedSteps(saved);
+          } else {
+            // No saved data — use defaults
+            setProcessState(getDefaultProcessState(found));
+          }
         }
       } catch (err) {
         console.error("Failed to load job:", err);
@@ -46,8 +88,113 @@ const InstallationProcess = () => {
       }
     };
 
-    fetchJob();
+    fetchData();
   }, [id, user]);
+
+  // ── Validation helper (must be before early returns to preserve hook order) ──
+  const isStepValid = useCallback(
+    (step) => validateStep(step, processState),
+    [processState]
+  );
+
+  // ── Update helpers (must be before early returns to preserve hook order) ──
+  const isServerUpdate = React.useRef(false);
+
+  const updateStep = (key, value) => {
+    setProcessState((prev) => ({ ...prev, [key]: value }));
+    // Skip unsave marking when updating from server response after save
+    if (isServerUpdate.current) return;
+    // Mark the step as unsaved when data changes
+    const stepNum = Object.entries(STEP_KEYS).find(([, v]) => v === key)?.[0];
+    if (stepNum) {
+      setSavedSteps((prev) => ({ ...prev, [stepNum]: false }));
+    }
+  };
+
+  const updatePostInstall = useCallback((patch) => {
+    setProcessState((prev) => ({
+      ...prev,
+      postInstall: { ...(prev.postInstall || {}), ...patch },
+    }));
+    if (isServerUpdate.current) return;
+    setSavedSteps((prev) => ({ ...prev, [4]: false }));
+  }, []);
+
+  // ── Save current step ──
+
+  const handleSaveStep = async () => {
+    if (currentStep === 7) return; // Step 7 uses the complete endpoint
+
+    // Step 3 (Controller Box): validate photo is uploaded before saving
+    if (currentStep === 3) {
+      const cbData = processState?.controllerBox || {};
+      if (!cbData.photo) {
+        toast.error("Please upload a controller box location photo before saving.");
+        return;
+      }
+    }
+
+    if (!isStepValid(currentStep)) {
+      toast.error("Please complete all required fields before continuing.");
+      return;
+    }
+
+    const stepKey = STEP_KEYS[currentStep];
+    if (!stepKey || !processState) return;
+
+    setIsSaving(true);
+    try {
+      const stepData = processState[stepKey];
+
+      // Step 3 (Controller Box): collect pending files for single FormData upload
+      let pendingFiles = null;
+      if (currentStep === 3) {
+        const cbFile = stepData?.photo?.file || null;
+        const assessmentFiles = (stepData?.preAssessmentImages || [])
+          .filter((img) => img.file)
+          .map((img) => img.file);
+
+        if (cbFile || assessmentFiles.length > 0) {
+          pendingFiles = {
+            controllerBoxPhoto: cbFile,
+            assessmentImages: assessmentFiles,
+          };
+        }
+      }
+
+      const result = await saveInstallStep({
+        quote_id: parseInt(id),
+        installer_id: job?.installer_id || user?.user_id || null,
+        current_step: currentStep,
+        step_data: stepData,
+        pendingFiles,
+      });
+
+      // Update processState with server response (has file paths instead of File objects)
+      // Use flag to prevent updateStep from marking it as unsaved
+      isServerUpdate.current = true;
+      if (result.step_data) {
+        setProcessState((prev) => {
+          isServerUpdate.current = false;
+          return {
+            ...prev,
+            [stepKey]: result.step_data,
+          };
+        });
+      } else {
+        isServerUpdate.current = false;
+      }
+
+      setSavedSteps((prev) => ({ ...prev, [currentStep]: true }));
+      toast.success(`Step ${currentStep} saved successfully!`);
+    } catch (err) {
+      console.error("Failed to save step:", err);
+      toast.error("Failed to save. Please try again.");
+      isServerUpdate.current = false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -71,18 +218,12 @@ const InstallationProcess = () => {
     );
   }
 
-  // ── Update helpers ──
-  const updateStep = (key, value) => {
-    setProcessState((prev) => ({ ...prev, [key]: value }));
-  };
 
   // ── Step mapping ──
-  const STEP_KEYS = ["prep", "onTheWay", "controllerBox", "postInstall", "dropOff", "timeEntry", "completed"];
-
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <PrepStage data={processState.prep} onChange={(v) => updateStep("prep", v)} job={job} />;
+        return <PrepStage data={processState.prep} onChange={(v) => updateStep("prep", v)} />;
       case 2:
         return <OnTheWay data={processState.onTheWay} onChange={(v) => updateStep("onTheWay", v)} job={job} />;
       case 3:
@@ -90,8 +231,8 @@ const InstallationProcess = () => {
       case 4:
         return (
           <div className="space-y-6">
-            <PostInstallationChecklist data={processState.postInstall} onChange={(v) => updateStep("postInstall", v)} />
-            <PostInstallationImages data={processState.postInstall} onChange={(v) => updateStep("postInstall", v)} />
+            <PostInstallationChecklist data={processState.postInstall} onChange={updatePostInstall} prepData={processState.prep} />
+            <PostInstallationImages data={processState.postInstall} onChange={updatePostInstall} />
           </div>
         );
       case 5:
@@ -106,148 +247,41 @@ const InstallationProcess = () => {
   };
 
   const isCompleted = processState.completed === true;
+  const isCurrentStepSaved = savedSteps[currentStep] === true;
+  const isOptionalStep = currentStep === 3; // Controller Box is optional
 
   return (
     <div className="space-y-5">
-      {/* ── Top Bar ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/install/calendar")}
-            className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <Icon icon="ph:arrow-left" className="text-gray-600 dark:text-gray-300" />
-          </button>
-          <div>
-            <h1 className="text-xl font-bold text-gray-800 dark:text-white">
-              Installation Process
-            </h1>
-            <p className="text-sm text-gray-500">
-              {job.quote_no} — {job.fname} {job.lname} • {job.address}, {job.city}
-            </p>
-          </div>
-        </div>
-
-        {job.installer_name && (
-          <div className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg">
-            <div className="w-7 h-7 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-bold">
-              {job.installer_name.split(" ").map((n) => n[0]).join("")}
-            </div>
-            <span className="text-sm text-indigo-700 dark:text-indigo-300 font-medium">
-              {job.installer_name}
-            </span>
-          </div>
-        )}
-      </div>
+      <InstallationTopBar
+        job={job}
+        currentStep={currentStep}
+        isCurrentStepSaved={isCurrentStepSaved}
+      />
 
       {/* ── Main Layout ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* ── Sidebar Steps ── */}
         <div className="lg:col-span-3">
-          <Card className="!shadow-sm border border-gray-100 dark:border-gray-700 sticky top-24">
-            <div className="space-y-1">
-              {PROCESS_STEPS.map((step) => {
-                const isActive = currentStep === step.id;
-                const isPast = currentStep > step.id;
-                const isCompletedStep = isCompleted;
-
-                return (
-                  <button
-                    key={step.id}
-                    type="button"
-                    onClick={() => !isCompleted && setCurrentStep(step.id)}
-                    disabled={isCompleted}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all ${
-                      isActive
-                        ? "bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700"
-                        : isPast || isCompletedStep
-                        ? "hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-700/50 opacity-60"
-                    }`}
-                  >
-                    {/* Step number/check */}
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-colors ${
-                        isCompletedStep || isPast
-                          ? "bg-green-500 text-white"
-                          : isActive
-                          ? "bg-indigo-500 text-white"
-                          : "bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
-                      }`}
-                    >
-                      {isCompletedStep || isPast ? (
-                        <Icon icon="ph:check-bold" className="text-sm" />
-                      ) : (
-                        step.id
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-medium truncate ${
-                          isActive
-                            ? "text-indigo-700 dark:text-indigo-300"
-                            : "text-gray-700 dark:text-gray-300"
-                        }`}
-                      >
-                        {step.label}
-                      </p>
-                    </div>
-
-                    <Icon
-                      icon={step.icon}
-                      className={`text-lg flex-shrink-0 ${
-                        isActive ? "text-indigo-500" : "text-gray-400"
-                      }`}
-                    />
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
+          <InstallationSidebar
+            currentStep={currentStep}
+            setCurrentStep={setCurrentStep}
+            isCompleted={isCompleted}
+            savedSteps={savedSteps}
+          />
         </div>
 
-        {/* ── Content Area ── */}
         <div className="lg:col-span-9">
           {renderStep()}
 
-          {/* ── Navigation Buttons ── */}
-          {!isCompleted && (
-            <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
-              <Button
-                text="Previous"
-                icon="ph:arrow-left"
-                className="btn-outline-secondary"
-                disabled={currentStep === 1}
-                onClick={() => setCurrentStep((s) => Math.max(1, s - 1))}
-              />
-
-              <div className="flex items-center gap-2">
-                {PROCESS_STEPS.map((step) => (
-                  <div
-                    key={step.id}
-                    className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                      step.id === currentStep
-                        ? "bg-indigo-500"
-                        : step.id < currentStep
-                        ? "bg-green-400"
-                        : "bg-gray-200 dark:bg-gray-600"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {currentStep < 7 && (
-                <Button
-                  text="Next"
-                  icon="ph:arrow-right"
-                  className="btn-primary"
-                  onClick={() => setCurrentStep((s) => Math.min(7, s + 1))}
-                />
-              )}
-              {currentStep === 7 && <div />}
-            </div>
-          )}
+          <InstallationNavigation
+            currentStep={currentStep}
+            setCurrentStep={setCurrentStep}
+            isCompleted={isCompleted}
+            isSaving={isSaving}
+            handleSaveStep={handleSaveStep}
+            isStepValid={isStepValid}
+            isCurrentStepSaved={isCurrentStepSaved}
+            savedSteps={savedSteps}
+          />
         </div>
       </div>
     </div>

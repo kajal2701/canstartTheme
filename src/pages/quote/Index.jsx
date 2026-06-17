@@ -25,6 +25,8 @@ const mapQuoteData = (quote) => {
     srNumber: quote.quote_no,
     email: quote.email,
     salesman: quote.salesman,
+    installerName: quote.installer_name || "",
+    installerId: quote.installer_id || null,
     customerName: `${quote.fname} ${quote.lname}`,
     phone: quote.phone,
     address: quote.address,
@@ -200,6 +202,7 @@ const Quote = () => {
         </span>
       ),
     },
+
     {
       Header: "Phone",
       accessor: "phone",
@@ -262,6 +265,15 @@ const Quote = () => {
           className={`inline-block text-xs px-3 py-1 rounded font-medium ${value === "Scheduled" ? "bg-green-500 text-white" : "bg-gray-500 text-white"}`}
         >
           {value}
+        </span>
+      ),
+    },
+    {
+      Header: "Installer",
+      accessor: "installerName",
+      Cell: ({ cell: { value } }) => (
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+          {value || <span className="text-gray-400 italic">—</span>}
         </span>
       ),
     },

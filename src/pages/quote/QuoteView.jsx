@@ -214,7 +214,7 @@ export default function QuoteView() {
                     className={index % 2 === 0 ? "bg-gray-50/50" : "bg-white"}
                   >
                     <td className="py-3 md:py-5 px-2 md:px-4 border-b border-gray-100 align-top">
-                      {item.required === "Optional" && (
+                      {item.required === "yes" && (
                         <input
                           type="checkbox"
                           defaultChecked
