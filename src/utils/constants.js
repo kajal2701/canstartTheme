@@ -137,4 +137,38 @@ export const PREP_CHECKBOX_ITEMS = [
   { key: "conduit", prepKey: "conduit", label: "Conduit", icon: "ph:pipe", qtyKey: "conduitQty" },
   { key: "cableTie", prepKey: "cableTie", label: "Cable Tie", icon: "ph:link", qtyKey: "cableTieQty" },
   { key: "connectorsBag", prepKey: "connectorsBag", label: "Connectors Bag", icon: "ph:plugs-connected", qtyKey: "connectorsBagQty" },
-];
+];
+
+// Current year + 4 prior years for the year filter dropdown
+export const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) =>
+  String(new Date().getFullYear() - i)
+);
+
+// 12 months for month filter dropdown
+export const MONTH_OPTIONS = [
+  { value: "01", label: "January" },
+  { value: "02", label: "February" },
+  { value: "03", label: "March" },
+  { value: "04", label: "April" },
+  { value: "05", label: "May" },
+  { value: "06", label: "June" },
+  { value: "07", label: "July" },
+  { value: "08", label: "August" },
+  { value: "09", label: "September" },
+  { value: "10", label: "October" },
+  { value: "11", label: "November" },
+  { value: "12", label: "December" },
+];
+
+// Light theme options for charts
+export const CHART_LIGHT_THEME = {
+  background: "transparent",
+  foreColor: "#64748b", // slate-500
+};
+
+export const CHART_COLORS = [
+  "#6366f1", "#f59e0b", "#10b981", "#3b82f6", "#ef4444",
+  "#8b5cf6", "#14b8a6", "#f97316", "#ec4899", "#06b6d4",
+  "#84cc16", "#a855f7", "#0ea5e9", "#eab308", "#22d3ee",
+];
+

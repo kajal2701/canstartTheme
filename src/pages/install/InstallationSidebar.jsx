@@ -17,8 +17,7 @@ const InstallationSidebar = ({ currentStep, setCurrentStep, isCompleted, savedSt
             <button
               key={step.id}
               type="button"
-              onClick={() => !isCompleted && setCurrentStep(step.id)}
-              disabled={isCompleted}
+              onClick={() => setCurrentStep(step.id)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all ${isActive
                 ? "bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700"
                 : isPast || isCompletedStep

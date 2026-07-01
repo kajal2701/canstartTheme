@@ -82,6 +82,13 @@ export const menuItems = [
     link: "inventory",
     roles: [1], // admin only
   },
+  {
+    title: "Reports",
+    isHide: true,
+    icon: "ph:chart-bar",
+    link: "reports",
+    roles: [1], // admin only
+  },
 ];
 
 export const topMenu = [

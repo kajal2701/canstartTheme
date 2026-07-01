@@ -59,6 +59,9 @@ const EditPlug = lazy(() => import("./pages/inventory/plugs/EditPlug"));
 const AddPowerCord = lazy(() => import("./pages/inventory/powercord/AddPowerCord"));
 const EditPowerCord = lazy(() => import("./pages/inventory/powercord/EditPowerCord"));
 
+// Reports Module
+const Reports = lazy(() => import("./pages/reports/Index"));
+
 // ✅ Keep these as normal imports (not lazy - they are layout/utility components)
 import Layout from "./layout/Layout";
 import Loading from "@/components/Loading";
@@ -474,6 +477,16 @@ function App() {
                 }
               />
             </Route>
+
+            {/* Reports Module */}
+            <Route
+              path="reports"
+              element={
+                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <Reports />
+                </ProtectedRoute>
+              }
+            />
 
             <Route path="profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="/404" />} />

@@ -15,8 +15,6 @@ const InstallationNavigation = ({
 }) => {
   const isOptionalStep = currentStep === 3; // Controller Box is optional
 
-  if (isCompleted) return null;
-
   return (
     <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
       <Button
@@ -45,7 +43,7 @@ const InstallationNavigation = ({
 
       <div className="flex items-center gap-2">
         {/* Save Button — visible on steps 1–6 */}
-        {currentStep < 7 && (
+        {currentStep < 7 && !isCompleted && (
           <button
             type="button"
             onClick={handleSaveStep}
@@ -71,7 +69,7 @@ const InstallationNavigation = ({
           <button
             type="button"
             className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-sm font-medium shadow-sm hover:shadow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!isStepValid(currentStep) || (!isCurrentStepSaved && !isOptionalStep)}
+            disabled={!isCompleted && (!isStepValid(currentStep) || (!isCurrentStepSaved && !isOptionalStep))}
             onClick={() => setCurrentStep((s) => Math.min(7, s + 1))}
           >
             <span>Next</span>

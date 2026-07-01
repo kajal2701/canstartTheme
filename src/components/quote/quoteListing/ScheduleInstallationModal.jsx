@@ -112,7 +112,13 @@ const ScheduleInstallationModal = ({
             icon="ph:paper-plane-tilt"
             className="btn-primary"
             onClick={handleSchedule}
-            disabled={!installationDate || !installerId || isLoading}
+            disabled={
+              !installationDate ||
+              !installerId ||
+              isLoading ||
+              // ✅ For reschedule: disable if user picked the same date as already scheduled
+              (prefillDate && installationDate === prefillDate.split("T")[0])
+            }
             isLoading={isLoading}
           />
         </>

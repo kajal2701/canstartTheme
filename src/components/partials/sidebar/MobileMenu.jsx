@@ -6,7 +6,7 @@ import SimpleBar from "simplebar-react";
 import { Link } from "react-router-dom";
 import useMobileMenu from "@/hooks/useMobileMenu";
 import Icon from "@/components/ui/Icon";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/store/auth/authSlice";
 
 // import Canstar logo
@@ -33,6 +33,15 @@ const MobileMenu = ({ className = "custom-class" }) => {
     localStorage.removeItem("user");
     dispatch(logout());
   };
+
+  // ✅ Get user role from redux store
+  const { user } = useSelector((state) => state.auth);
+  const userRole = user?.role; // number: 1=Admin, 2=Installer, 3=Operations, 4=Sales
+
+  // ✅ Filter menuItems based on user role
+  const filteredMenuItems = menuItems.filter((item) =>
+    item.roles?.includes(userRole),
+  );
 
   return (
     <div>
@@ -63,9 +72,8 @@ const MobileMenu = ({ className = "custom-class" }) => {
 
         {/* Scroll Shadow */}
         <div
-          className={`h-[60px] absolute top-[80px] nav-shadow z-[1] w-full transition-all duration-200 pointer-events-none ${
-            scroll ? "opacity-100" : "opacity-0"
-          }`}
+          className={`h-[60px] absolute top-[80px] nav-shadow z-[1] w-full transition-all duration-200 pointer-events-none ${scroll ? "opacity-100" : "opacity-0"
+            }`}
         ></div>
 
         {/* Menu Items - Adjusted height to make room for logout */}
@@ -73,7 +81,7 @@ const MobileMenu = ({ className = "custom-class" }) => {
           className="sidebar-menu h-[calc(100%-165px)]"
           scrollableNodeProps={{ ref: scrollableNodeRef }}
         >
-          <Navmenu menus={menuItems} />
+          <Navmenu menus={filteredMenuItems} />
         </SimpleBar>
 
         {/* Logout Button - Fixed at Bottom */}
