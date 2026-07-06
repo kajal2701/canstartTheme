@@ -36,6 +36,7 @@ export default function QuoteView() {
   const [reviewIdx, setReviewIdx] = useState(0);
   const [termsChecked, setTermsChecked] = useState(false);
   const [payModalOpen, setPayModalOpen] = useState(false);
+  const [checkedItems, setCheckedItems] = useState(new Set());
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -72,6 +73,19 @@ export default function QuoteView() {
     };
     if (id) load();
   }, [id]);
+
+  // Seed checkedItems when quote loads: all optional items start as checked (included in total)
+  useEffect(() => {
+    if (!quote) return;
+    const builtItems = buildQuoteItems(quote, { descriptionStyle: "react" });
+    const initialChecked = new Set(
+      builtItems
+        .map((item, idx) => ({ item, idx }))
+        .filter(({ item }) => item.required === "no")
+        .map(({ idx }) => idx)
+    );
+    setCheckedItems(initialChecked);
+  }, [quote]);
 
   const isPayButtonHidden = () => {
     if (!quote?.payment_details) return false;
@@ -138,6 +152,60 @@ export default function QuoteView() {
 
   const items = buildQuoteItems(quote, { descriptionStyle: "react" });
   const depositInfo = getDepositLabel();
+
+  const excludedItems = items
+    .map((item, idx) => ({ item, idx }))
+    .filter(({ item, idx }) => item.required === "no" && !checkedItems.has(idx));
+
+  const excludedFeetPrice = excludedItems
+    .filter(({ item }) => item.source === "annotation")
+    .reduce((sum, { item }) => sum + (item.total || 0), 0);
+
+  const excludedControllerPrice = excludedItems
+    .filter(({ item }) => item.source === "product" || item.source === "custom_product")
+    .reduce((sum, { item }) => sum + (item.total || 0), 0);
+
+  const excludedExtraWork = excludedItems
+    .filter(({ item }) => item.source === "extra_work")
+    .reduce((sum, { item }) => sum + (item.total || 0), 0);
+
+  const dynamicFeetPrice = parseFloat(quote.total_feet_price || 0) - excludedFeetPrice;
+  const dynamicControllerPrice = parseFloat(quote.total_controller_price || 0) - excludedControllerPrice;
+  const dynamicExtraWork = parseFloat(quote.total_extra_work || 0) - excludedExtraWork;
+
+  const dynamicSubtotal = dynamicFeetPrice + dynamicControllerPrice;
+  const dynamicDiscount = (dynamicSubtotal * parseFloat(quote.discount_percentage || 0)) / 100;
+  
+  // Calculate base for GST
+  const baseForGst = dynamicSubtotal + dynamicExtraWork - dynamicDiscount;
+  const dynamicGst = (baseForGst * parseFloat(quote.gst_percentage || 0)) / 100;
+  const dynamicTotal = baseForGst + dynamicGst;
+  const displayTotal = dynamicTotal;
+
+  // Build adjusted payload for ConfirmAndPay
+  const uncheckedAnnotationIds = excludedItems
+    .filter(({ item }) => item.source === "annotation")
+    .map(({ item }) => item.annotation_image_id)
+    .filter(Boolean)
+    .join(",");
+
+  const filteredProducts = quote.products ? quote.products.filter(
+    (_, idx) => {
+      const itemIdx = items.findIndex(i => i.source === "product" && i.sourceIndex === idx);
+      if (itemIdx === -1) return true;
+      return items[itemIdx].required !== "no" || checkedItems.has(itemIdx);
+    }
+  ) : [];
+
+  const adjustedPayload = {
+    annotation_image_ids_to_delete: uncheckedAnnotationIds,
+    products: filteredProducts,
+    custom_product_data: quote.custom_product_data || [],
+    total_feet_price: dynamicFeetPrice.toFixed(2),
+    total_controller_price: dynamicControllerPrice.toFixed(2),
+    gst: dynamicGst.toFixed(2),
+    main_total: dynamicTotal.toFixed(2),
+  };
 
   return (
     <div className="min-h-screen bg-[#fff6f6] py-4 md:py-8 px-3 md:px-4 lg:px-8 flex flex-col items-center font-sans">
@@ -214,11 +282,19 @@ export default function QuoteView() {
                     className={index % 2 === 0 ? "bg-gray-50/50" : "bg-white"}
                   >
                     <td className="py-3 md:py-5 px-2 md:px-4 border-b border-gray-100 align-top">
-                      {item.required === "yes" && (
+                      {item.required === "no" && (
                         <input
                           type="checkbox"
-                          defaultChecked
-                          className="w-4 h-4 accent-[#ee5d59]"
+                          checked={checkedItems.has(index)}
+                          onChange={() => {
+                            setCheckedItems((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(index)) next.delete(index);
+                              else next.add(index);
+                              return next;
+                            });
+                          }}
+                          className="w-4 h-4 accent-[#ee5d59] cursor-pointer"
                         />
                       )}
                     </td>
@@ -268,38 +344,25 @@ export default function QuoteView() {
           <div className="w-full md:max-w-[320px] space-y-2 md:space-y-3">
             <div className="flex justify-between text-gray-600 font-medium text-xs md:text-base">
               <span>Subtotal:</span>
-              <span>
-                {formatCurrency(
-                  parseFloat(quote.total_feet_price) +
-                  parseFloat(quote.total_controller_price),
-                )}
-              </span>
+              <span>{formatCurrency(dynamicSubtotal)}</span>
             </div>
-            {quote.total_extra_work && (
+            {(dynamicExtraWork > 0 || quote.total_extra_work > 0) && (
               <div className="flex justify-between text-gray-600 font-medium text-xs md:text-base">
                 <span>Total Extra Work:</span>
-                <span>{formatCurrency(quote.total_extra_work)}</span>
+                <span>{formatCurrency(dynamicExtraWork)}</span>
               </div>
             )}
             <div className="flex justify-between text-green-500 font-medium text-xs md:text-base">
               <span>Discount ({quote.discount_percentage}%):</span>
-              <span>
-                {formatCurrency(
-                  quote.discount_amount ||
-                  ((parseFloat(quote.total_feet_price) +
-                    parseFloat(quote.total_controller_price)) *
-                    parseFloat(quote.discount_percentage)) /
-                  100,
-                )}
-              </span>
+              <span>{formatCurrency(dynamicDiscount)}</span>
             </div>
             <div className="flex justify-between text-gray-600 font-medium pb-2 md:pb-3 border-b border-gray-200 text-xs md:text-base">
               <span>GST ({parseInt(quote.gst_percentage)}%):</span>
-              <span>{formatCurrency(quote.gst)}</span>
+              <span>{formatCurrency(dynamicGst)}</span>
             </div>
             <div className="flex justify-between text-[#ee5d59] font-bold text-lg md:text-2xl pt-1 md:pt-2">
               <span>Total:</span>
-              <span>{formatCurrency(quote.main_total)}</span>
+              <span>{formatCurrency(displayTotal)}</span>
             </div>
             {quote.payment_details?.part_payment_amount && depositInfo && (
               <div
@@ -307,7 +370,11 @@ export default function QuoteView() {
               >
                 <span>{depositInfo.label}:</span>
                 <span>
-                  {formatCurrency(quote.payment_details.part_payment_amount)}
+                  {formatCurrency(
+                    depositInfo.label === "Deposit Amount"
+                      ? (dynamicTotal * parseFloat(quote.payment_details.payment_percentage || 100) / 100)
+                      : quote.payment_details.part_payment_amount
+                  )}
                 </span>
               </div>
             )}
@@ -377,6 +444,7 @@ export default function QuoteView() {
         isOpen={payModalOpen}
         onClose={() => setPayModalOpen(false)}
         quote={quote}
+        adjustedPayload={adjustedPayload}
         onSuccess={() => window.location.reload()}
       />
     </div>

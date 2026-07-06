@@ -151,15 +151,12 @@ const TrackList = () => {
             />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <DataTable
+          <DataTable
               title="Tracks List"
               columns={columns}
               data={data}
               loading={loading}
-              className="min-w-[600px]"
             />
-          </div>
         )}
       </Card>
 

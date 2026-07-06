@@ -103,9 +103,7 @@ const ScrewList = () => {
             <Button text="Retry" className="btn-sm btn-outline" onClick={fetchData} />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <DataTable title="Screws List" columns={columns} data={data} loading={loading} className="min-w-[600px]" />
-          </div>
+          <DataTable title="Screws List" columns={columns} data={data} loading={loading} />
         )}
       </Card>
 

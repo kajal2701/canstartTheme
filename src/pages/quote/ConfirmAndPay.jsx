@@ -25,7 +25,7 @@ const TAB_LABELS = {
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function ConfirmAndPay({ isOpen, onClose, quote, onSuccess }) {
+export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload, onSuccess }) {
   const paymentDetails = quote?.payment_details ?? {};
 
   // Derived — read-only, never changes (matches PHP: radios are display-only)
@@ -35,6 +35,13 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, onSuccess }) {
   const selectedMethods = paymentDetails.select_payment_methods
     ? paymentDetails.select_payment_methods.split(",").map((m) => m.trim())
     : [];
+
+  // Calculate dynamic payable amount based on adjusted payload and payment percentage
+  const dynamicMainTotal = parseFloat(adjustedPayload?.main_total ?? quote?.main_total ?? 0);
+  const depositPercentage = parseFloat(paymentDetails.payment_percentage || 100);
+  const payableAmount = paymentType === "2" 
+    ? (dynamicMainTotal * depositPercentage / 100).toFixed(2)
+    : dynamicMainTotal.toFixed(2);
 
   // ── State ─────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState(selectedMethods[0] || "");
@@ -74,26 +81,26 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, onSuccess }) {
       // ── Core payment fields ──────────────────────────────────────────────
       formData.append("quote_id", quote.quote_id);
       formData.append("payment_id", paymentDetails.payment_id || "");
-      formData.append("amount", paymentDetails.part_payment_amount || "");
+      formData.append("amount", payableAmount);
       formData.append("payment_method", activeTab);
 
       // ── quotedata_changes fields ─────────────────────────────────────────
       formData.append(
         "product_data_json",
-        JSON.stringify(quote.products || []),
+        JSON.stringify(adjustedPayload?.products || quote.products || []),
       );
       formData.append(
         "custom_product_data_json",
-        JSON.stringify(quote.custom_product_data || []),
+        JSON.stringify(adjustedPayload?.custom_product_data || quote.custom_product_data || []),
       );
       formData.append(
         "total-controller-input",
-        quote.total_controller_price || 0,
+        adjustedPayload?.total_controller_price ?? quote.total_controller_price ?? 0,
       );
-      formData.append("total-feet-input", quote.total_feet_price || 0);
-      formData.append("gst-input", quote.gst_percentage || 0);
-      formData.append("total-input", quote.main_total || 0);
-      formData.append("annotation_image_ids", ""); // empty — no deletions from customer side
+      formData.append("total-feet-input", adjustedPayload?.total_feet_price ?? quote.total_feet_price ?? 0);
+      formData.append("gst-input", adjustedPayload?.gst ?? quote.gst ?? 0);
+      formData.append("total-input", adjustedPayload?.main_total ?? quote.main_total ?? 0);
+      formData.append("annotation_image_ids", adjustedPayload?.annotation_image_ids_to_delete || "");
 
       // ── Credit card fields ───────────────────────────────────────────────
       if (activeTab === "credit_card") {
@@ -200,7 +207,7 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, onSuccess }) {
           <input
             type="text"
             disabled
-            value={paymentDetails.part_payment_amount || ""}
+            value={payableAmount || ""}
             className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm"
           />
         </div>

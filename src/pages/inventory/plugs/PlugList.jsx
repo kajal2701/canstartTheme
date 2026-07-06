@@ -80,9 +80,7 @@ const PlugList = () => {
             <Button text="Retry" className="btn-sm btn-outline" onClick={fetchData} />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <DataTable title="Plugs List" columns={columns} data={data} loading={loading} className="min-w-[600px]" />
-          </div>
+          <DataTable title="Plugs List" columns={columns} data={data} loading={loading} />
         )}
       </Card>
       <ConfirmModal activeModal={deleteModalOpen} onClose={closeDeleteModal}

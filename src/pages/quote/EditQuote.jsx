@@ -138,7 +138,7 @@ const EditQuote = () => {
             quantity: saved ? saved.qty : "0",
             amount: saved ? parseFloat(saved.amount).toFixed(2) : "0.00",
             option: saved
-              ? saved.required === "Mandatory"
+              ? saved.required === "yes"
                 ? "mandatory"
                 : "optional"
               : "mandatory",
@@ -160,7 +160,7 @@ const EditQuote = () => {
               quantity: c.qty || "",
               unitPrice: c.unit_price || "",
               amount: c.amount || "",
-              option: c.required === "Mandatory" ? "mandatory" : "optional",
+              option: c.required === "yes" ? "mandatory" : "optional",
             })),
           );
         }
@@ -207,7 +207,7 @@ const EditQuote = () => {
                 unitPrice: String(ann.unit_price || ""),
                 amount: String(ann.total_amount || ""),
                 action:
-                  ann.required === "yes" || ann.required === "Mandatory"
+                  ann.required === "yes"
                     ? "Mandatory"
                     : "Optional",
               },
@@ -367,8 +367,8 @@ const EditQuote = () => {
         quantity: atLeastOneProduct ? "" : "Quantity is required",
         option:
           qty > 0 &&
-          (!product?.option ||
-            !["mandatory", "optional"].includes(product.option.toLowerCase()))
+            (!product?.option ||
+              !["mandatory", "optional"].includes(product.option.toLowerCase()))
             ? "Action is required"
             : "",
       };
@@ -597,7 +597,7 @@ const EditQuote = () => {
             methods={methods}
             title="Customer Info"
             submitText=""
-            onSubmit={() => {}}
+            onSubmit={() => { }}
             hideActions={true}
           />
 

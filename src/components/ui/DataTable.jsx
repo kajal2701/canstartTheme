@@ -17,13 +17,17 @@ const DataTable = ({
   loading = false,
   skeletonRows = 6,
   rightHeaderContent,
+  serverSidePagination = false,
+  currentPage = 1,
+  totalPages = 1,
+  onPageChange = () => {},
 }) => {
   const tableInstance = useTable(
     {
       columns,
       data,
       initialState: {
-        pageSize: initialPageSize,
+        pageSize: serverSidePagination ? data.length || 10 : initialPageSize,
       },
     },
     useGlobalFilter,
@@ -54,7 +58,7 @@ const DataTable = ({
       <div className="md:flex justify-between items-center mb-6">
         <h4 className="card-title">{title}</h4>
         <div className="flex items-center gap-3">
-          <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
+          {!serverSidePagination && <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />}
           {rightHeaderContent}
         </div>
       </div>
@@ -159,15 +163,27 @@ const DataTable = ({
           </div>
         </div>
         {!loading && (
-          <TablePagination
-            pageIndex={pageIndex}
-            totalPages={pageOptions.length}
-            canPreviousPage={canPreviousPage}
-            canNextPage={canNextPage}
-            previousPage={previousPage}
-            nextPage={nextPage}
-            gotoPage={gotoPage}
-          />
+          serverSidePagination ? (
+            <TablePagination
+              pageIndex={currentPage - 1}
+              totalPages={totalPages}
+              canPreviousPage={currentPage > 1}
+              canNextPage={currentPage < totalPages}
+              previousPage={() => onPageChange(currentPage - 1)}
+              nextPage={() => onPageChange(currentPage + 1)}
+              gotoPage={(p) => onPageChange(p + 1)}
+            />
+          ) : (
+            <TablePagination
+              pageIndex={pageIndex}
+              totalPages={pageOptions.length}
+              canPreviousPage={canPreviousPage}
+              canNextPage={canNextPage}
+              previousPage={previousPage}
+              nextPage={nextPage}
+              gotoPage={gotoPage}
+            />
+          )
         )}
       </div>
     </Card>

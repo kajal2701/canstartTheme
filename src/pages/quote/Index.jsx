@@ -5,7 +5,7 @@ import Button from "@/components/ui/Button";
 import LoadingIcon from "@/components/LoadingIcon";
 import DataTable from "@/components/ui/DataTable";
 import { useNavigate } from "react-router-dom";
-import { getQuotes } from "@/services/quoteService";
+import { getQuotes, exportAllQuotes } from "@/services/quoteService";
 import { useSelector } from "react-redux";
 import { AddressCell } from "@/utils/mappers";
 import { formatDate } from "@/utils/formatters";
@@ -17,6 +17,7 @@ import { exportQuotesToExcel } from "../../utils/exportUtils";
 import { toast } from "react-toastify";
 import FutureReferenceModal from "../../components/quote/quoteListing/FutureReferenceModal";
 import FollowUpModal from "../../components/quote/quoteListing/FollowUpModal";
+import { useCallback } from "react";
 
 const mapQuoteData = (quote) => {
   const stage = getQuoteStage(quote);
@@ -61,13 +62,25 @@ const mapQuoteData = (quote) => {
 const Quote = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  // Filter State
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [salesmanFilter, setSalesmanFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
+  const [installationFilter, setInstallationFilter] = useState("");
+
   const [quotesData, setQuotesData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [installationFilter, setInstallationFilter] = useState("");
+  const [uniqueSalesmen, setUniqueSalesmen] = useState([]);
+
   const [futureRefModal, setFutureRefModal] = useState({
     open: false,
     quote: null,
@@ -77,41 +90,85 @@ const Quote = () => {
     quote: null,
   });
 
-  const loadQuotes = async () => {
+  // Debounce search query
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 800);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // Reset page when any filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, statusFilter, salesmanFilter, dateFilter, installationFilter, limit]);
+
+  // Load unique salesmen once on mount
+  useEffect(() => {
+    let mounted = true;
+    const fetchSalesmen = async () => {
+      const uid = user?.user_id ?? "";
+      const role = user?.role ?? "";
+      try {
+        const all = await exportAllQuotes({ userId: uid, role });
+        if (mounted && all.length > 0) {
+          const salesmen = [...new Set(all.map(q => q.salesman))].filter(Boolean).sort();
+          setUniqueSalesmen(salesmen);
+        }
+      } catch (e) {
+        console.error("Failed to load salesmen", e);
+      }
+    };
+    if (user) fetchSalesmen();
+    return () => { mounted = false; };
+  }, [user]);
+
+  const loadQuotes = useCallback(async () => {
     try {
       setLoading(true);
       const uid = user?.user_id ?? "";
       const role = user?.role ?? "";
-      const list = await getQuotes(uid, role);
-      const mappedList = list.map(mapQuoteData);
-      setQuotesData(mappedList);
+
+      const res = await getQuotes({
+        userId: uid,
+        role: role,
+        page,
+        limit,
+        search: debouncedSearch,
+        status: statusFilter,
+        salesman: salesmanFilter === "all" ? "" : salesmanFilter,
+        date: dateFilter,
+        installation_date: installationFilter
+      });
+
+      if (res && res.data) {
+        setQuotesData(res.data.map(mapQuoteData));
+        setTotalPages(res.pagination?.totalPages || 1);
+        setTotalRecords(res.pagination?.total || 0);
+      } else {
+        setQuotesData([]);
+      }
     } catch (err) {
       console.error("Error loading quotes:", err);
       setQuotesData([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, page, limit, debouncedSearch, statusFilter, salesmanFilter, dateFilter, installationFilter]);
 
   useEffect(() => {
     let mounted = true;
-
     if (mounted) {
       loadQuotes();
     }
-
     return () => {
       mounted = false;
     };
-  }, [user]);
+  }, [loadQuotes]);
 
-  const fetchQuotes = async () => {
+  const fetchQuotes = useCallback(async () => {
     await loadQuotes();
-  };
-
-  const uniqueSalesmen = useMemo(() => {
-    return [...new Set(quotesData.map((item) => item.salesman))].sort();
-  }, [quotesData]);
+  }, [loadQuotes]);
 
   const onClearAll = () => {
     setSearchQuery("");
@@ -120,61 +177,6 @@ const Quote = () => {
     setDateFilter("");
     setInstallationFilter("");
   };
-
-  const filteredData = useMemo(() => {
-    return quotesData.filter((item) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        [
-          item.srNumber,
-          item.customerName,
-          item.phone,
-          item.address,
-          item.email,
-          item.salesman,
-          item.city,
-          item.state,
-          item.country,
-          item.post_code,
-          item.colors,
-          item.total,
-          item.status,
-          item.date,
-          item.installationDate,
-          item.linearFeet?.toString(),
-        ]
-          .filter(Boolean) // removes null/undefined
-          .some((field) =>
-            field.toLowerCase().includes(searchQuery.toLowerCase()),
-          );
-      const matchesInstallation =
-        installationFilter === "" ||
-        item.rawInstallationDate === installationFilter;
-      const matchesStatus = statusFilter === "" || item.status === statusFilter;
-
-      const matchesSalesman =
-        salesmanFilter === "all" || item.salesman === salesmanFilter;
-      const matchesDate =
-        dateFilter === "" ||
-        item.rawDate === dateFilter ||
-        item.rawInstallationDate === dateFilter;
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesSalesman &&
-        matchesDate &&
-        matchesInstallation
-      );
-    });
-  }, [
-    searchQuery,
-    statusFilter,
-    salesmanFilter,
-    dateFilter,
-    quotesData,
-    installationFilter,
-  ]);
 
   const COLUMNS = [
     {
@@ -385,21 +387,35 @@ const Quote = () => {
     },
   ];
 
-  const handleExport = () => {
-    if (data.length === 0) {
-      toast.error("No data to export!");
-      return;
-    }
+  const handleExport = async () => {
     try {
-      exportQuotesToExcel(data);
-      toast.success(`${data.length} quotes exported successfully!`);
+      const uid = user?.user_id ?? "";
+      const role = user?.role ?? "";
+      const allMatchingData = await exportAllQuotes({
+        userId: uid,
+        role: role,
+        search: debouncedSearch,
+        status: statusFilter,
+        salesman: salesmanFilter === "all" ? "" : salesmanFilter,
+        date: dateFilter,
+        installation_date: installationFilter
+      });
+
+      if (!allMatchingData || allMatchingData.length === 0) {
+        toast.error("No data to export!");
+        return;
+      }
+
+      const mappedData = allMatchingData.map(mapQuoteData);
+      exportQuotesToExcel(mappedData);
+      toast.success(`${mappedData.length} quotes exported successfully!`);
     } catch (error) {
       console.error("Export failed:", error);
       toast.error("Export failed. Please try again.");
     }
   };
-  const columns = useMemo(() => COLUMNS, []);
-  const data = useMemo(() => filteredData, [filteredData]);
+  const columns = useMemo(() => COLUMNS, [fetchQuotes]);
+  const data = quotesData;
 
   return (
     <>
@@ -419,9 +435,13 @@ const Quote = () => {
               setSalesmanFilter={setSalesmanFilter}
               dateFilter={dateFilter}
               setDateFilter={setDateFilter}
+              installationFilter={installationFilter}
+              setInstallationFilter={setInstallationFilter}
               uniqueSalesmen={uniqueSalesmen}
               STATUS_OPTIONS={quoteStatusList}
               onClearAll={onClearAll}
+              limit={limit}
+              setLimit={setLimit}
             />
             <div className="flex gap-2">
               <Button
@@ -440,10 +460,14 @@ const Quote = () => {
           </Card>
 
           <DataTable
-            title="Quote List"
+            title={`Quote List (${totalRecords})`}
             columns={columns}
             data={data}
             loading={loading}
+            serverSidePagination={true}
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
           />
         </div>
       )}

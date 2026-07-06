@@ -269,52 +269,61 @@ export const buildQuoteItems = (quote, options = {}) => {
   };
   // Annotation images
   if (quote.annotation_image && Array.isArray(quote.annotation_image)) {
-    quote.annotation_image.forEach((item) => {
+    quote.annotation_image.forEach((item, idx) => {
       items.push({
         no: ++counter,
         description: getDescription(item.color, item.identify_image_name),
         total: parseFloat(item.total_amount),
         images: (item.images || []).filter((img) => img.type === "drawnLines"),
         required: item.required ?? null,
+        annotation_image_id: item.annotation_image_id,
+        source: "annotation",
+        sourceIndex: idx,
       });
     });
   }
 
   // Products
   if (quote.products && Array.isArray(quote.products)) {
-    quote.products.forEach((item) => {
+    quote.products.forEach((item, idx) => {
       items.push({
         no: ++counter,
         description: item.product_description || item.product,
         total: parseFloat(item.amount),
         images: [],
         required: item.required ?? null,
+        source: "product",
+        sourceIndex: idx,
       });
     });
   }
 
   // Custom products
   if (quote.custom_product_data && Array.isArray(quote.custom_product_data)) {
-    quote.custom_product_data.forEach((item) => {
+    quote.custom_product_data.forEach((item, idx) => {
       items.push({
         no: ++counter,
         description: item.product,
         total: parseFloat(item.amount),
         images: [],
         required: item.required ?? null,
+        source: "custom_product",
+        sourceIndex: idx,
       });
     });
   }
 
   // Extra work
   if (quote.extra_work_data && Array.isArray(quote.extra_work_data)) {
-    quote.extra_work_data.forEach((item) => {
+    quote.extra_work_data.forEach((item, idx) => {
       items.push({
         no: ++counter,
         description: item.description,
         total: parseFloat(item.total),
         images: [],
         required: null,
+        source: "extra_work",
+        sourceIndex: idx,
       });
     });
   }

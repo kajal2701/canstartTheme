@@ -1,12 +1,46 @@
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const getQuotes = async (userId, role) => {
+export const getQuotes = async ({ userId, role, page = 1, limit = 10, search = "", status = "", salesman = "", date = "", installation_date = "" }) => {
   try {
     const params = new URLSearchParams();
     if (userId != null && userId !== "") params.append("user_id", userId);
     if (role != null && role !== "") params.append("role", role);
+    if (page) params.append("page", page);
+    if (limit) params.append("limit", limit);
+    if (search) params.append("search", search);
+    if (status) params.append("status", status);
+    if (salesman) params.append("salesman", salesman);
+    if (date) params.append("date", date);
+    if (installation_date) params.append("installation_date", installation_date);
+
     const res = await fetch(
       `${BASE_URL}/quote/manage_quote?${params.toString()}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    const result = await res.json();
+    if (res.ok && result?.success) {
+      return result; // returning the whole result which contains data and pagination
+    }
+  } catch (e) { }
+  return { data: [], pagination: { total: 0, page: 1, limit: 10, totalPages: 1 } };
+};
+
+export const exportAllQuotes = async ({ userId, role, search = "", status = "", salesman = "", date = "", installation_date = "" }) => {
+  try {
+    const params = new URLSearchParams();
+    if (userId != null && userId !== "") params.append("user_id", userId);
+    if (role != null && role !== "") params.append("role", role);
+    if (search) params.append("search", search);
+    if (status) params.append("status", status);
+    if (salesman) params.append("salesman", salesman);
+    if (date) params.append("date", date);
+    if (installation_date) params.append("installation_date", installation_date);
+
+    const res = await fetch(
+      `${BASE_URL}/quote/manage_quote_export?${params.toString()}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },

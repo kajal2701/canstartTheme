@@ -66,8 +66,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   const depositConfirmed = onlinePayments.some((r) => Number(r.status) === 1);
 
   // ── Visibility flags (based on flow) ──
-  const canEditPayment =
-    hasPaymentDetails && paymentStatus === 0 && quoteStatus !== 3;
+  const canEditPayment = hasPaymentDetails;
 
   // Stage 1: no payment yet
   const showPaymentForm = !hasPaymentDetails;
@@ -689,6 +688,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
                 type="date"
                 label="Installation Date (*):"
                 value={installationDate}
+                min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setInstallationDate(e.target.value)}
               />
               <div className="space-y-2">

@@ -134,7 +134,7 @@ const LineItemsTable = ({
   // ── Submit ────────────────────────────────────────────────────────────────
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    if (extraRows.length === 0) {
+    if (extraRows.length === 0 && (!existingExtraWork || existingExtraWork.length === 0)) {
       toast.error("Please add at least one extra work item before submitting.");
       return;
     }
@@ -146,7 +146,7 @@ const LineItemsTable = ({
     }
 
     const ok = await confirmAction({
-      text: "Do you want to submit this extra work?",
+      text: extraRows.length === 0 ? "Are you sure you want to remove all extra work?" : "Do you want to submit this extra work?",
       confirmButtonText: "Yes, submit it!",
     });
     if (!ok) return;

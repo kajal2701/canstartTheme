@@ -354,6 +354,7 @@ const AddQuote = () => {
     const formData = new FormData();
 
     formData.append("user_id", String(user?.user_id ?? ""));
+    formData.append("customer_id", String(selectedCustomer?.cust_id ?? ""));
     formData.append("fname", String(selectedCustomer?.fname || ""));
     formData.append("lname", String(selectedCustomer?.lname || ""));
     formData.append("email", String(selectedCustomer?.email || ""));
