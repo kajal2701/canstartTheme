@@ -61,7 +61,7 @@ const CustomerForm = ({
         <form onSubmit={handleSubmit((data) => onSubmit(data, provincesData))}>
           <div className="space-y-5">
             {/* ── Personal Info ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               <Textinput
                 label="First Name"
                 type="text"
@@ -92,6 +92,15 @@ const CustomerForm = ({
                     message: "Last name must be at least 2 characters",
                   },
                 }}
+              />
+
+              <Textinput
+                label="Company Name (Optional)"
+                type="text"
+                placeholder="Company Name"
+                name="companyName"
+                register={register}
+                error={errors.companyName}
               />
 
               {/* Primary email */}

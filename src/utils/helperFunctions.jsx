@@ -104,8 +104,8 @@ export const renderReviews = (reviewIdx, setReviewIdx) => (
               key={i}
               onClick={() => setReviewIdx(i)}
               className={`w-2 h-2 rounded-full transition-all ${i === reviewIdx
-                  ? "bg-[#ee5d59] w-6"
-                  : "bg-gray-300 hover:bg-gray-400"
+                ? "bg-[#ee5d59] w-6"
+                : "bg-gray-300 hover:bg-gray-400"
                 }`}
             />
           ))}
@@ -242,6 +242,10 @@ export const renderCustomerAddress = (quote, title = "Invoice To") => (
     <h3 className="text-[#ee5d59] font-semibold text-lg md:text-xl mb-3">
       {title}
     </h3>
+
+    <p className="font-bold text-red-700 text-base md:text-lg">
+      {quote.customer_company_name}
+    </p>
     <p className="font-bold text-gray-900 text-base md:text-lg">
       {quote.fname} {quote.lname}
     </p>

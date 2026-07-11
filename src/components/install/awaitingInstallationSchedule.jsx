@@ -100,6 +100,15 @@ const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
       ),
     },
     {
+      Header: "Color",
+      accessor: "color",
+      Cell: ({ cell: { value } }) => (
+        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+          {value || "—"}
+        </span>
+      ),
+    },
+    {
       Header: "Total Amount",
       accessor: "main_total",
       Cell: ({ cell: { value } }) => (
@@ -139,8 +148,8 @@ const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
             {/* ✅ Schedule button with modal */}
             <button
               className={`icon-btn transition-colors ${canSchedule
-                  ? "hover:bg-indigo-50 dark:hover:bg-indigo-900 text-indigo-600 cursor-pointer"
-                  : "opacity-40 cursor-not-allowed text-gray-400"
+                ? "hover:bg-indigo-50 dark:hover:bg-indigo-900 text-indigo-600 cursor-pointer"
+                : "opacity-40 cursor-not-allowed text-gray-400"
                 }`}
               type="button"
               title={

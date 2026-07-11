@@ -26,17 +26,18 @@ const Customer = () => {
       const list = await getCustomers();
       const mapped = Array.isArray(list)
         ? list.map((c, idx) => {
-            const parts = buildAddressParts(c);
-            return {
-              id: c.cust_id ?? idx + 1,
-              name:
-                [c.fname, c.lname].filter(Boolean).join(" ").trim() ||
-                "Customer",
-              email: c.email ?? "",
-              phone: c.phone ?? "",
-              ...parts,
-            };
-          })
+          const parts = buildAddressParts(c);
+          return {
+            id: c.cust_id ?? idx + 1,
+            name:
+              [c.fname, c.lname].filter(Boolean).join(" ").trim() ||
+              "Customer",
+            companyName: c.company_name ?? "",
+            email: c.email ?? "",
+            phone: c.phone ?? "",
+            ...parts,
+          };
+        })
         : [];
       setData(mapped);
     } catch (e) {
@@ -101,6 +102,17 @@ const Customer = () => {
       ),
     },
     {
+      Header: "Company Name",
+      accessor: "companyName",
+      Cell: ({ cell: { value } }) => (
+        <span
+          className="text-sm text-gray-700 dark:text-gray-300"
+        >
+          {value || "-"}
+        </span>
+      ),
+    },
+    {
       Header: "Email",
       accessor: "email",
       Cell: ({ cell: { value } }) => (
@@ -118,10 +130,19 @@ const Customer = () => {
         </span>
       ),
     },
+    // {
+    //   Header: "Address",
+    //   accessor: addressAccessor,
+    //   Cell: AddressCell,
+    // },
     {
       Header: "Address",
       accessor: addressAccessor,
-      Cell: AddressCell,
+      Cell: ({ row }) => (
+        <div className="min-w-[200px]">
+          <AddressCell row={row} />
+        </div>
+      ),
     },
     {
       Header: "Action",

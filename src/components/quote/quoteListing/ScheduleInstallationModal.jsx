@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 import { scheduleInstallation } from "../../../services/quoteService";
 import { getUsers } from "@/services/usersService";
+import { isPastDate } from "../../../utils/formatters";
 
 const ScheduleInstallationModal = ({
   activeModal,
@@ -87,7 +88,6 @@ const ScheduleInstallationModal = ({
       onClose();
     }
   };
-
   return (
     <Modal
       activeModal={activeModal}
@@ -118,6 +118,7 @@ const ScheduleInstallationModal = ({
               isLoading ||
               // ✅ For reschedule: disable if user picked the same date as already scheduled
               (prefillDate && installationDate === prefillDate.split("T")[0])
+              || isPastDate(prefillDate)
             }
             isLoading={isLoading}
           />

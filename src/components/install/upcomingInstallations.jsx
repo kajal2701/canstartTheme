@@ -124,6 +124,13 @@ const UpcomingInstallations = ({ jobs = [], loading, onRefresh }) => {
       ),
     },
     {
+      Header: "Color",
+      accessor: "color",
+      Cell: ({ cell: { value } }) => (
+        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{value || "—"}</span>
+      ),
+    },
+    {
       Header: "Total Amount",
       accessor: "main_total",
       Cell: ({ cell: { value } }) => (

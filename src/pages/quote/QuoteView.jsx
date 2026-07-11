@@ -175,7 +175,7 @@ export default function QuoteView() {
 
   const dynamicSubtotal = dynamicFeetPrice + dynamicControllerPrice;
   const dynamicDiscount = (dynamicSubtotal * parseFloat(quote.discount_percentage || 0)) / 100;
-  
+
   // Calculate base for GST
   const baseForGst = dynamicSubtotal + dynamicExtraWork - dynamicDiscount;
   const dynamicGst = (baseForGst * parseFloat(quote.gst_percentage || 0)) / 100;
@@ -371,9 +371,7 @@ export default function QuoteView() {
                 <span>{depositInfo.label}:</span>
                 <span>
                   {formatCurrency(
-                    depositInfo.label === "Deposit Amount"
-                      ? (dynamicTotal * parseFloat(quote.payment_details.payment_percentage || 100) / 100)
-                      : quote.payment_details.part_payment_amount
+                    (dynamicTotal * parseFloat(quote.payment_details.payment_percentage || 100) / 100)
                   )}
                 </span>
               </div>

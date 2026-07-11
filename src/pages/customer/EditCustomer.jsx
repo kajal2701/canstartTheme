@@ -13,6 +13,7 @@ const EditCustomer = () => {
     defaultValues: {
       firstName: "",
       lastName: "",
+      companyName: "",
       email: "",
       phoneNumber: "",
       street: "",
@@ -49,6 +50,7 @@ const EditCustomer = () => {
         reset({
           firstName: c.fname ?? "",
           lastName: c.lname ?? "",
+          companyName: c.company_name ?? "",
           email: c.email ?? "",
           phoneNumber: c.phone ?? "",
           street: c.address ?? "",
@@ -81,6 +83,7 @@ const EditCustomer = () => {
       customer_id: id,
       fname: data.firstName,
       lname: data.lastName,
+      company_name: data.companyName,
       email: data.email,
       email_json: JSON.stringify(allEmails),
       phone: data.phoneNumber,

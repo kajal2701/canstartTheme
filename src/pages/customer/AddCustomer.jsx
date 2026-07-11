@@ -11,6 +11,7 @@ const AddCustomer = () => {
     defaultValues: {
       firstName: "",
       lastName: "",
+      companyName: "",
       email: "",
       phoneNumber: "",
       street: "",
@@ -38,6 +39,7 @@ const AddCustomer = () => {
     const payload = {
       fname: data.firstName,
       lname: data.lastName,
+      company_name: data.companyName,
       email: data.email,
       email_json: JSON.stringify(allEmails),
       phone: data.phoneNumber,

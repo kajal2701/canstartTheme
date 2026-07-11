@@ -45,6 +45,11 @@ const CompanyInfo = ({ quote }) => {
           <p className="text-xs font-semibold uppercase tracking-widest text-blue-500 dark:text-blue-400 mb-3">
             To
           </p>
+          {quote.customer_company_name && (
+            <p className="text-base font-bold text-red-700 dark:text-red-400">
+              {quote.customer_company_name}
+            </p>
+          )}
           <p className="text-base font-bold text-slate-900 dark:text-white">
             {quote.fname} {quote.lname}
           </p>
