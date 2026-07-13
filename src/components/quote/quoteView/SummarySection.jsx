@@ -6,6 +6,8 @@ const SummarySection = ({
   quote,
   summaryCalculations,
   onlinePayments = [],
+  activeDiscount,
+  onDiscountChange,
 }) => {
   // ✅ payment_details is array
   const pd = quote?.payment_details ?? null;
@@ -25,7 +27,24 @@ const SummarySection = ({
           value={`$${quote.total_controller_price}`}
         />
         <PriceRow
-          label={`Discount (${quote.discount_percentage}%)`}
+          label={
+            <span className="flex items-center gap-3">
+              <span>Discount ({activeDiscount ?? quote.discount_percentage ?? 0}%)</span>
+              {onDiscountChange && (
+                <input
+                  id="discount-slider"
+                  type="range"
+                  min="0"
+                  max="40"
+                  step="1"
+                  value={activeDiscount ?? quote.discount_percentage ?? 0}
+                  onChange={(e) => onDiscountChange(e.target.value)}
+                  className="w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700 accent-blue-600 print-hide"
+                  title="Adjust dynamic pricing"
+                />
+              )}
+            </span>
+          }
           value={summaryCalculations.discountAmountFormatted}
           red={true}
         />

@@ -280,22 +280,35 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   };
 
   // Payment Receive → confirm deposit
-  const handlePaymentReceive = async (row, idx) => {
-    const ok = await confirmAction({
-      text: "Do you want to confirm this payment receipt?",
-      confirmButtonText: "Yes, confirm it!",
+  const handlePaymentReceiveClick = async (row, idx) => {
+    const result = await confirmAction({
+      title: "Confirm Payment Receipt",
+      text: "Please enter the received amount:",
+      confirmButtonText: "Confirm",
+      input: "text",
+      inputValue: row.amount,
+      inputPlaceholder: "Enter amount",
+      inputValidator: (value) => {
+        if (!value) {
+          return "Amount is required!";
+        }
+        if (isNaN(Number(value))) {
+          return "Please enter a valid number!";
+        }
+      }
     });
-    if (!ok) return;
+
+    if (!result.isConfirmed) return;
 
     try {
       setIsReceivingPayment(idx);
-      const result = await paymentReceive({
+      const response = await paymentReceive({
         quote_id: quote?.quote_id,
         online_payment_id: row.online_payment_id,
         maintotal: mainTotal,
-        amount: row.amount,
+        amount: result.value,
       });
-      toast.success(result.message);
+      toast.success(response.message);
       onSubmitSuccess?.();
     } catch (err) {
       toast.error(err.message || "An error occurred.");
@@ -655,7 +668,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
                     type="button"
                     disabled={isConfirmed || isReceivingPayment === idx}
                     onClick={() =>
-                      !isConfirmed && handlePaymentReceive(row, idx)
+                      !isConfirmed && handlePaymentReceiveClick(row, idx)
                     }
                     className={`mt-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all ${isConfirmed
                       ? "bg-green-500 opacity-60 cursor-not-allowed"

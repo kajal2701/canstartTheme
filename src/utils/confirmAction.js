@@ -25,6 +25,10 @@ const confirmAction = async ({
   cancelButtonText = "Cancel",
   confirmButtonColor = "#3085d6",
   cancelButtonColor = "#d33",
+  input,
+  inputValue,
+  inputPlaceholder,
+  inputValidator,
 } = {}) => {
   const result = await Swal.fire({
     title,
@@ -35,7 +39,15 @@ const confirmAction = async ({
     cancelButtonColor,
     confirmButtonText,
     cancelButtonText,
+    input,
+    inputValue,
+    inputPlaceholder,
+    inputValidator,
   });
+
+  if (input) {
+    return { isConfirmed: result.isConfirmed, value: result.value };
+  }
 
   return result.isConfirmed;
 };

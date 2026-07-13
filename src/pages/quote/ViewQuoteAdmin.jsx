@@ -93,11 +93,12 @@ const ViewQuoteAdmin = () => {
   }, [navigate]);
 
   const [extraWorkTotal, setExtraWorkTotal] = useState(0);
+  const [discountOverride, setDiscountOverride] = useState(null);
 
   const summaryCalculations = useMemo(() => {
     const totalFeetPrice = Number(quote?.total_feet_price || 0);
     const totalControllerPrice = Number(quote?.total_controller_price || 0);
-    const discountPercentage = Number(quote?.discount_percentage || 0);
+    const discountPercentage = discountOverride !== null ? Number(discountOverride) : Number(quote?.discount_percentage || 0);
 
     const subtotal = totalFeetPrice + totalControllerPrice;
     const discountAmount = (subtotal * discountPercentage) / 100;
@@ -120,6 +121,7 @@ const ViewQuoteAdmin = () => {
     quote?.discount_percentage,
     quote?.gst_percentage,
     extraWorkTotal,
+    discountOverride,
   ]);
 
   // Show loading
@@ -198,6 +200,8 @@ const ViewQuoteAdmin = () => {
           quote={quote}
           summaryCalculations={summaryCalculations}
           onlinePayments={onlinePayments}
+          activeDiscount={discountOverride !== null ? discountOverride : (quote?.discount_percentage || 0)}
+          onDiscountChange={setDiscountOverride}
         />
       </div>
 
