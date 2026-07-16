@@ -69,6 +69,7 @@ const EditQuote = () => {
     setAdminNotes,
     discountPercent,
     setDiscountPercent,
+    totalLinearFeet,
     totalControllerPrice,
     totalLinearFeetPrice,
     calculateDiscount,
@@ -771,6 +772,7 @@ const EditQuote = () => {
               type="button"
             />
             <PriceSummary
+              totalLinearFeet={totalLinearFeet}
               totalControllerPrice={totalControllerPrice}
               totalLinearFeetPrice={totalLinearFeetPrice}
               discountPercent={discountPercent}

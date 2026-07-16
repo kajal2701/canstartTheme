@@ -344,15 +344,20 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   };
 
   const handleSendFinalInvoice = async () => {
-    const ok = await confirmAction({
+    const confirmResult = await confirmAction({
       text: "Do you want to send the final invoice?",
       confirmButtonText: "Yes, send it!",
+      input: "checkbox",
+      inputValue: 1,
+      inputPlaceholder: "Send email to customer",
     });
-    if (!ok) return;
+    if (!confirmResult || !confirmResult.isConfirmed) return;
+
+    const sendEmail = confirmResult.value === 1 || confirmResult.value === true;
 
     try {
       setIsSendingInvoice(true);
-      const result = await sendFinalQuote({ quote_id: quote?.quote_id });
+      const result = await sendFinalQuote({ quote_id: quote?.quote_id, send_email: sendEmail });
       result.success
         ? toast.success(result.message)
         : toast.error(result.message);

@@ -55,10 +55,16 @@ const CustomerForm = ({
   }, []);
   // ────────────────────────────────────────────────────────────────
 
+  // When embedded inside another form (hideActions=true), use a div to avoid nested <form> elements
+  const Wrapper = hideActions ? "div" : "form";
+  const wrapperProps = hideActions
+    ? {}
+    : { onSubmit: handleSubmit((data) => onSubmit(data, provincesData)) };
+
   return (
     <Card title={title}>
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit((data) => onSubmit(data, provincesData))}>
+        <Wrapper {...wrapperProps}>
           <div className="space-y-5">
             {/* ── Personal Info ── */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -260,7 +266,7 @@ const CustomerForm = ({
               </div>
             )}
           </div>
-        </form>
+        </Wrapper>
       </FormProvider>
     </Card>
   );

@@ -15,6 +15,7 @@ import React from "react";
  * @param {number} mainTotal - Final total after discount and GST
  */
 const PriceSummary = ({
+  totalLinearFeet,
   totalControllerPrice,
   totalLinearFeetPrice,
   discountPercent,
@@ -29,6 +30,14 @@ const PriceSummary = ({
 
   return (
     <div className="w-full md:w-auto space-y-2 text-right">
+      {/* Controller Price */}
+      <div className="flex justify-between md:justify-end gap-14 text-gray-700">
+        <span>Total Linear Feet:</span>
+        <span className="font-medium">
+          {/* {(totalLinearFeet)} */}
+          {parseFloat(totalLinearFeet || 0).toFixed(2)}
+        </span>
+      </div>
       {/* Controller Price */}
       <div className="flex justify-between md:justify-end gap-8 text-gray-700">
         <span>Total Controller price :</span>

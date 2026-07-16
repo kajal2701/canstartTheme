@@ -51,7 +51,7 @@ const ViewQuoteAdmin = () => {
       (item, index) => ({
         id: index + 1,
         description: `Canstar Puck Lights with a customized data line system, paired with a **${item.color}** aluminum track package, designed for the **${item.identify_image_name}** of the house/property.`,
-        images: (item.images || []).filter((img) => img.type === "fullyEdited"),
+        images: item.images || [],
         quantity: item.total_numerical_box,
         unitCost: Number(item.unit_price),
         total: Number(item.total_amount),

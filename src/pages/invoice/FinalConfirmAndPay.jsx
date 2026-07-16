@@ -33,8 +33,17 @@ export default function FinalConfirmAndPay({
 }) {
   const paymentDetails = quote?.payment_details ?? {};
 
-  // Derived — read-only, never changes (matches PHP: radios are display-only)
-  const paymentType = paymentDetails.payment_type == 2 ? "2" : "1";
+  // Detect if deposit was already paid → this is a final/remaining payment
+  const isFinalPayment =
+    Number(paymentDetails.part_payment_amount || 0) > 0 &&
+    Number(paymentDetails.pending_payment_amount || 0) > 0;
+
+  // If final payment, show "Full Payment" selected; otherwise use original logic
+  const paymentType = isFinalPayment
+    ? "1"
+    : paymentDetails.payment_type == 2
+      ? "2"
+      : "1";
 
   // Available tabs from admin-set methods e.g. "credit_card,etransfer"
   const selectedMethods = paymentDetails.select_payment_methods
@@ -79,7 +88,8 @@ export default function FinalConfirmAndPay({
       // ── Core payment fields ──────────────────────────────────────────────
       formData.append("quote_id", quote.quote_id);
       formData.append("payment_id", paymentDetails.payment_id || "");
-      formData.append("payment_type", paymentDetails.payment_type || "");
+      // For final payment, send payment_type as 1 (full payment)
+      formData.append("payment_type", isFinalPayment ? "1" : (paymentDetails.payment_type || ""));
       formData.append(
         "payment_percentage",
         paymentDetails.payment_percentage || "",
@@ -150,11 +160,10 @@ export default function FinalConfirmAndPay({
           <button
             type="button"
             disabled={loading}
-            className={`px-4 py-2 rounded-md text-sm font-medium text-white transition-colors ${
-              loading
-                ? "bg-blue-400 cursor-not-allowed opacity-80"
-                : "bg-green-500 hover:bg-green-600"
-            }`}
+            className={`px-4 py-2 rounded-md text-sm font-medium text-white transition-colors ${loading
+              ? "bg-blue-400 cursor-not-allowed opacity-80"
+              : "bg-green-500 hover:bg-green-600"
+              }`}
             onClick={handlePayNow}
           >
             {loading ? "Loading..." : "Pay Now"}
@@ -173,7 +182,7 @@ export default function FinalConfirmAndPay({
                   name="pay-type"
                   value="1"
                   checked={paymentType === "1"}
-                  onChange={() => {}}
+                  onChange={() => { }}
                   disabled
                   className="accent-[#ee5d59]"
                 />
@@ -185,7 +194,7 @@ export default function FinalConfirmAndPay({
                   name="pay-type"
                   value="2"
                   checked={paymentType === "2"}
-                  onChange={() => {}}
+                  onChange={() => { }}
                   disabled
                   className="accent-[#ee5d59]"
                 />
@@ -193,11 +202,17 @@ export default function FinalConfirmAndPay({
               </label>
             </div>
 
-            {paymentType === "2" && (
+            {isFinalPayment ? (
               <p className="text-base text-gray-700 dark:text-gray-300">
-                Deposit Payment Percentage :{" "}
-                <b>{paymentDetails.payment_percentage}%</b>
+                <b>Final Payment</b>
               </p>
+            ) : (
+              paymentType === "2" && (
+                <p className="text-base text-gray-700 dark:text-gray-300">
+                  Deposit Payment Percentage :{" "}
+                  <b>{paymentDetails.payment_percentage}%</b>
+                </p>
+              )
             )}
           </>
         )}
@@ -224,11 +239,10 @@ export default function FinalConfirmAndPay({
                   <button
                     type="button"
                     onClick={() => setActiveTab(method)}
-                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === method
-                        ? "border-[#ee5d59] text-[#ee5d59]"
-                        : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                    }`}
+                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === method
+                      ? "border-[#ee5d59] text-[#ee5d59]"
+                      : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                      }`}
                   >
                     {TAB_LABELS[method] || method}
                   </button>

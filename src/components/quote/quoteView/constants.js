@@ -1,5 +1,5 @@
 export const COMPANY_INFO = {
-  name: "CanStar",
+  name: "Canstar Light Ltd",
   address: "3227 18 St NW",
   city: "Edmonton",
   state: "AB",

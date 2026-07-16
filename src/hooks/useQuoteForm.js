@@ -73,6 +73,13 @@ export const useQuoteForm = () => {
     }, 0);
   }, [products, customProducts]);
 
+  // calculate total linear feet 
+  const totalLinearFeet = useMemo(() => {
+    return annotationSections.reduce((sum, item) => {
+      return sum + (parseFloat(item.formData.total) || 0);
+    }, 0);
+  }, [annotationSections]);
+
   // calculate linear feet price
   const totalLinearFeetPrice = useMemo(() => {
     return annotationSections.reduce((sum, item) => {
@@ -151,6 +158,7 @@ export const useQuoteForm = () => {
     setAdminNotes,
 
     // Pricing
+    totalLinearFeet,
     discountPercent,
     setDiscountPercent,
     totalControllerPrice,

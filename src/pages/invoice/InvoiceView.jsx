@@ -77,11 +77,25 @@ export default function InvoiceView() {
     return false;
   };
 
+  const invoiceNumber = (() => {
+    if (!quote) return "";
+    const id = quote.payment_details?.payment_id || quote.quote_id || "";
+    const inv = `INV250${id}`;
+    const cxName = `${quote.fname || ""} ${quote.lname || ""}`.trim().replace(/\s+/g, "");
+
+    const d = new Date(quote.invoice_date || new Date());
+    const date = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+
+    return `${inv}_${cxName}_${date}_${month}_${year}`;
+  })();
+
   const handleDownloadInvoice = async () => {
     try {
       await downloadAsPDF({
         selector: ".invoice-layout",
-        filename: `Invoice-${quote.payment_details?.payment_id || quote.quote_id}.pdf`,
+        filename: `Invoice-${invoiceNumber}.pdf`,
       });
     } catch (error) {
       console.error("Error downloading invoice:", error);
@@ -130,14 +144,14 @@ export default function InvoiceView() {
                 window.innerWidth >= 768 ? "200px" : "0px",
             }}
           >
-            <div className="w-full md:w-[250px] md:mr-[50px]">
+            <div className="w-full md:w-[350px] md:mr-[50px]">
               <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white">
                 INVOICE
               </h2>
               <div className="flex justify-between text-sm md:text-base">
                 <span>Invoice Number</span>
                 <span className="font-semibold">
-                  #INV250{quote.payment_details?.payment_id || quote.quote_id}
+                  #{invoiceNumber}
                 </span>
               </div>
               <div className="flex justify-between text-sm md:text-base">
@@ -145,7 +159,7 @@ export default function InvoiceView() {
                 <span>
                   {formatDateLong(
                     quote.invoice_date ||
-                      new Date().toISOString().split("T")[0],
+                    new Date().toISOString().split("T")[0],
                   )}
                 </span>
               </div>
@@ -234,7 +248,7 @@ export default function InvoiceView() {
               <span>
                 {formatCurrency(
                   parseFloat(quote.total_feet_price) +
-                    parseFloat(quote.total_controller_price),
+                  parseFloat(quote.total_controller_price),
                 )}
               </span>
             </div>
@@ -249,10 +263,10 @@ export default function InvoiceView() {
               <span>
                 {formatCurrency(
                   quote.discount_amount ||
-                    ((parseFloat(quote.total_feet_price) +
-                      parseFloat(quote.total_controller_price)) *
-                      parseFloat(quote.discount_percentage)) /
-                      100,
+                  ((parseFloat(quote.total_feet_price) +
+                    parseFloat(quote.total_controller_price)) *
+                    parseFloat(quote.discount_percentage)) /
+                  100,
                 )}
               </span>
             </div>
@@ -320,7 +334,7 @@ export default function InvoiceView() {
 
         {/* ✅ Common functions used here */}
         {renderReviews(reviewIdx, setReviewIdx)}
-        {renderTermsAndPayment(termsChecked, true, () => {})}
+        {renderTermsAndPayment(termsChecked, true, () => { })}
         {renderContactFooter()}
       </div>
 
@@ -349,16 +363,16 @@ export default function InvoiceView() {
 
       {/* If waiting for admin confirmation, still show download button but hide pay button */}
       {isPayButtonHidden() && Number(quote.payment_details?.pending_payment_amount) > 0 && (
-         <div className="w-full max-w-[1120px] mt-6 md:mt-8 flex flex-col sm:flex-row justify-center gap-3 md:gap-4 no-print px-3 md:px-4">
-           <Button
-             size="lg"
-             className="bg-[#2563eb] hover:bg-blue-700 text-white font-semibold px-6 py-2 md:py-3 rounded-full shadow-lg gap-2"
-             onClick={handleDownloadInvoice}
-           >
-             <Download className="w-4 md:w-5 h-4 md:h-5" />
-             Download Invoice
-           </Button>
-         </div>
+        <div className="w-full max-w-[1120px] mt-6 md:mt-8 flex flex-col sm:flex-row justify-center gap-3 md:gap-4 no-print px-3 md:px-4">
+          <Button
+            size="lg"
+            className="bg-[#2563eb] hover:bg-blue-700 text-white font-semibold px-6 py-2 md:py-3 rounded-full shadow-lg gap-2"
+            onClick={handleDownloadInvoice}
+          >
+            <Download className="w-4 md:w-5 h-4 md:h-5" />
+            Download Invoice
+          </Button>
+        </div>
       )}
 
       <Modal

@@ -65,6 +65,7 @@ const AddQuote = () => {
     setAdminNotes,
 
     // Pricing
+    totalLinearFeet,
     discountPercent,
     setDiscountPercent,
     totalControllerPrice,
@@ -255,8 +256,8 @@ const AddQuote = () => {
         // Validation for Action: Only required if this specific row has a quantity
         option:
           qty > 0 &&
-          (!product?.option ||
-            !["mandatory", "optional"].includes(product.option.toLowerCase()))
+            (!product?.option ||
+              !["mandatory", "optional"].includes(product.option.toLowerCase()))
             ? "Action is required"
             : "",
       };
@@ -683,6 +684,7 @@ const AddQuote = () => {
               disabled={isSubmitting}
             />
             <PriceSummary
+              totalLinearFeet={totalLinearFeet}
               totalControllerPrice={totalControllerPrice}
               totalLinearFeetPrice={totalLinearFeetPrice}
               discountPercent={discountPercent}
