@@ -9,6 +9,7 @@ export const quoteStatusList = [
     { value: "", label: "All Quotes" },
     { value: "Created", label: "Created" },
     { value: "Pending Approval", label: "Pending Approval" },
+    { value: "Sent", label: "Sent" },
     { value: "Confirmed - Awaiting Payment", label: "Confirmed - Awaiting Payment" },
     { value: "Confirmed - Deposit Paid", label: "Confirmed - Deposit Paid" },
     { value: "Invoice Sent", label: "Invoice Sent" },

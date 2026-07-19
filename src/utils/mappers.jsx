@@ -81,82 +81,75 @@ export const decodeId = (encoded) => {
 };
 
 // with color
+// Returns { label, color } for a quote row — direct port of the PHP status logic
 export const getQuoteStage = (row) => {
-  // Step 1: Get payment details
+  // --- Payment details ---
   const paymentDetails = row.payment_details || [];
   const hasPayment = paymentDetails.length > 0;
 
-  // Step 2: Get paymentStatus and payStatus from first payment record
-  let paymentStatus = null;
-  let payStatus = null;
-
+  // status & payment_status from the FIRST payment record (quote_payment)
+  let paymentStatus = null; // $paymentStatus
+  let payStatus = null;     // $payStatus
   if (hasPayment && paymentDetails[0]?.status !== undefined) {
     paymentStatus = paymentDetails[0].status;
     payStatus = paymentDetails[0].payment_status;
   }
 
-  // Step 3: Loop ALL payments → check if all confirmed or all pending
-  let paymentStatusValue = null;
-
+  // --- Loop ALL payments → derive payment_status_value ---
+  let paymentStatusValue = null; // $payment_status_value
   if (hasPayment) {
     let allConfirmed = true;
     let allPending = true;
 
     paymentDetails.forEach((payment) => {
+      // PHP: isset($payment['payment_status']) — skip records missing the field
+      if (payment.payment_status === undefined || payment.payment_status === null) {
+        return;
+      }
       if (payment.payment_status == 1) {
-        allPending = false;
+        allPending = false;        // at least one confirmed
       } else if (payment.payment_status == 0) {
-        allConfirmed = false;
+        allConfirmed = false;      // at least one pending
       } else {
         allConfirmed = false;
         allPending = false;
       }
     });
 
-    if (allConfirmed) paymentStatusValue = 1;
-    else if (allPending) paymentStatusValue = 0;
-    else paymentStatusValue = 0;
+    if (allConfirmed) {
+      paymentStatusValue = 1;      // all confirmed
+    } else if (allPending) {
+      paymentStatusValue = 0;      // all pending
+    } else {
+      paymentStatusValue = 0;      // mixed → treat as pending
+    }
   }
 
-  // Step 4: Check date flags
+  // --- Date flag ---
   const hasInvoiceDate = !!row.invoice_date;
 
-  // Step 5: Priority conditions — EXACT SAME ORDER AS PHP
-
+  // --- Priority chain (exact PHP order) ---
   if (row.status == 1) {
-    return { label: "Created", color: "bg-blue-500 text-white" }; // bg-info
+    return { label: "Created", color: "bg-blue-500 text-white" };
   } else if (paymentStatusValue == 1 && paymentStatus == 1) {
-    return { label: "Fully Paid", color: "bg-green-500 text-white" }; // bg-success
+    return { label: "Fully Paid", color: "bg-green-500 text-white" };
   } else if (paymentStatusValue != 1 && paymentStatus == 0 && hasInvoiceDate) {
-    return {
-      label: "Invoice Sent - Awaiting Confirmation",
-      color: "bg-yellow-400 text-gray-800",
-    }; // bg-warning
+    return { label: "Invoice Sent - Awaiting Confirmation", color: "bg-yellow-400 text-gray-800" };
   } else if (hasInvoiceDate) {
-    return { label: "Invoice Sent", color: "bg-indigo-500 text-white" }; // bg-primary
-  } else if (
-    paymentStatus == 0 &&
-    paymentStatusValue == 1 &&
-    payStatus != null
-  ) {
-    return {
-      label: "Confirmed - Deposit Paid",
-      color: "bg-blue-500 text-white",
-    }; // bg-info
+    return { label: "Invoice Sent", color: "bg-indigo-500 text-white" };
+  } else if (paymentStatus == 0 && paymentStatusValue == 1 && payStatus != null) {
+    return { label: "Confirmed - Deposit Paid", color: "bg-blue-500 text-white" };
   } else if (paymentStatus == 0 && hasPayment && paymentStatusValue != 1) {
-    return {
-      label: "Confirmed - Awaiting Payment",
-      color: "bg-yellow-400 text-gray-800",
-    }; // bg-warning
+    return { label: "Confirmed - Awaiting Payment", color: "bg-yellow-400 text-gray-800" };
   } else if (paymentStatus === null && row.status == 3) {
-    return { label: "Sent", color: "bg-yellow-400 text-gray-800" }; // bg-warning
+    return { label: "Sent", color: "bg-yellow-400 text-gray-800" };
   } else if (row.status == 3) {
-    return { label: "Sent", color: "bg-yellow-400 text-gray-800" }; // bg-warning
+    return { label: "Sent", color: "bg-yellow-400 text-gray-800" };
   } else if (row.status == 2) {
-    return { label: "Pending Approval", color: "bg-indigo-500 text-white" }; // bg-primary
+    return { label: "Pending Approval", color: "bg-indigo-500 text-white" };
   } else if (row.status == 4) {
-    return { label: "Cancelled", color: "bg-red-500 text-white" }; // bg-danger
+    return { label: "Cancelled", color: "bg-red-500 text-white" };
   } else {
-    return { label: "Unknown Status", color: "bg-gray-400 text-white" }; // bg-secondary
+    return { label: "Unknown Status", color: "bg-gray-400 text-white" };
   }
 };
