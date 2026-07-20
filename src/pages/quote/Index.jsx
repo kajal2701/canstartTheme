@@ -297,7 +297,7 @@ const Quote = () => {
       accessor: "sanctionReason",
       Cell: ({ row }) => {
         const isSanctioned =
-          row.original.status === "Confirmed - Awaiting Payment";
+          row.original.status === "Sent";
 
         if (!isSanctioned) {
           return (

@@ -4,6 +4,7 @@ import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 
 import { useQuoteForm } from "@/hooks/useQuoteForm";
 import ProductRow from "@/components/quote/ProductRow";
@@ -470,9 +471,7 @@ const AddQuote = () => {
           {/* ==================== CUSTOMER SELECTION ==================== */}
           <div className="space-y-3">
             <label className="block font-medium text-gray-700">Customer</label>
-            <Select
-              className="react-select"
-              classNamePrefix="select"
+            <SearchableSelect
               options={customerOptions}
               value={selectedCustomer?.cust_id || ""}
               onChange={handleCustomerChange}

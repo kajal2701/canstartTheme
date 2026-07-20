@@ -7,7 +7,7 @@ const GlobalFilter = ({ filter, setFilter }) => {
     setFilter(e.target.value || undefined);
   };
   return (
-    <div>
+    <div className="w-full sm:w-auto sm:min-w-[200px]">
       <Textinput
         value={value || ""}
         onChange={onChange}

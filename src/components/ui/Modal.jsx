@@ -84,8 +84,8 @@ const Modal = ({
                     leaveTo={`opacity-0 ${enterFrom}`}
                   >
                     <Dialog.Panel
-                      className={`w-full transform overflow-hidden rounded-lg
-                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all ${className}`}
+                      className={`w-full transform overflow-auto rounded-lg
+                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all max-h-[90vh] ${className}`}
                     >
                       {title && (
                         <div
@@ -153,8 +153,8 @@ const Modal = ({
                   leaveTo={`opacity-0 ${enterFrom}`}
                 >
                   <Dialog.Panel
-                    className={`w-full transform overflow-hidden rounded-lg
-                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all ${className}`}
+                    className={`w-full transform overflow-auto rounded-lg
+                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all max-h-[90vh] ${className}`}
                   >
                     {title && (
                       <div

@@ -20,7 +20,7 @@ const DataTable = ({
   serverSidePagination = false,
   currentPage = 1,
   totalPages = 1,
-  onPageChange = () => {},
+  onPageChange = () => { },
 }) => {
   const tableInstance = useTable(
     {
@@ -55,9 +55,9 @@ const DataTable = ({
 
   return (
     <Card noborder>
-      <div className="md:flex justify-between items-center mb-6">
-        <h4 className="card-title">{title}</h4>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+        <h4 className="card-title mb-0">{title}</h4>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           {!serverSidePagination && <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />}
           {rightHeaderContent}
         </div>
@@ -123,40 +123,39 @@ const DataTable = ({
                 >
                   {loading && (!data || data.length === 0)
                     ? Array.from({ length: skeletonRows }).map((_, rIdx) => (
-                        <tr key={`sk-${rIdx}`} className="animate-pulse">
-                          {columns.map((_, cIdx) => (
-                            <td key={`sk-${rIdx}-${cIdx}`} className="table-td">
-                              <div
-                                className={`h-4 rounded ${
-                                  cIdx % 2 === 0
-                                    ? "bg-gray-100 dark:bg-gray-700 w-5/6"
-                                    : "bg-gray-100 dark:bg-gray-700 w-3/4"
+                      <tr key={`sk-${rIdx}`} className="animate-pulse">
+                        {columns.map((_, cIdx) => (
+                          <td key={`sk-${rIdx}-${cIdx}`} className="table-td">
+                            <div
+                              className={`h-4 rounded ${cIdx % 2 === 0
+                                  ? "bg-gray-100 dark:bg-gray-700 w-5/6"
+                                  : "bg-gray-100 dark:bg-gray-700 w-3/4"
                                 }`}
-                              />
-                            </td>
-                          ))}
-                        </tr>
-                      ))
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
                     : page.map((row) => {
-                        prepareRow(row);
-                        return (
-                          <tr
-                            {...row.getRowProps()}
-                            className="hover:bg-gray-100 dark:hover:bg-gray-700 hover:bg-opacity-30"
-                          >
-                            {row.cells.map((cell) => {
-                              return (
-                                <td
-                                  {...cell.getCellProps()}
-                                  className="table-td"
-                                >
-                                  {cell.render("Cell")}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        );
-                      })}
+                      prepareRow(row);
+                      return (
+                        <tr
+                          {...row.getRowProps()}
+                          className="hover:bg-gray-100 dark:hover:bg-gray-700 hover:bg-opacity-30"
+                        >
+                          {row.cells.map((cell) => {
+                            return (
+                              <td
+                                {...cell.getCellProps()}
+                                className="table-td"
+                              >
+                                {cell.render("Cell")}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>

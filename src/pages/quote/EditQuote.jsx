@@ -26,6 +26,7 @@ const EditQuote = () => {
   const [pageLoading, setPageLoading] = useState(true);
   const [quoteData, setQuoteData] = useState(null);
   const [colorOptions, setColorOptions] = useState([]);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const methods = useForm({
     defaultValues: {
@@ -417,14 +418,20 @@ const EditQuote = () => {
 
   // ==================== SUBMIT ====================
   const handleSubmit = async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
     const isCustomerValid = await methods.trigger();
     if (!isCustomerValid) {
       toast.error("Please fix customer form errors");
+      setIsUpdating(false);
       return;
     }
 
     const ok = validateQuote();
-    if (!ok) return;
+    if (!ok) {
+      setIsUpdating(false);
+      return;
+    }
 
     const formValues = methods.getValues();
 
@@ -578,6 +585,8 @@ const EditQuote = () => {
       navigate("/quote");
     } catch (e) {
       toast.error(e.message || "Failed to update quote");
+    } finally {
+      setIsUpdating(false);
     }
   };
   // ==================== LOADING ====================
@@ -770,6 +779,8 @@ const EditQuote = () => {
               className="btn-outline-primary"
               onClick={handleSubmit}
               type="button"
+              isLoading={isUpdating}
+              disabled={isUpdating}
             />
             <PriceSummary
               totalLinearFeet={totalLinearFeet}
