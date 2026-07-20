@@ -22,6 +22,8 @@ const ScheduleInstallationModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingInstallers, setIsFetchingInstallers] = useState(false);
 
+  console.log(prefillDate, "prefillDate")
+
   useEffect(() => {
     if (activeModal && installers.length === 0) {
       const fetchInstallers = async () => {
@@ -61,7 +63,7 @@ const ScheduleInstallationModal = ({
   }, [activeModal, prefillDate, prefillInstallerId]);
 
   const handleSchedule = async () => {
-    if (!installationDate || !installerId) return;
+    if (!installationDate) return;
 
     try {
       setIsLoading(true);
@@ -114,7 +116,6 @@ const ScheduleInstallationModal = ({
             onClick={handleSchedule}
             disabled={
               !installationDate ||
-              !installerId ||
               isLoading ||
               // ✅ For reschedule: disable if user picked the same date as already scheduled
               (prefillDate && installationDate === prefillDate.split("T")[0])
@@ -163,7 +164,7 @@ const ScheduleInstallationModal = ({
       <div>
         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           <Icon icon="ph:user-list" />
-          Assign Installer <span className="text-red-500">*</span>
+          Assign Installer <span className="text-gray-400 font-normal">(Optional)</span>
         </label>
         <select
           value={installerId}
@@ -184,8 +185,12 @@ const ScheduleInstallationModal = ({
         {/* ✅ Different helper text for reschedule */}
         <p className="text-xs text-gray-500 mt-2">
           {prefillDate
-            ? "The customer and installer will receive an email with the updated details."
-            : "The customer and installer will receive an email notification with the scheduled date."}
+            ? installerId
+              ? "The customer and installer will receive an email with the updated details."
+              : "The customer will receive an email with the updated details."
+            : installerId
+              ? "The customer and installer will receive an email notification with the scheduled date."
+              : "The customer will receive an email notification with the scheduled date."}
         </p>
       </div>
     </Modal>

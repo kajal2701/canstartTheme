@@ -323,10 +323,6 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       toast.error("Please select an installation date.");
       return;
     }
-    if (!installerId) {
-      toast.error("Please assign an installer.");
-      return;
-    }
     try {
       setIsScheduling(true);
       const result = await scheduleInstallation({
@@ -711,7 +707,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
               />
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Assign Installer (*):
+                  Assign Installer (Optional):
                 </label>
                 <select
                   value={installerId}
@@ -735,7 +731,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
               text={isScheduling ? "Scheduling..." : "Schedule Installation"}
               className="bg-blue-500 hover:bg-blue-600 text-white mt-3"
               type="button"
-              disabled={isScheduling || !installationDate || !installerId}
+              disabled={isScheduling || !installationDate}
               onClick={handleScheduleInstallation}
             />
           </div>

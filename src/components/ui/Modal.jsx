@@ -61,18 +61,17 @@ const Modal = ({
                   leaveTo="opacity-0"
                 >
                   <div
-                    className={`fixed inset-0 bg-gray-900/70 backdrop-filter ${
-                      isBlur ? "backdrop-blur-sm" : ""
-                    } `}
+                    className={`fixed inset-0 bg-gray-900/70 backdrop-filter ${isBlur ? "backdrop-blur-sm" : ""
+                      } `}
                   />
                 </Transition.Child>
               )}
 
-              <div className="fixed inset-0 overflow-y-auto">
+              <div className="fixed inset-0 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div
-                  className={`flex min-h-full justify-center text-center p-6 ${
-                    centered ? "items-center" : "items-start "
-                  }`}
+                  className={`flex justify-center text-center p-6 ${centered ? "items-center" : "items-start "
+                    }`}
+                  style={{ minHeight: '100vh', minHeight: '100dvh' }}
                 >
                   <Transition.Child
                     as={Fragment}
@@ -85,7 +84,8 @@ const Modal = ({
                   >
                     <Dialog.Panel
                       className={`w-full transform overflow-auto rounded-lg
-                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all max-h-[90vh] ${className}`}
+                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all ${className}`}
+                      style={{ maxHeight: '90vh', maxHeight: '90dvh' }}
                     >
                       {title && (
                         <div
@@ -100,9 +100,8 @@ const Modal = ({
                         </div>
                       )}
                       <div
-                        className={`px-6 py-8 ${
-                          scrollContent ? "overflow-y-auto max-h-[400px]" : ""
-                        }`}
+                        className={`px-6 py-8 ${scrollContent ? "overflow-y-auto max-h-[400px]" : ""
+                          }`}
                       >
                         {children}
                       </div>
@@ -131,17 +130,16 @@ const Modal = ({
               leaveTo="opacity-0"
             >
               <div
-                className={`fixed inset-0 bg-gray-900/70 backdrop-filter   ${
-                  isBlur ? "backdrop-blur-sm" : ""
-                } `}
+                className={`fixed inset-0 bg-gray-900/70 backdrop-filter   ${isBlur ? "backdrop-blur-sm" : ""
+                  } `}
               />
             </Transition.Child>
 
-            <div className="fixed inset-0 overflow-y-auto">
+            <div className="fixed inset-0 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div
-                className={`flex min-h-full justify-center text-center p-6 ${
-                  centered ? "items-center" : "items-start "
-                }`}
+                className={`flex justify-center text-center p-6 ${centered ? "items-center" : "items-start "
+                  }`}
+                style={{ minHeight: '100vh', minHeight: '100dvh' }}
               >
                 <Transition.Child
                   as={Fragment}
@@ -154,7 +152,8 @@ const Modal = ({
                 >
                   <Dialog.Panel
                     className={`w-full transform overflow-auto rounded-lg
-                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all max-h-[90vh] ${className}`}
+                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all ${className}`}
+                    style={{ maxHeight: '90vh', maxHeight: '90dvh' }}
                   >
                     {title && (
                       <div
@@ -169,9 +168,8 @@ const Modal = ({
                       </div>
                     )}
                     <div
-                      className={`px-6 py-8 ${
-                        scrollContent ? "overflow-y-auto max-h-[400px]" : ""
-                      }`}
+                      className={`px-6 py-8 ${scrollContent ? "overflow-y-auto max-h-[400px]" : ""
+                        }`}
                     >
                       {children}
                     </div>
