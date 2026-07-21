@@ -122,6 +122,22 @@
 }
 
 @layer utilities {
+  /* Modal viewport utilities — vh fallback with dvh override for mobile browsers */
+  .modal-viewport-full {
+    min-height: 100vh;
+  }
+  .modal-viewport-max {
+    max-height: 90vh;
+  }
+  @supports (min-height: 100dvh) {
+    .modal-viewport-full {
+      min-height: 100dvh;
+    }
+    .modal-viewport-max {
+      max-height: 90dvh;
+    }
+  }
+
   .bg-primary {
     background-color: var(--primary);
   }

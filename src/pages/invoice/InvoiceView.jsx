@@ -77,25 +77,32 @@ export default function InvoiceView() {
     return false;
   };
 
+  // Short invoice number for display & print
   const invoiceNumber = (() => {
     if (!quote) return "";
     const id = quote.payment_details?.payment_id || quote.quote_id || "";
-    const inv = `INV250${id}`;
-    const cxName = `${quote.fname || ""} ${quote.lname || ""}`.trim().replace(/\s+/g, "");
+    return `INV250${id}`;
+  })();
+
+  // Full detailed name used only for the downloaded PDF filename
+  const invoiceFileName = (() => {
+    if (!quote) return "";
+    const firstName = (quote.fname || "").trim();
+    const lastName = (quote.lname || "").trim();
 
     const d = new Date(quote.invoice_date || new Date());
     const date = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
 
-    return `${inv}_${cxName}_${date}_${month}_${year}`;
+    return `${invoiceNumber}_${firstName}_${lastName}_${date}_${month}_${year}`;
   })();
 
   const handleDownloadInvoice = async () => {
     try {
       await downloadAsPDF({
         selector: ".invoice-layout",
-        filename: `Invoice-${invoiceNumber}.pdf`,
+        filename: `${invoiceFileName}.pdf`,
       });
     } catch (error) {
       console.error("Error downloading invoice:", error);

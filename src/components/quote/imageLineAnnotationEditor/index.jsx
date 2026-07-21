@@ -13,13 +13,18 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
 
   const getCoordinates = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
+    // Pointer events expose clientX/clientY directly for mouse, touch AND pen,
+    // so this same math works on laptop, iPhone, iPad and Android.
     return {
       x: (e.clientX - rect.left) / scale,
       y: (e.clientY - rect.top) / scale,
     };
   };
 
-  const handleMouseDown = (e) => {
+  // ================= POINTER DOWN (was handleMouseDown) =================
+  const handlePointerDown = (e) => {
+    // Keep receiving move/up events even if the finger drifts off the element.
+    e.currentTarget.setPointerCapture(e.pointerId);
     const { x, y } = getCoordinates(e);
     setDrawing(true);
     setCurrentLine({
@@ -32,7 +37,8 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
     });
   };
 
-  const handleMouseMove = (e) => {
+  // ================= POINTER MOVE (was handleMouseMove) =================
+  const handlePointerMove = (e) => {
     if (!drawing) return;
     const { x, y } = getCoordinates(e);
     setCurrentLine((prev) => ({
@@ -42,7 +48,11 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
     }));
   };
 
-  const handleMouseUp = () => {
+  // ================= POINTER UP (was handleMouseUp) =================
+  const handlePointerUp = (e) => {
+    if (e && e.pointerId != null && e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
     setDrawing(false);
     if (currentLine) {
       setLines((prev) => [...prev, currentLine]);
@@ -54,12 +64,9 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
   const handleUndo = () => {
     setLines((prev) => {
       if (prev.length === 0) return prev;
-
       const updated = [...prev];
-      const removed = updated.pop(); // remove last line
-
+      const removed = updated.pop();
       setRemovedLines((prevRemoved) => [...prevRemoved, removed]);
-
       return updated;
     });
   };
@@ -67,12 +74,9 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
   const handleReverse = () => {
     setRemovedLines((prev) => {
       if (prev.length === 0) return prev;
-
       const updated = [...prev];
       const restored = updated.pop();
-
       setLines((prevLines) => [...prevLines, restored]);
-
       return updated;
     });
   };
@@ -85,16 +89,13 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      // Create a canvas, draw original image + SVG lines on top
       const canvas = document.createElement("canvas");
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       const ctx = canvas.getContext("2d");
 
-      // Draw original image
       ctx.drawImage(img, 0, 0);
 
-      // Draw each line scaled to natural image dimensions
       const renderedWidth = containerRef.current.offsetWidth;
       const scaleX = img.naturalWidth / renderedWidth;
       const scaleY = img.naturalHeight / containerRef.current.offsetHeight;
@@ -109,11 +110,18 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
       });
 
       const finalImageUrl = canvas.toDataURL("image/webp", 0.92);
-
-      // Send back to parent
       if (onSave) onSave(finalImageUrl);
     };
     img.src = image;
+  };
+
+  // Shared style that stops iOS Safari from scrolling / zooming / popping the
+  // long-press callout menu while you draw.
+  const interactiveStyle = {
+    touchAction: "none",
+    WebkitUserSelect: "none",
+    userSelect: "none",
+    WebkitTouchCallout: "none",
   };
 
   return (
@@ -155,7 +163,6 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
         </div>
 
         {/* Buttons */}
-
         <Button
           onClick={handleUndo}
           icon="ph:arrow-clockwise"
@@ -196,49 +203,53 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
             display: "inline-block",
             transform: `scale(${scale})`,
             transformOrigin: "top left",
+            ...interactiveStyle,
           }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
         >
           <img
             src={image}
             alt="sample"
-            style={{ width: "100%", display: "block" }}
+            draggable={false}
+            style={{ width: "100%", display: "block", ...interactiveStyle }}
           />
 
-        <svg
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          {lines.map((line, index) => (
-            <line
-              key={index}
-              x1={line.x1}
-              y1={line.y1}
-              x2={line.x2}
-              y2={line.y2}
-              stroke={line.color}
-              strokeWidth={line.strokeWidth}
-            />
-          ))}
+          <svg
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              pointerEvents: "none", // let the container capture the gesture
+            }}
+          >
+            {lines.map((line, index) => (
+              <line
+                key={index}
+                x1={line.x1}
+                y1={line.y1}
+                x2={line.x2}
+                y2={line.y2}
+                stroke={line.color}
+                strokeWidth={line.strokeWidth}
+              />
+            ))}
 
-          {currentLine && (
-            <line
-              x1={currentLine.x1}
-              y1={currentLine.y1}
-              x2={currentLine.x2}
-              y2={currentLine.y2}
-              stroke={currentLine.color}
-              strokeWidth={currentLine.strokeWidth}
-            />
-          )}
-        </svg>
+            {currentLine && (
+              <line
+                x1={currentLine.x1}
+                y1={currentLine.y1}
+                x2={currentLine.x2}
+                y2={currentLine.y2}
+                stroke={currentLine.color}
+                strokeWidth={currentLine.strokeWidth}
+              />
+            )}
+          </svg>
         </div>
       </div>
     </div>

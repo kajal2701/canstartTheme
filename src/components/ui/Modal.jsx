@@ -69,9 +69,8 @@ const Modal = ({
 
               <div className="fixed inset-0 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div
-                  className={`flex justify-center text-center p-6 ${centered ? "items-center" : "items-start "
+                  className={`flex justify-center text-center p-6 modal-viewport-full ${centered ? "items-center" : "items-start "
                     }`}
-                  style={{ minHeight: '100vh', minHeight: '100dvh' }}
                 >
                   <Transition.Child
                     as={Fragment}
@@ -84,8 +83,7 @@ const Modal = ({
                   >
                     <Dialog.Panel
                       className={`w-full transform overflow-auto rounded-lg
-                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all ${className}`}
-                      style={{ maxHeight: '90vh', maxHeight: '90dvh' }}
+                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all modal-viewport-max ${className}`}
                     >
                       {title && (
                         <div
@@ -137,9 +135,8 @@ const Modal = ({
 
             <div className="fixed inset-0 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div
-                className={`flex justify-center text-center p-6 ${centered ? "items-center" : "items-start "
+                className={`flex justify-center text-center p-6 modal-viewport-full ${centered ? "items-center" : "items-start "
                   }`}
-                style={{ minHeight: '100vh', minHeight: '100dvh' }}
               >
                 <Transition.Child
                   as={Fragment}
@@ -152,8 +149,7 @@ const Modal = ({
                 >
                   <Dialog.Panel
                     className={`w-full transform overflow-auto rounded-lg
-                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all ${className}`}
-                    style={{ maxHeight: '90vh', maxHeight: '90dvh' }}
+                 bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all modal-viewport-max ${className}`}
                   >
                     {title && (
                       <div

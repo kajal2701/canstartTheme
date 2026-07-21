@@ -10,7 +10,7 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
   const containerRef = useRef();
   const dragId = useRef(null);
 
-  // ================= ADD BOX ON  CLICK =================
+  // ================= ADD BOX ON CLICK =================
   const handleAddText = () => {
     if (!inputValue) return;
 
@@ -31,18 +31,22 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
     setInputValue("");
   };
 
-  // ================= DRAG START =================
-  const handleMouseDown = (e, id) => {
+  // ================= DRAG START (was handleMouseDown) =================
+  const handlePointerDown = (e, id) => {
     e.stopPropagation();
+    // Capture the pointer so the drag keeps tracking even if the finger/cursor
+    // slides off the small box (essential on iPhone/iPad).
+    e.currentTarget.setPointerCapture(e.pointerId);
     dragId.current = id;
   };
 
-  // ================= DRAG MOVE =================
-  const handleMouseMove = (e) => {
+  // ================= DRAG MOVE (was handleMouseMove) =================
+  const handlePointerMove = (e) => {
     if (!dragId.current) return;
 
     const rect = containerRef.current.getBoundingClientRect();
 
+    // Pointer events expose clientX/clientY for mouse, touch and pen alike.
     const x = (e.clientX - rect.left) / scale;
     const y = (e.clientY - rect.top) / scale;
 
@@ -51,7 +55,7 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
     );
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     dragId.current = null;
   };
 
@@ -65,10 +69,8 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
   // ================= UNDO =================
   const handleUndo = () => {
     if (boxes.length === 0) return;
-
     const updated = [...boxes];
     const removedBox = updated.pop();
-
     setBoxes(updated);
     setRemoved((prev) => [...prev, removedBox]);
   };
@@ -76,10 +78,8 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
   // ================= REDO =================
   const handleReverse = () => {
     if (removed.length === 0) return;
-
     const updated = [...removed];
     const restored = updated.pop();
-
     setBoxes((prev) => [...prev, restored]);
     setRemoved(updated);
   };
@@ -134,12 +134,21 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
         sum += parseInt(box.value) || 0;
       });
 
-      const finalImageUrl = canvas.toDataURL("image/webp", 0.92)
+      const finalImageUrl = canvas.toDataURL("image/webp", 0.92);
 
       // Send image + sum back to parent
       if (onSave) onSave(finalImageUrl, sum);
     };
     img.src = image;
+  };
+
+  // Shared style that stops iOS Safari from scrolling / zooming / popping the
+  // long-press callout menu while you drag.
+  const interactiveStyle = {
+    touchAction: "none",
+    WebkitUserSelect: "none",
+    userSelect: "none",
+    WebkitTouchCallout: "none",
   };
 
   return (
@@ -219,80 +228,87 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
             transform: `scale(${scale})`,
             transformOrigin: "top left",
             cursor: "crosshair",
+            ...interactiveStyle,
           }}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
         >
           <img
             src={image}
             alt="sample"
-            style={{ width: "100%", display: "block" }}
+            draggable={false}
+            style={{ width: "100%", display: "block", ...interactiveStyle }}
           />
 
-        <svg
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          {boxes.map((box) => (
-            <foreignObject
-              key={box.id}
-              x={box.x}
-              y={box.y}
-              width="1"
-              height="1"
-              style={{ overflow: "visible" }}
-            >
-              <div
-                onMouseDown={(e) => handleMouseDown(e, box.id)}
-                style={{
-                  position: "relative",
-                  background: "#f3f4f6",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  padding: "6px 10px",
-                  fontWeight: "bold",
-                  cursor: "move",
-                  textAlign: "center",
-                  whiteSpace: "nowrap",
-                  display: "inline-block", // Important: shrink to content
-                  minWidth: "30px",
-                }}
+          <svg
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            {boxes.map((box) => (
+              <foreignObject
+                key={box.id}
+                x={box.x}
+                y={box.y}
+                width="1"
+                height="1"
+                style={{ overflow: "visible" }}
               >
-                {box.value}
-
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemove(box.id);
-                  }}
+                <div
+                  onPointerDown={(e) => handlePointerDown(e, box.id)}
                   style={{
-                    position: "absolute",
-                    top: "-8px",
-                    right: "-8px",
-                    background: "white",
-                    border: "1px solid red",
-                    color: "red",
-                    borderRadius: "50%",
-                    width: "18px",
-                    height: "18px",
-                    fontSize: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
+                    position: "relative",
+                    background: "#f3f4f6",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    padding: "6px 10px",
+                    fontWeight: "bold",
+                    cursor: "move",
+                    textAlign: "center",
+                    whiteSpace: "nowrap",
+                    display: "inline-block", // Important: shrink to content
+                    minWidth: "30px",
+                    ...interactiveStyle,
                   }}
                 >
-                  ×
-                </span>
-              </div>
-            </foreignObject>
-          ))}
-        </svg>
+                  {box.value}
+
+                  <span
+                    // Use onPointerDown (not onClick) so the tap isn't swallowed
+                    // by the drag gesture on touch devices.
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      handleRemove(box.id);
+                    }}
+                    style={{
+                      position: "absolute",
+                      top: "-8px",
+                      right: "-8px",
+                      background: "white",
+                      border: "1px solid red",
+                      color: "red",
+                      borderRadius: "50%",
+                      width: "18px",
+                      height: "18px",
+                      fontSize: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      ...interactiveStyle,
+                    }}
+                  >
+                    ×
+                  </span>
+                </div>
+              </foreignObject>
+            ))}
+          </svg>
         </div>
       </div>
     </div>
