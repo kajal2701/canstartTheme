@@ -148,14 +148,13 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   const [depositPercent, setDepositPercent] = useState(
     Number(pd?.payment_percentage || 25),
   );
-  const computedDepositAmount = useMemo(
-    () => ((mainTotal * (Number(depositPercent) || 0)) / 100).toFixed(2),
-    [mainTotal, depositPercent],
+  const [depositAmount, setDepositAmount] = useState(
+    ((mainTotal * (Number(pd?.payment_percentage || 25) || 0)) / 100).toFixed(2)
   );
-  const [depositAmount, setDepositAmount] = useState(computedDepositAmount);
+
   useEffect(() => {
-    setDepositAmount(computedDepositAmount);
-  }, [computedDepositAmount]);
+    setDepositAmount(((mainTotal * (Number(depositPercent) || 0)) / 100).toFixed(2));
+  }, [mainTotal]);
 
   const initialMethods = useMemo(() => {
     const raw = pd?.select_payment_methods || "";
@@ -440,8 +439,10 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
               placeholder="0"
               value={depositPercent}
               onChange={(e) => {
-                setDepositPercent(e.target.value.replace(/[^0-9.]/g, ""));
-                setPaymentErrors((prev) => ({ ...prev, depositPercent: "" }));
+                const val = e.target.value.replace(/[^0-9.]/g, "");
+                setDepositPercent(val);
+                setDepositAmount(((mainTotal * (Number(val) || 0)) / 100).toFixed(2));
+                setPaymentErrors((prev) => ({ ...prev, depositPercent: "", depositAmount: "" }));
               }}
             />
             {paymentErrors.depositPercent && (
@@ -457,8 +458,12 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
               placeholder="0.00"
               value={depositAmount}
               onChange={(e) => {
-                setDepositAmount(e.target.value.replace(/[^0-9.]/g, ""));
-                setPaymentErrors((prev) => ({ ...prev, depositAmount: "" }));
+                const val = e.target.value.replace(/[^0-9.]/g, "");
+                setDepositAmount(val);
+                if (mainTotal > 0) {
+                  setDepositPercent(((Number(val) / mainTotal) * 100).toFixed(2));
+                }
+                setPaymentErrors((prev) => ({ ...prev, depositAmount: "", depositPercent: "" }));
               }}
             />
             {paymentErrors.depositAmount && (

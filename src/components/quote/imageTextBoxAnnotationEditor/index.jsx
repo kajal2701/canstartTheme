@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import Button from "@/components/ui/Button";
 
-export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
+export default function ImageTextBoxAnnotationEditor({ image, onSave, previousSum = 0 }) {
   const [boxes, setBoxes] = useState([]);
   const [removed, setRemoved] = useState([]);
   const [inputValue, setInputValue] = useState("");
@@ -131,13 +131,16 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave }) {
         ctx.textBaseline = "middle";
         ctx.fillText(box.value, x + boxWidth / 2, y + boxHeight / 2);
 
-        sum += parseInt(box.value) || 0;
+        sum += parseFloat(box.value) || 0;
       });
 
       const finalImageUrl = canvas.toDataURL("image/webp", 0.92);
 
-      // Send image + sum back to parent
-      if (onSave) onSave(finalImageUrl, sum);
+      // Add current boxes' sum to the previous cumulative sum
+      const cumulativeSum = (parseFloat(previousSum) || 0) + sum;
+
+      // Send image + cumulative sum back to parent
+      if (onSave) onSave(finalImageUrl, cumulativeSum);
     };
     img.src = image;
   };

@@ -35,6 +35,16 @@ const AnnotationImagePreview = ({
     fetchColors();
   }, []);
 
+  // ── Shared total-calculation helper ──
+  // Formula: total = ceil((sftCount * sqftSize) / 12)
+  // When sqftSize is empty/0, treat it as 1 so the formula degrades to ceil(sftCount / 12)
+  const calculateTotal = (sftCount, sqftSize) => {
+    const sft = parseFloat(sftCount) || 0;
+    const sqft = parseFloat(sqftSize) || 0;
+    if (sft === 0) return 0;
+    return Math.ceil((sft * (sqft > 0 ? sqft : 1)) / 12);
+  };
+
   // Add new empty input row
   const handleAdd = () => {
     onFilesChange([
@@ -67,7 +77,7 @@ const AnnotationImagePreview = ({
       (acc, f) => acc + (parseFloat(f.textSum) || 0),
       0,
     );
-    const total = Math.ceil(newSftCount / 12);
+    const total = calculateTotal(newSftCount, formData.sqftSize);
     const amount = (total * (parseFloat(formData.unitPrice) || 0)).toFixed(2);
     onFormDataChange({
       ...formData,
@@ -86,13 +96,10 @@ const AnnotationImagePreview = ({
     let recalcAmount = false;
 
     if (field === "sftCount") {
-      const sft = parseFloat(value) || 0;
-      next.total = Math.ceil(sft / 12);
+      next.total = calculateTotal(value, next.sqftSize);
       recalcAmount = true;
     } else if (field === "sqftSize") {
-      const sft = parseFloat(next.sftCount) || 0;
-      const sqft = parseFloat(value) || 0;
-      next.total = Math.ceil((sft * sqft) / 12);
+      next.total = calculateTotal(next.sftCount, value);
       recalcAmount = true;
     } else if (field === "total") {
       recalcAmount = true;
@@ -134,7 +141,7 @@ const AnnotationImagePreview = ({
       (acc, f) => acc + (parseFloat(f.textSum) || 0),
       0,
     );
-    const total = Math.ceil(newSftCount / 12);
+    const total = calculateTotal(newSftCount, formData.sqftSize);
     onFormDataChange({
       ...formData,
       sftCount: newSftCount,
@@ -361,14 +368,14 @@ const AnnotationImagePreview = ({
 
           {/* Sqft Size */}
           <div>
-            <label className="block text-sm font-medium mb-2">Sqft size</label>
+            <label className="block text-sm font-medium mb-2">SFT Size</label>
             <input
               type="text"
               value={formData.sqftSize}
               onChange={(e) =>
                 handleFieldChange(
                   "sqftSize",
-                  e.target.value.replace(/[^0-9]/g, ""),
+                  e.target.value.replace(/[^0-9.]/g, ""),
                 )
               }
               className="w-full border border-gray-300 rounded-lg p-2"
@@ -485,6 +492,7 @@ const AnnotationImagePreview = ({
           <ImageTextBoxAnnotationEditor
             image={selectedImage}
             onSave={handleTextSave}
+            previousSum={selectedIndex !== null ? (files[selectedIndex]?.textSum || 0) : 0}
           />
         )}
       </Modal>

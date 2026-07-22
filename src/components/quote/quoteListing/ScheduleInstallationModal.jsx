@@ -22,7 +22,6 @@ const ScheduleInstallationModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingInstallers, setIsFetchingInstallers] = useState(false);
 
-  console.log(prefillDate, "prefillDate")
 
   useEffect(() => {
     if (activeModal && installers.length === 0) {

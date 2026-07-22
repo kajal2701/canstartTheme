@@ -565,16 +565,26 @@ const EditQuote = () => {
     (annotationSections || []).forEach((section, nIdx) => {
       const N = nIdx + 1;
       (section.files || []).forEach((f, jIdx) => {
-        // drawnLines — only if new base64
-        if (f.lineSaved && !isRemoteUrl(f.lineSaved)) {
+        const hasNewLine = f.lineSaved && !isRemoteUrl(f.lineSaved);
+        const hasNewText = f.textSaved && !isRemoteUrl(f.textSaved);
+        const hasExistingLine = f.lineSaved && isRemoteUrl(f.lineSaved);
+        const hasExistingText = f.textSaved && isRemoteUrl(f.textSaved);
+        const hasFile = f?.file instanceof File;
+
+        // drawnLines: use new line-drawn image, or original file if no line exists at all
+        if (hasNewLine) {
           const drawn = dataUrlToFile(f.lineSaved, `preview_${N}_${jIdx}.jpg`);
           if (drawn) formData.append(`preview-image_${N}_${jIdx}`, drawn);
+        } else if (!hasExistingLine && hasFile) {
+          formData.append(`preview-image_${N}_${jIdx}`, f.file);
         }
-        // fullyEdited — only if new base64
-        if (f.textSaved && !isRemoteUrl(f.textSaved)) {
+
+        // fullyEdited: use new text-box image, or original file if no text exists at all
+        if (hasNewText) {
           const edited = dataUrlToFile(f.textSaved, `edited_${N}_${jIdx}.jpg`);
-          if (edited)
-            formData.append(`preview-image-edit_${N}_${jIdx}`, edited);
+          if (edited) formData.append(`preview-image-edit_${N}_${jIdx}`, edited);
+        } else if (!hasExistingText && hasFile) {
+          formData.append(`preview-image-edit_${N}_${jIdx}`, f.file);
         }
       });
     });
