@@ -9,23 +9,22 @@
   }
 
   body {
-    @apply h-full overflow-x-hidden dark:text-gray-300 text-gray-600 font-normal bg-[#FAFAFD] font-sans;
+    @apply overflow-x-hidden dark:text-gray-300 text-gray-600 font-normal bg-[#FAFAFD] font-sans;
 
     &.dark {
       @apply bg-[#0f172a] text-gray-300;
     }
   }
 
-  html,
-  body {
-    @apply h-full;
+  /* min-height (not height) so body grows with content and the document is the
+     single scroller — a fixed 100% height put the whole app in a viewport-sized
+     box, which iOS scroll-locking (Headless UI Dialog) shifted off-screen,
+     leaving a blank white page on iPhone/iPad. */
+  html {
+    @apply min-h-full;
   }
-
-  /* iOS Safari viewport height fix for modals */
-  @supports (-webkit-touch-callout: none) {
-    .fixed.inset-0 {
-      min-height: -webkit-fill-available;
-    }
+  body {
+    @apply min-h-screen;
   }
 
   .CanStar-app-wrapper {

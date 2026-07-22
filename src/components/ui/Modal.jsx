@@ -61,13 +61,13 @@ const Modal = ({
                   leaveTo="opacity-0"
                 >
                   <div
-                    className={`fixed inset-0 bg-gray-900/70 backdrop-filter ${isBlur ? "backdrop-blur-sm" : ""
+                    className={`fixed inset-0 bg-gray-900/70 ${isBlur ? "backdrop-blur-sm" : ""
                       } `}
                   />
                 </Transition.Child>
               )}
 
-              <div className="fixed inset-0 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="fixed inset-0 overflow-y-auto">
                 <div
                   className={`flex justify-center text-center p-6 modal-viewport-full ${centered ? "items-center" : "items-start "
                     }`}
@@ -82,7 +82,7 @@ const Modal = ({
                     leaveTo={`opacity-0 ${enterFrom}`}
                   >
                     <Dialog.Panel
-                      className={`w-full transform overflow-auto rounded-lg
+                      className={`w-full overflow-auto rounded-lg
                  bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all modal-viewport-max ${className}`}
                     >
                       {title && (
@@ -128,12 +128,12 @@ const Modal = ({
               leaveTo="opacity-0"
             >
               <div
-                className={`fixed inset-0 bg-gray-900/70 backdrop-filter   ${isBlur ? "backdrop-blur-sm" : ""
+                className={`fixed inset-0 bg-gray-900/70 ${isBlur ? "backdrop-blur-sm" : ""
                   } `}
               />
             </Transition.Child>
 
-            <div className="fixed inset-0 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="fixed inset-0 overflow-y-auto">
               <div
                 className={`flex justify-center text-center p-6 modal-viewport-full ${centered ? "items-center" : "items-start "
                   }`}
@@ -148,7 +148,7 @@ const Modal = ({
                   leaveTo={`opacity-0 ${enterFrom}`}
                 >
                   <Dialog.Panel
-                    className={`w-full transform overflow-auto rounded-lg
+                    className={`w-full overflow-auto rounded-lg
                  bg-white dark:bg-gray-800 text-left align-middle shadow-base transition-all modal-viewport-max ${className}`}
                   >
                     {title && (

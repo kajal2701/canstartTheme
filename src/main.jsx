@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import ErrorBoundary from "./components/ErrorBoundary";
 import "simplebar-react/dist/simplebar.min.css";
 import "flatpickr/dist/themes/light.css";
 import "../src/assets/scss/app.scss";
@@ -12,12 +13,12 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <>
+  <ErrorBoundary>
     <BrowserRouter>
       <Provider store={store}>
         <ToastContainer />
         <App />
       </Provider>
     </BrowserRouter>
-  </>,
+  </ErrorBoundary>,
 );
