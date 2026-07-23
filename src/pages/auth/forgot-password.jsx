@@ -23,7 +23,7 @@ const forgotPass = () => {
             Forgot Your Password?
           </div>
           <div className=" text-gray-500 dark:text-gray-400 text-sm">
-            Reset Password with Admin CanStar.
+            Reset Password with Admin Canstar Light.
           </div>
         </div>
         <div className="p-6 auth-box">

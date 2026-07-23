@@ -13,7 +13,7 @@ const MobileLogo = () => {
         <div className="bg-gradient-to-br from-[#0F2027] via-[#1a3038] to-[#2C5364] rounded-lg p-2 inline-block">
           <img
             src={CanstarLogo}
-            alt="Canstar Lights"
+            alt="Canstar Light"
             className="h-8 w-auto object-contain"
           />
         </div>
@@ -21,7 +21,7 @@ const MobileLogo = () => {
         // Dark mode: Logo shows naturally
         <img
           src={CanstarLogo}
-          alt="Canstar Lights"
+          alt="Canstar Light"
           className="h-8 w-auto object-contain"
         />
       )}

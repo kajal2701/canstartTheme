@@ -305,8 +305,15 @@ export default function InvoiceView() {
             {/* Pending payment row */}
             {quote.payment_details?.pending_payment_amount > 0 &&
               quote.payment_details?.status == 0 && (
-                <div className="flex justify-between text-[#ee5d59] font-bold pt-1 md:pt-2 text-xs md:text-base">
-                  <span>Pending Payment:</span>
+                <div className={`flex justify-between font-bold pt-1 md:pt-2 text-xs md:text-base ${quote.payment_details?.payment_status == 0
+                  ? "text-orange-500"
+                  : "text-[#ee5d59]"
+                  }`}>
+                  <span>
+                    {quote.payment_details?.payment_status == 0
+                      ? "Pending Payment - Awaiting Confirmation:"
+                      : "Pending Payment:"}
+                  </span>
                   <span>
                     {formatCurrency(
                       quote.payment_details.pending_payment_amount,

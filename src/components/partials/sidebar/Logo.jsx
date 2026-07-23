@@ -18,7 +18,7 @@ const SidebarLogo = ({ menuHover }) => {
             <div className="h-full flex items-center">
               <img
                 src={canStarLogo}
-                alt="Canstar Lights"
+                alt="Canstar Light"
                 className="h-full w-auto object-contain"
               />
             </div>

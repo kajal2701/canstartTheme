@@ -54,7 +54,7 @@ const MobileMenu = ({ className = "custom-class" }) => {
             <div className={`inline-flex items-center justify-center `}>
               <img
                 src={CanstarLogo}
-                alt="Canstar Lights"
+                alt="Canstar Light"
                 className="h-14 w-auto object-contain"
               />
             </div>

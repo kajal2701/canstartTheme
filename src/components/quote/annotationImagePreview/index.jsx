@@ -97,8 +97,10 @@ const AnnotationImagePreview = ({
 
     if (field === "sftCount") {
       next.total = calculateTotal(value, next.sqftSize);
+      next.sftPrevValue = 0;   // clear the red warning after manual adjustment
       recalcAmount = true;
-    } else if (field === "sqftSize") {
+    }
+    else if (field === "sqftSize") {
       next.total = calculateTotal(next.sftCount, value);
       recalcAmount = true;
     } else if (field === "total") {
@@ -129,7 +131,11 @@ const AnnotationImagePreview = ({
 
   // Handle text box annotation save
   const handleTextSave = (savedImageUrl, sum) => {
+    if (!textBoxModel) return;   // already saved/closed → ignore duplicate
+    setTextBoxModel(false);      // close immediately
     const updatedFiles = [...files];
+    const prevTextSum = parseFloat(updatedFiles[selectedIndex]?.textSum) || 0; // ← old value
+
     updatedFiles[selectedIndex] = {
       ...updatedFiles[selectedIndex],
       textSaved: savedImageUrl,
@@ -138,15 +144,18 @@ const AnnotationImagePreview = ({
     onFilesChange(updatedFiles);
 
     const newSftCount = updatedFiles.reduce(
-      (acc, f) => acc + (parseFloat(f.textSum) || 0),
-      0,
+      (acc, f) => acc + (parseFloat(f.textSum) || 0), 0,
     );
     const total = calculateTotal(newSftCount, formData.sqftSize);
+
     onFormDataChange({
       ...formData,
       sftCount: newSftCount,
       total,
       amount: (total * parseFloat(formData.unitPrice || 0)).toFixed(2),
+      // ← mirror the old `previousValue != 0` rule.
+      // Warn when SFT already had a value before this edit stacked more on top.
+      sftPrevValue: prevTextSum > 0 ? prevTextSum : 0,
     });
     setTextBoxModel(false);
   };
@@ -354,16 +363,24 @@ const AnnotationImagePreview = ({
             <label className="block text-sm font-medium mb-2">SFT Count</label>
             <input
               type="text"
+              inputMode="numeric"     // ← numeric keypad on mobile
+              pattern="[0-9]*"        // ← hints iOS to show the digits-only pad
               value={formData.sftCount}
               onChange={(e) =>
-                handleFieldChange(
-                  "sftCount",
-                  e.target.value.replace(/[^0-9]/g, ""),
-                )
+                handleFieldChange("sftCount", e.target.value.replace(/[^0-9]/g, ""))
               }
               className="w-full border border-gray-300 rounded-lg p-2"
               placeholder="Enter number"
             />
+
+            {/* 🔴 Red notification — same as old #editNumber */}
+            {formData.sftPrevValue > 0 && (
+              <p className="text-red-600 text-[13px] font-semibold mt-1">
+                Before Editing the Number was{" "}
+                <span className="text-black">{formData.sftPrevValue}</span>. Please make
+                sure to adjust manually.
+              </p>
+            )}
           </div>
 
           {/* Sqft Size */}

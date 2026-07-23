@@ -102,7 +102,7 @@ export default function QuoteView() {
   const getDepositLabel = () => {
     if (!quote?.payment_details) return null;
 
-    const ps = quote.payment_details.status;
+    const ps = quote.payment_details.payment_status;
 
     if (ps === 0 || ps === "0")
       return {

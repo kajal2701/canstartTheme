@@ -42,7 +42,7 @@ export const REVIEW_DATA = [
         reviewer_name: "Ellwood Daycare",
         rating: "5 Stars",
         review_text:
-            "Canstar lights edmonton and the team, according to me, is the ultimate 'A' team. Hands down the best in the business in Edmonton. Kudos!",
+            "Canstar Light Edmonton and the team, according to me, is the ultimate 'A' team. Hands down the best in the business in Edmonton. Kudos!",
     },
     {
         reviewer_name: "Cherilyn Vreim",

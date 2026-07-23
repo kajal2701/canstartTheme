@@ -1,6 +1,6 @@
 const themeConfig = {
   app: {
-    name: "CanStar System",
+    name: "Canstar Light",
   },
   // layout
   layout: {

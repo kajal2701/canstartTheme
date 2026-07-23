@@ -6,7 +6,8 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave, previousSu
   const [removed, setRemoved] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [scale, setScale] = useState(1);
-
+  const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
   const containerRef = useRef();
   const dragId = useRef(null);
 
@@ -90,57 +91,71 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave, previousSu
 
   // ================= SAVE =================
   const handleSave = () => {
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
+    setIsSaving(true);
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext("2d");
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
 
-      ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0);
 
-      const renderedWidth = containerRef.current.offsetWidth;
-      const renderedHeight = containerRef.current.offsetHeight;
-      const scaleX = img.naturalWidth / renderedWidth;
-      const scaleY = img.naturalHeight / renderedHeight;
+        const renderedWidth = containerRef.current.offsetWidth;
+        const renderedHeight = containerRef.current.offsetHeight;
+        const scaleX = img.naturalWidth / renderedWidth;
+        const scaleY = img.naturalHeight / renderedHeight;
 
-      let sum = 0;
+        let sum = 0;
 
-      boxes.forEach((box) => {
-        const x = box.x * scaleX;
-        const y = box.y * scaleY;
-        ctx.font = `bold ${14 * scaleX}px sans-serif`;
-        const metrics = ctx.measureText(String(box.value));
-        const textWidth = metrics.width;
-        const paddingX = 10 * scaleX;
-        const paddingY = 8 * scaleY;
-        const lineHeight = 18 * scaleY;
-        const boxWidth = textWidth + paddingX * 2;
-        const boxHeight = lineHeight + paddingY * 2;
+        boxes.forEach((box) => {
+          const x = box.x * scaleX;
+          const y = box.y * scaleY;
+          ctx.font = `bold ${14 * scaleX}px sans-serif`;
+          const metrics = ctx.measureText(String(box.value));
+          const textWidth = metrics.width;
+          const paddingX = 10 * scaleX;
+          const paddingY = 8 * scaleY;
+          const lineHeight = 18 * scaleY;
+          const boxWidth = textWidth + paddingX * 2;
+          const boxHeight = lineHeight + paddingY * 2;
 
-        ctx.fillStyle = "rgba(243, 244, 246, 1)";
-        ctx.fillRect(x, y, boxWidth, boxHeight);
+          ctx.fillStyle = "rgba(243, 244, 246, 1)";
+          ctx.fillRect(x, y, boxWidth, boxHeight);
 
-        ctx.strokeStyle = "#ccc";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x, y, boxWidth, boxHeight);
+          ctx.strokeStyle = "#ccc";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, boxWidth, boxHeight);
 
-        ctx.fillStyle = "#000";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(box.value, x + boxWidth / 2, y + boxHeight / 2);
+          ctx.fillStyle = "#000";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(box.value, x + boxWidth / 2, y + boxHeight / 2);
 
-        sum += parseFloat(box.value) || 0;
-      });
+          sum += parseFloat(box.value) || 0;
+        });
 
-      const finalImageUrl = canvas.toDataURL("image/webp", 0.92);
+        const finalImageUrl = canvas.toDataURL("image/webp", 0.92);
 
-      // Add current boxes' sum to the previous cumulative sum
-      const cumulativeSum = (parseFloat(previousSum) || 0) + sum;
+        // Add current boxes' sum to the previous cumulative sum
+        const cumulativeSum = (parseFloat(previousSum) || 0) + sum;
 
-      // Send image + cumulative sum back to parent
-      if (onSave) onSave(finalImageUrl, cumulativeSum);
+        // Send image + cumulative sum back to parent
+        if (onSave) {
+          onSave(finalImageUrl, cumulativeSum);
+        }
+      } finally {
+        isSavingRef.current = false;   // ✅ release lock
+        setIsSaving(false);
+      }
+    };
+    img.onerror = () => {
+      isSavingRef.current = false;     // ✅ release on error too
+      setIsSaving(false);
     };
     img.src = image;
   };
@@ -171,20 +186,16 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave, previousSu
         {/* INPUT FIELD */}
         <input
           type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           placeholder="Enter number"
           value={inputValue}
           onChange={(e) => {
-            const value = e.target.value.replace(/[^0-9.-]/g, "");
+            const value = e.target.value.replace(/[^0-9]/g, "");  // ← match: digits only
             setInputValue(value);
           }}
-          style={{
-            padding: "6px 10px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            width: "120px",
-          }}
+          style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #ccc", width: "120px" }}
         />
-
         <Button
           text="Add Text"
           className="btn-secondary"
@@ -210,7 +221,12 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave, previousSu
           icon="ph:magnifying-glass-plus"
           className="btn-danger h-9 w-9 p-3"
         />
-        <Button text="Save" className="btn-secondary" onClick={handleSave} />
+        <Button
+          text={isSaving ? "Saving..." : "Save"}
+          className="btn-secondary"
+          onClick={handleSave}
+          disabled={isSaving}
+        />
       </div>
 
       {/* ================= IMAGE CONTAINER ================= */}

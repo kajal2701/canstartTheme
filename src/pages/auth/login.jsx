@@ -12,7 +12,7 @@ const Login = () => (
           <Link to="/">
             <img
               src={Logo}
-              alt="Canstar Lights"
+              alt="Canstar Light"
               className="h-16 w-auto object-contain drop-shadow-xl"
             />
           </Link>

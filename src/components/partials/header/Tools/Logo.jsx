@@ -15,7 +15,7 @@ const Logo = () => {
           <div>
             <img
               src={CanstarLogo}
-              alt="Canstar Lights"
+              alt="Canstar Light"
               className="h-10 w-auto object-contain"
             />
           </div>
@@ -24,7 +24,7 @@ const Logo = () => {
           <div>
             <img
               src={CanstarLogo}
-              alt="Canstar Lights"
+              alt="Canstar Light"
               className="h-10 w-auto object-contain"
             />
           </div>

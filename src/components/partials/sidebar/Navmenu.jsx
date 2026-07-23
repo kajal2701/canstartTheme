@@ -40,7 +40,7 @@ const Navmenu = ({ menus }) => {
         }
       }
     });
-    document.title = `CanStar System  | ${locationName}`;
+    document.title = `Canstar Light  | ${locationName}`;
 
     setActiveSubmenu(submenuIndex);
     if (mobileMenu) {
