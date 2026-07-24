@@ -212,19 +212,15 @@ const AddQuote = () => {
   };
 
   const handleRemoveAnnotationSection = (id) => {
-    if (annotationSections.length > 1) {
-      setAnnotationSections(
-        annotationSections.filter((section) => section.id !== id),
-      );
-      // Clear errors for removed section
-      setErrors((prev) => {
-        const updatedAnnotations = { ...prev.annotations };
-        delete updatedAnnotations[id];
-        return { ...prev, annotations: updatedAnnotations };
-      });
-    } else {
-      alert("At least one annotation section must remain");
-    }
+    setAnnotationSections(
+      annotationSections.filter((section) => section.id !== id),
+    );
+    // Clear errors for removed section
+    setErrors((prev) => {
+      const updatedAnnotations = { ...prev.annotations };
+      delete updatedAnnotations[id];
+      return { ...prev, annotations: updatedAnnotations };
+    });
   };
 
   // ==================== VALIDATION ====================
@@ -454,8 +450,27 @@ const AddQuote = () => {
       });
     });
 
+    // ── Access images / notes (Easy Plug & Controller) ──
+    const appendAccessData = (isEnabled, files, notes, filePrefix, notesKey) => {
+      if (isEnabled) {
+        // Toggle ON → images mode: append each File object
+        files.forEach((f, idx) => {
+          if (f?.file instanceof File) {
+            formData.append(`${filePrefix}${idx}`, f.file);
+          }
+        });
+      } else if (notes) {
+        // Toggle OFF → notes mode: append notes text
+        formData.append(notesKey, notes);
+      }
+    };
+    appendAccessData(isEasyPlugEnabled, easyPlugFiles, easyPlugNotes, "access_image_plug_", "easy_plug_notes");
+    appendAccessData(isControllerEnabled, controllerFiles, controllerNotes, "access_image_controller_", "controller_notes");
+
     try {
       const result = await addQuote(formData);
+      localStorage.removeItem("lineEditorColor");
+      localStorage.removeItem("lineEditorStrokeWidth");
       toast.success(result?.message || "Quote added successful.");
       navigate("/quote");
     } catch (e) {
@@ -496,9 +511,9 @@ const AddQuote = () => {
           </div>
 
           {/* ==================== IMAGE DETAILS ==================== */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-6">Image Details</h2>
-            <div className="grid md:grid-cols-2 gap-8">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+            <h2 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6">Image Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {/* Easy Plug Section */}
               <ImageUploadWithToggle
                 title="Easy plug access"
@@ -620,6 +635,7 @@ const AddQuote = () => {
                 <AnnotationImagePreview
                   sectionId={section.id}
                   onRemoveSection={handleRemoveAnnotationSection}
+                  annotationCount={annotationSections.length}
                   files={section.files}
                   formData={section.formData}
                   onFilesChange={(updatedFiles) =>

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Button from "@/components/ui/Button";
 
 export default function ImageTextBoxAnnotationEditor({ image, onSave, previousSum = 0 }) {
@@ -10,7 +10,12 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave, previousSu
   const isSavingRef = useRef(false);
   const containerRef = useRef();
   const dragId = useRef(null);
+  const inputRef = useRef(null);
 
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
   // ================= ADD BOX ON CLICK =================
   const handleAddText = () => {
     if (!inputValue) return;
@@ -30,6 +35,7 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave, previousSu
     setBoxes((prev) => [...prev, newBox]);
     setRemoved([]);
     setInputValue("");
+    inputRef.current?.focus();
   };
 
   // ================= DRAG START (was handleMouseDown) =================
@@ -185,13 +191,17 @@ export default function ImageTextBoxAnnotationEditor({ image, onSave, previousSu
       >
         {/* INPUT FIELD */}
         <input
+          ref={inputRef}
           type="text"
           inputMode="numeric"
-          pattern="[0-9]*"
+          pattern="[0-9-]*"
           placeholder="Enter number"
           value={inputValue}
           onChange={(e) => {
-            const value = e.target.value.replace(/[^0-9]/g, "");  // ← match: digits only
+            let value = e.target.value;
+            value = value.replace(/[^0-9-]/g, "");
+            // Allow only one minus at the beginning
+            value = value.replace(/(?!^)-/g, "");
             setInputValue(value);
           }}
           style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #ccc", width: "120px" }}

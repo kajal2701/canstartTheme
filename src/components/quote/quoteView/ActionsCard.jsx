@@ -29,6 +29,8 @@ import { getUsers } from "@/services/usersService";
 const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   const { user } = useSelector((state) => state.auth);
   const isAdmin = user?.role === 1;
+  // role 4 = sales
+  const hasActionAccess = user?.role === 1 || user?.role === 4;
 
   const handlePrint = () => window.print();
 
@@ -536,7 +538,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       {/* ── Top action buttons ── */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-3">
-          {isAdmin && quoteStatus >= 3 && (
+          {hasActionAccess && quoteStatus >= 3 && (
             <>
               <QuoteButton
                 icon={BUTTON_ICONS.resend}
@@ -559,7 +561,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
         </div>
         <div className="flex flex-wrap gap-3">
           {/* Stage 2 — Approve button */}
-          {showApprove && isAdmin && (
+          {showApprove && hasActionAccess && (
             <QuoteButton
               icon={BUTTON_ICONS.approve}
               variant="success"
@@ -596,14 +598,14 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
         </div>
       </div>
 
-      {isAdmin && <div className="my-5 border-t border-slate-100 dark:border-slate-700" />}
+      {hasActionAccess && <div className="my-5 border-t border-slate-100 dark:border-slate-700" />}
 
       {/* ── Payment section ──
            Case 1: No payment → show form
            Case 2: Payment exists, not editing → show PaymentInfo + edit button
            Case 3: Editing → show form with Cancel
       */}
-      {isAdmin && (
+      {hasActionAccess && (
         <>
           {showPaymentForm ? (
             PaymentForm
@@ -627,7 +629,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       )}
 
       {/* ── Stage 3 & 4: Payment Receive Cards ── */}
-      {showPaymentReceiveCards && isAdmin && (
+      {showPaymentReceiveCards && hasActionAccess && (
         <>
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -695,7 +697,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       )}
 
       {/* ── Stage 5: Schedule Installation ── */}
-      {showScheduleInstallation && isAdmin && (
+      {showScheduleInstallation && hasActionAccess && (
         <>
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
@@ -744,7 +746,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       )}
 
       {/* ── Stage 6: Send Final Invoice ── */}
-      {showSendInvoice && isAdmin && (
+      {showSendInvoice && hasActionAccess && (
         <>
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <QuoteButton
@@ -761,7 +763,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       )}
 
       {/* ── Stage 7: Awaiting Full Payment ── */}
-      {showAwaitingFullPayment && isAdmin && (
+      {showAwaitingFullPayment && hasActionAccess && (
         <>
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700">
@@ -777,7 +779,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       )}
 
       {/* ── Stage 8: Fully Paid ── */}
-      {showFullyPaid && isAdmin && (
+      {showFullyPaid && hasActionAccess && (
         <>
           <div className="my-5 border-t border-slate-100 dark:border-slate-700" />
           <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">

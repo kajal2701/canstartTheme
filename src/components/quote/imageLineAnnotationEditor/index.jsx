@@ -1,12 +1,23 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Button from "@/components/ui/Button";
 
 export default function ImageLineAnnotationEditor({ image, onSave }) {
   const [lines, setLines] = useState([]);
   const [drawing, setDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState(null);
-  const [color, setColor] = useState("#ff0000");
-  const [strokeWidth, setStrokeWidth] = useState(2);
+  const [color, setColor] = useState(() => localStorage.getItem("lineEditorColor") || "#ff0000");
+  const [strokeWidth, setStrokeWidth] = useState(() => {
+    const saved = localStorage.getItem("lineEditorStrokeWidth");
+    return saved ? Number(saved) : 2;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("lineEditorColor", color);
+  }, [color]);
+
+  useEffect(() => {
+    localStorage.setItem("lineEditorStrokeWidth", strokeWidth);
+  }, [strokeWidth]);
   const [scale, setScale] = useState(1);
   const [removedLines, setRemovedLines] = useState([]);
   const containerRef = useRef();

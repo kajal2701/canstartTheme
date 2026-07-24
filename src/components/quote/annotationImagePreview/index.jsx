@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import Modal from "@/components/ui/Modal";
 import { Icon } from "@iconify/react";
 import Button from "../../ui/Button";
+import Swal from "sweetalert2";
+import confirmAction from "../../../utils/confirmAction";
 import ImageLineAnnotationEditor from "../imageLineAnnotationEditor";
 import ImageTextBoxAnnotationEditor from "../imageTextBoxAnnotationEditor";
 import { getColors } from "../../../services/quoteService";
@@ -9,6 +11,7 @@ import { getColors } from "../../../services/quoteService";
 const AnnotationImagePreview = ({
   sectionId,
   onRemoveSection,
+  annotationCount = 1,
   files,
   formData,
   onFilesChange,
@@ -133,9 +136,11 @@ const AnnotationImagePreview = ({
   const handleTextSave = (savedImageUrl, sum) => {
     if (!textBoxModel) return;   // already saved/closed → ignore duplicate
     setTextBoxModel(false);      // close immediately
-    const updatedFiles = [...files];
-    const prevTextSum = parseFloat(updatedFiles[selectedIndex]?.textSum) || 0; // ← old value
 
+    // Capture the full previous sftCount (sum of ALL images) before this edit
+    const prevTotalSftCount = parseFloat(formData.sftCount) || 0;
+
+    const updatedFiles = [...files];
     updatedFiles[selectedIndex] = {
       ...updatedFiles[selectedIndex],
       textSaved: savedImageUrl,
@@ -153,11 +158,10 @@ const AnnotationImagePreview = ({
       sftCount: newSftCount,
       total,
       amount: (total * parseFloat(formData.unitPrice || 0)).toFixed(2),
-      // ← mirror the old `previousValue != 0` rule.
-      // Warn when SFT already had a value before this edit stacked more on top.
-      sftPrevValue: prevTextSum > 0 ? prevTextSum : 0,
+      // Show warning with the full previous sftCount (all images combined)
+      // so the user knows the total before this edit changed it.
+      sftPrevValue: prevTotalSftCount > 0 ? prevTotalSftCount : 0,
     });
-    setTextBoxModel(false);
   };
 
   return (
@@ -474,7 +478,26 @@ const AnnotationImagePreview = ({
         {/* Remove Section Button */}
         <div className="flex justify-end mt-4">
           <button
-            onClick={() => onRemoveSection(sectionId)}
+            onClick={async () => {
+              if (annotationCount <= 1) {
+                Swal.fire({
+                  icon: "info",
+                  title: "Cannot Remove",
+                  text: "At least one annotation section must remain.",
+                  confirmButtonColor: "#3085d6",
+                });
+                return;
+              }
+              const ok = await confirmAction({
+                title: "Remove Section?",
+                text: "Are you sure you want to remove this section?",
+                icon: "warning",
+                confirmButtonText: "Yes, Remove",
+              });
+              if (ok) {
+                onRemoveSection(sectionId);
+              }
+            }}
             type="button"
             className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition"
           >

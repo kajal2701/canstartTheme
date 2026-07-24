@@ -39,7 +39,7 @@ const SummarySection = ({
                   step="0.1"
                   value={activeDiscount ?? quote.discount_percentage ?? 0}
                   onChange={(e) => onDiscountChange(e.target.value)}
-                  className="w-24 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700 accent-blue-600 print-hide"
+                  className="w-20 sm:w-40 md:w-60 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700 accent-blue-600 print-hide"
                   title="Adjust dynamic pricing"
                 />
               )}

@@ -308,7 +308,7 @@ export default function QuoteView() {
                     <td className="py-3 md:py-5 px-2 md:px-4 border-b border-gray-100 align-top text-center">
                       {item.images?.length > 0 ? (
                         <div className="flex flex-col gap-2 justify-center items-center">
-                          {item.images.slice(0, 2).map((img, i) => (
+                          {item.images.map((img, i) => (
                             <img
                               key={i}
                               src={

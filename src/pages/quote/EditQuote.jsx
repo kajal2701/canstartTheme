@@ -224,24 +224,32 @@ const EditQuote = () => {
         setDiscountPercent(quote.discount_percentage || 0);
 
         // ── Easy plug / Controller access images ──
-        if (quote.access_image_plug) {
-          setIsEasyPlugEnabled(true);
-          setEasyPlugFiles([
-            {
-              file: null,
-              preview: getImgSrc(quote.access_image_plug),
-            },
-          ]);
-        }
-        if (quote.access_image_controller) {
-          setIsControllerEnabled(true);
-          setControllerFiles([
-            {
-              file: null,
-              preview: getImgSrc(quote.access_image_controller),
-            },
-          ]);
-        }
+        const prefillAccessImage = (accessObj, setEnabled, setFiles, setNotes) => {
+          if (!accessObj) return;
+          if (accessObj.data_type == 1) {
+            // Images mode: data is a JSON array of file paths
+            setEnabled(true);
+            let paths = accessObj.data;
+            if (typeof paths === "string") {
+              try { paths = JSON.parse(paths); } catch (e) { paths = []; }
+            }
+            if (Array.isArray(paths) && paths.length > 0) {
+              setFiles(paths.map((p, i) => ({
+                id: Date.now() + i,
+                file: null,
+                name: p.split("/").pop(),
+                preview: getImgSrc(p),
+                existingPath: p,
+              })));
+            }
+          } else if (accessObj.data_type == 2) {
+            // Notes mode
+            setEnabled(false);
+            setNotes(accessObj.data || "");
+          }
+        };
+        prefillAccessImage(quote.access_image_plug, setIsEasyPlugEnabled, setEasyPlugFiles, setEasyPlugNotes);
+        prefillAccessImage(quote.access_image_controller, setIsControllerEnabled, setControllerFiles, setControllerNotes);
       } catch (e) {
         console.error(e);
         toast.error("Failed to load quote");
@@ -326,18 +334,14 @@ const EditQuote = () => {
   };
 
   const handleRemoveAnnotationSection = (sectionId) => {
-    if (annotationSections.length > 1) {
-      setAnnotationSections(
-        annotationSections.filter((s) => s.id !== sectionId),
-      );
-      setErrors((prev) => {
-        const updated = { ...prev.annotations };
-        delete updated[sectionId];
-        return { ...prev, annotations: updated };
-      });
-    } else {
-      alert("At least one annotation section must remain");
-    }
+    setAnnotationSections(
+      annotationSections.filter((s) => s.id !== sectionId),
+    );
+    setErrors((prev) => {
+      const updated = { ...prev.annotations };
+      delete updated[sectionId];
+      return { ...prev, annotations: updated };
+    });
   };
 
   const handleAnnotationErrorChange = (sectionId, field, message) => {
@@ -589,8 +593,34 @@ const EditQuote = () => {
       });
     });
 
+    // ── Access images / notes (Easy Plug & Controller) ──
+    const appendAccessData = (isEnabled, accessFiles, notes, filePrefix, notesKey) => {
+      if (isEnabled) {
+        // Toggle ON → images mode: append new File objects
+        // Also send existing paths that weren't replaced
+        const existingPaths = [];
+        accessFiles.forEach((f, idx) => {
+          if (f?.file instanceof File) {
+            formData.append(`${filePrefix}${idx}`, f.file);
+          } else if (f?.existingPath) {
+            existingPaths.push(f.existingPath);
+          }
+        });
+        if (existingPaths.length > 0) {
+          formData.append(`${filePrefix}existing`, JSON.stringify(existingPaths));
+        }
+      } else if (notes) {
+        // Toggle OFF → notes mode: append notes text
+        formData.append(notesKey, notes);
+      }
+    };
+    appendAccessData(isEasyPlugEnabled, easyPlugFiles, easyPlugNotes, "access_image_plug_", "easy_plug_notes");
+    appendAccessData(isControllerEnabled, controllerFiles, controllerNotes, "access_image_controller_", "controller_notes");
+
     try {
       const result = await editQuote(formData);
+      localStorage.removeItem("lineEditorColor");
+      localStorage.removeItem("lineEditorStrokeWidth");
       toast.success(result?.message || "Quote updated successfully.");
       navigate("/quote");
     } catch (e) {
@@ -722,6 +752,7 @@ const EditQuote = () => {
                 <AnnotationImagePreview
                   sectionId={section.id}
                   onRemoveSection={handleRemoveAnnotationSection}
+                  annotationCount={annotationSections.length}
                   files={section.files}
                   formData={section.formData}
                   onFilesChange={(updatedFiles) =>

@@ -66,10 +66,7 @@ export const formatTime = (iso) => {
 export const isPastDate = (dateStr) => {
   if (!dateStr) return false;
   const todayKey = new Date().toISOString().split("T")[0]; // same pattern as isToday
-  console.log(todayKey, "todayKey")
   const datePart = dateStr.split("T")[0]; // handles ISO strings with time too
-  console.log(datePart, "datePart")
-  console.log(datePart < todayKey, "datePart < todayKey")
   return datePart < todayKey;
 
 };
