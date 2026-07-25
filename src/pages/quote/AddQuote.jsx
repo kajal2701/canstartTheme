@@ -190,6 +190,8 @@ const AddQuote = () => {
 
   // ==================== ANNOTATION HANDLERS ====================
   const handleAddAnnotationSection = () => {
+    const firstSectionData = annotationSections[0]?.formData || {};
+
     setAnnotationSections([
       ...annotationSections,
       {
@@ -197,13 +199,13 @@ const AddQuote = () => {
         files: [{ file: null, preview: "", lineSaved: "", textSaved: "" }],
         formData: {
           identifyImageName: "",
-          color: "",
+          color: firstSectionData.color || "",
           peaksCount: "",
           jumpersCount: "",
           sftCount: "",
-          sqftSize: "",
+          sqftSize: firstSectionData.sqftSize || "",
           total: "",
-          unitPrice: "",
+          unitPrice: firstSectionData.unitPrice || "",
           amount: "",
           action: "Mandatory",
         },

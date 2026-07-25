@@ -109,6 +109,15 @@ const CustomerForm = ({
                 error={errors.companyName}
               />
 
+              <Textinput
+                label="Lead Source (Optional)"
+                type="text"
+                placeholder="Enter lead source..."
+                name="leadSource"
+                register={register}
+                error={errors.leadSource}
+              />
+
               {/* Primary email */}
               <div className="flex flex-col">
                 <Textinput

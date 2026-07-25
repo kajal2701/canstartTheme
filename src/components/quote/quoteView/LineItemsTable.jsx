@@ -42,6 +42,8 @@ const LineItemsTable = ({
 }) => {
   const { user } = useSelector((state) => state.auth);
   const isAdmin = user?.role === 1;
+  const isSales = user?.role === 4;
+  const canAddExtraWork = isAdmin || isSales;
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState(null);
@@ -279,8 +281,8 @@ const LineItemsTable = ({
                   </tr>
                 ))}
 
-                {/* Extra work rows for non-admins */}
-                {!isAdmin &&
+                {/* Extra work rows (read-only for users without edit access) */}
+                {!canAddExtraWork &&
                   extraRows.map((item, index) => {
                     const rowQty = parseFloat(item.quantity) || 0;
                     const rowUnit = parseFloat(item.unitCost) || 0;
@@ -330,13 +332,13 @@ const LineItemsTable = ({
             </table>
           </div>
 
-          {/* Extra rows (Admin only editable section) */}
-          {isAdmin && extraRows.map((row, idx) => (
+          {/* Extra rows (Admin & Sales editable section) */}
+          {canAddExtraWork && extraRows.map((row, idx) => (
             <div key={row.id} className="space-y-1 mt-4">
               <div className="grid grid-cols-12 gap-3 items-start">
                 {/* Remove */}
                 <div className="col-span-2 md:col-span-1 flex md:justify-start">
-                  {isAdmin && (
+                  {canAddExtraWork && (
                     <Button
                       text="Remove"
                       className="btn-danger btn-sm h-[42px] rounded-r-none"
@@ -353,7 +355,7 @@ const LineItemsTable = ({
                     row={1}
                     value={row.description} // ← value not defaultValue
                     className="h-[42px] rounded-l-none"
-                    disabled={!isAdmin}
+                    disabled={!canAddExtraWork}
                     onChange={(e) =>
                       handleExtraChange(idx, "description", e.target.value)
                     }
@@ -372,7 +374,7 @@ const LineItemsTable = ({
                     placeholder="Qty"
                     className="h-[42px]"
                     value={row.quantity} // ← value not defaultValue
-                    disabled={!isAdmin}
+                    disabled={!canAddExtraWork}
                     onChange={(e) =>
                       handleExtraChange(
                         idx,
@@ -395,7 +397,7 @@ const LineItemsTable = ({
                     placeholder="Unit Price"
                     className="h-[42px]"
                     value={row.unitCost} // ← value not defaultValue
-                    disabled={!isAdmin}
+                    disabled={!canAddExtraWork}
                     onChange={(e) =>
                       handleExtraChange(
                         idx,
@@ -427,7 +429,7 @@ const LineItemsTable = ({
           ))}
 
           {/* Action buttons */}
-          {isAdmin && (
+          {canAddExtraWork && (
             <div className="flex gap-3 mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
               <QuoteButton
                 icon={BUTTON_ICONS.add}

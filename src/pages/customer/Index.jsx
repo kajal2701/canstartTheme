@@ -33,6 +33,7 @@ const Customer = () => {
               [c.fname, c.lname].filter(Boolean).join(" ").trim() ||
               "Customer",
             companyName: c.company_name ?? "",
+            leadSource: c.lead_source ?? "",
             email: c.email ?? "",
             phone: c.phone ?? "",
             ...parts,
@@ -108,6 +109,15 @@ const Customer = () => {
         <span
           className="text-sm text-gray-700 dark:text-gray-300"
         >
+          {value || "-"}
+        </span>
+      ),
+    },
+    {
+      Header: "Lead Source",
+      accessor: "leadSource",
+      Cell: ({ cell: { value } }) => (
+        <span className="text-sm text-gray-700 dark:text-gray-300">
           {value || "-"}
         </span>
       ),
