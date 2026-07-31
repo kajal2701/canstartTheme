@@ -6,6 +6,7 @@ import LoadingIcon from "@/components/LoadingIcon";
 import { getQuote, getQuotePaymentDetails } from "../../services/quoteService";
 import { toast } from "react-toastify";
 import CompanyInfo from "../../components/quote/quoteView/CompanyInfo";
+import { normalizeRequired } from "../../utils/helperFunctions";
 import LineItemsTable from "../../components/quote/quoteView/LineItemsTable";
 import NotesSection from "../../components/quote/quoteView/NotesSection";
 import SummarySection from "../../components/quote/quoteView/SummarySection";
@@ -47,6 +48,10 @@ const ViewQuoteAdmin = () => {
 
   const formattedItems = useMemo(() => {
     if (!quote) return [];
+    const typeLabel = (val) => {
+      const n = normalizeRequired(val);
+      return n === 'yes' ? 'Mandatory' : n === 'no' ? 'Optional' : '-';
+    };
     const annotationItems = (quote.annotation_image || []).map(
       (item, index) => ({
         id: index + 1,
@@ -55,7 +60,7 @@ const ViewQuoteAdmin = () => {
         quantity: item.total_numerical_box,
         unitCost: Number(item.unit_price),
         total: Number(item.total_amount),
-        type: item.required === 'yes' ? 'Mandatory' : item.required === 'no' ? 'Optional' : '-',
+        type: typeLabel(item.required),
       }),
     );
 
@@ -66,7 +71,7 @@ const ViewQuoteAdmin = () => {
       quantity: Number(product.qty),
       unitCost: Number(product.price),
       total: Number(product.amount),
-      type: product.required === 'yes' ? 'Mandatory' : product.required === 'no' ? 'Optional' : '-',
+      type: typeLabel(product.required),
     }));
 
     const customItems = (quote.custom_product_data || []).map(
@@ -81,7 +86,7 @@ const ViewQuoteAdmin = () => {
         quantity: Number(item.qty),
         unitCost: Number(item.unit_price),
         total: Number(item.amount),
-        type: item.required === 'yes' ? 'Mandatory' : item.required === 'no' ? 'Optional' : '-',
+        type: typeLabel(item.required),
       }),
     );
 

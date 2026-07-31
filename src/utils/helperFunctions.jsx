@@ -259,6 +259,15 @@ export const renderCustomerAddress = (quote, title = "Invoice To") => (
 
 // src/utils/quoteHelpers.js
 
+// Normalize old ("Mandatory"/"optional") and new ("yes"/"no") required formats
+export const normalizeRequired = (val) => {
+  if (!val) return null;
+  const lower = String(val).toLowerCase();
+  if (lower === "yes" || lower === "mandatory") return "yes";
+  if (lower === "no" || lower === "optional") return "no";
+  return null;
+};
+
 export const buildQuoteItems = (quote, options = {}) => {
   const { descriptionStyle = "php" } = options;
 
@@ -279,7 +288,7 @@ export const buildQuoteItems = (quote, options = {}) => {
         description: getDescription(item.color, item.identify_image_name),
         total: parseFloat(item.total_amount),
         images: (item.images || []).filter((img) => img.type === "drawnLines"),
-        required: item.required ?? null,
+        required: normalizeRequired(item.required),
         annotation_image_id: item.annotation_image_id,
         source: "annotation",
         sourceIndex: idx,
@@ -295,7 +304,7 @@ export const buildQuoteItems = (quote, options = {}) => {
         description: item.product_description || item.product,
         total: parseFloat(item.amount),
         images: [],
-        required: item.required ?? null,
+        required: normalizeRequired(item.required),
         source: "product",
         sourceIndex: idx,
       });
@@ -310,7 +319,7 @@ export const buildQuoteItems = (quote, options = {}) => {
         description: item.product,
         total: parseFloat(item.amount),
         images: [],
-        required: item.required ?? null,
+        required: normalizeRequired(item.required),
         source: "custom_product",
         sourceIndex: idx,
       });

@@ -140,7 +140,7 @@ const EditQuote = () => {
             quantity: saved ? saved.qty : "0",
             amount: saved ? parseFloat(saved.amount).toFixed(2) : "0.00",
             option: saved
-              ? saved.required === "yes"
+              ? (saved.required === "yes" || saved.required === "Mandatory")
                 ? "mandatory"
                 : "optional"
               : "mandatory",
@@ -162,7 +162,7 @@ const EditQuote = () => {
               quantity: c.qty || "",
               unitPrice: c.unit_price || "",
               amount: c.amount || "",
-              option: c.required === "yes" ? "mandatory" : "optional",
+              option: (c.required === "yes" || c.required === "Mandatory") ? "mandatory" : "optional",
             })),
           );
         }
@@ -209,7 +209,7 @@ const EditQuote = () => {
                 unitPrice: String(ann.unit_price || ""),
                 amount: String(ann.total_amount || ""),
                 action:
-                  ann.required === "yes"
+                  (ann.required === "yes" || ann.required === "Mandatory")
                     ? "Mandatory"
                     : "Optional",
               },
@@ -649,6 +649,7 @@ const EditQuote = () => {
             submitText=""
             onSubmit={() => { }}
             hideActions={true}
+            hideLeadSourceAndCompany={true}
           />
 
           <div className="bg-white p-6 rounded-lg shadow">

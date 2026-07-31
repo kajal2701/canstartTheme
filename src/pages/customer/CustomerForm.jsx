@@ -7,7 +7,6 @@ import Select from "@/components/ui/Select";
 import { getProvinces } from "@/services/quoteService";
 import { useNavigate } from "react-router-dom";
 import { useFieldArray } from "react-hook-form";
-import Icon from "@/components/ui/Icon";
 
 const countryOptions = [
   { value: "Canada", label: "Canada" },
@@ -20,6 +19,7 @@ const CustomerForm = ({
   title,
   submitText,
   hideActions = false,
+  hideLeadSourceAndCompany = false,
 }) => {
   const navigate = useNavigate();
   const [provinceOptions, setProvinceOptions] = useState([]);
@@ -67,7 +67,7 @@ const CustomerForm = ({
         <Wrapper {...wrapperProps}>
           <div className="space-y-5">
             {/* ── Personal Info ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className={`grid grid-cols-1 ${hideLeadSourceAndCompany ? 'md:grid-cols-2' : 'lg:grid-cols-3'} gap-5`}>
               <Textinput
                 label="First Name"
                 type="text"
@@ -100,23 +100,18 @@ const CustomerForm = ({
                 }}
               />
 
-              <Textinput
-                label="Company Name (Optional)"
-                type="text"
-                placeholder="Company Name"
-                name="companyName"
-                register={register}
-                error={errors.companyName}
-              />
+              {!hideLeadSourceAndCompany && (
+                <Textinput
+                  label="Company Name (Optional)"
+                  type="text"
+                  placeholder="Company Name"
+                  name="companyName"
+                  register={register}
+                  error={errors.companyName}
+                />
+              )}
 
-              <Textinput
-                label="Lead Source (Optional)"
-                type="text"
-                placeholder="Enter lead source..."
-                name="leadSource"
-                register={register}
-                error={errors.leadSource}
-              />
+
 
               {/* Primary email */}
               <div className="flex flex-col">
@@ -190,6 +185,17 @@ const CustomerForm = ({
                   },
                 }}
               />
+
+              {!hideLeadSourceAndCompany && (
+                <Textinput
+                  label="Lead Source (Optional)"
+                  type="text"
+                  placeholder="Enter lead source..."
+                  name="leadSource"
+                  register={register}
+                  error={errors.leadSource}
+                />
+              )}
             </div>
 
             {/* ── Address ── */}

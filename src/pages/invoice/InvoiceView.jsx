@@ -375,8 +375,8 @@ export default function InvoiceView() {
         </div>
       )}
 
-      {/* If waiting for admin confirmation, still show download button but hide pay button */}
-      {isPayButtonHidden() && Number(quote.payment_details?.pending_payment_amount) > 0 && (
+      {/* If waiting for admin confirmation or fully paid, still show download button but hide pay button */}
+      {isPayButtonHidden() && (
         <div className="w-full max-w-[1120px] mt-6 md:mt-8 flex flex-col sm:flex-row justify-center gap-3 md:gap-4 no-print px-3 md:px-4">
           <Button
             size="lg"
