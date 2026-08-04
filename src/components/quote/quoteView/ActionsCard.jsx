@@ -463,7 +463,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
                 const val = e.target.value.replace(/[^0-9.]/g, "");
                 setDepositAmount(val);
                 if (mainTotal > 0) {
-                  setDepositPercent(((Number(val) / mainTotal) * 100).toFixed(2));
+                  setDepositPercent(((Number(val) / mainTotal) * 100).toFixed(6));
                 }
                 setPaymentErrors((prev) => ({ ...prev, depositAmount: "", depositPercent: "" }));
               }}

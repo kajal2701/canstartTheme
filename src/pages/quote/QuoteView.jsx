@@ -152,6 +152,8 @@ export default function QuoteView() {
 
   const items = buildQuoteItems(quote, { descriptionStyle: "react" });
   const depositInfo = getDepositLabel();
+  const isDepositPaid = quote.payment_details?.payment_status === 0 || quote.payment_details?.payment_status === "0" ||
+    quote.payment_details?.payment_status === 1 || quote.payment_details?.payment_status === "1";
 
   const excludedItems = items
     .map((item, idx) => ({ item, idx }))
@@ -371,7 +373,9 @@ export default function QuoteView() {
                 <span>{depositInfo.label}:</span>
                 <span>
                   {formatCurrency(
-                    (dynamicTotal * parseFloat(quote.payment_details.payment_percentage || 100) / 100)
+                    isDepositPaid
+                      ? parseFloat(quote.payment_details.part_payment_amount)
+                      : (dynamicTotal * parseFloat(quote.payment_details.payment_percentage || 100) / 100)
                   )}
                 </span>
               </div>

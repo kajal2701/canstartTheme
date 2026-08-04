@@ -193,7 +193,7 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
             {paymentType === "2" && (
               <p className="text-base text-gray-700 dark:text-gray-300">
                 Deposit Payment Percentage :{" "}
-                <b>{paymentDetails.payment_percentage}%</b>
+                <b>{parseFloat(paymentDetails.payment_percentage).toFixed(2)}%</b>
               </p>
             )}
           </>
