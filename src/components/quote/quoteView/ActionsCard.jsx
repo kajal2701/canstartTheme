@@ -25,6 +25,7 @@ import {
   scheduleInstallation,
 } from "../../../services/quoteService";
 import { getUsers } from "@/services/usersService";
+import WarrantySection from "./WarrantySection";
 
 const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   const { user } = useSelector((state) => state.auth);
@@ -787,6 +788,9 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
               <Icon icon="ph:check-circle" className="text-lg" /> Fully Paid ✅
             </p>
           </div>
+
+          {/* ── Warranty Actions (separate component) ── */}
+          <WarrantySection quote={quote} onSubmitSuccess={onSubmitSuccess} />
         </>
       )}
 

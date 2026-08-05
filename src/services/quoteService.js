@@ -385,3 +385,30 @@ export const saveFollowUpDate = async (payload) => {
 
   return data;
 };
+
+
+export const setWarrantyParams = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/set_warranty_params`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Failed to set warranty parameters.");
+  }
+  return data;
+};
+
+export const sendWarrantyEmail = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/send_warranty_email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Failed to send warranty email.");
+  }
+  return data;
+};

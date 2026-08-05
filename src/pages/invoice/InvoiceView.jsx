@@ -11,7 +11,7 @@ import {
   formatDateLong,
   getImgSrc,
 } from "../../utils/formatters";
-import { decodeId } from "../../utils/mappers";
+import { decodeId, formatWarrantyDates } from "../../utils/mappers";
 import { REVIEW_DATA } from "../../utils/constants";
 import { downloadAsPDF } from "../../utils/pdfDownloader";
 
@@ -345,6 +345,38 @@ export default function InvoiceView() {
             </p>
           </div>
         )}
+
+        {/* Warranty Registration */}
+        {quote.warranty_data && (() => {
+          const w = formatWarrantyDates(quote.warranty_data);
+          const details = [
+            { label: "Start Date", value: w.startDate },
+            { label: `Product Warranty (${w.productYears} Years)`, value: `Ends ${w.productEndDate}` },
+            { label: `Labour Warranty (${w.labourYears} Years)`, value: `Ends ${w.labourEndDate}` },
+          ];
+
+          return (
+            <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-12">
+              <div className="bg-gray-50 border-l-4 border-[#ee5d59] p-4 md:p-6 rounded-r-xl shadow-sm">
+                <h3 className="text-[#ee5d59] font-bold text-lg mb-4 flex items-center gap-2">
+                  🛡️ Warranty Registration
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                  {details.map((item, idx) => (
+                    <div key={idx} className="flex flex-col">
+                      <span className="text-gray-500 text-xs uppercase tracking-wide font-semibold mb-1">
+                        {item.label}
+                      </span>
+                      <span className="text-gray-900 font-semibold text-sm md:text-base">
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ✅ Common functions used here */}
         {renderReviews(reviewIdx, setReviewIdx)}

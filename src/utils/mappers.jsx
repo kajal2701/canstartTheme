@@ -1,3 +1,5 @@
+import { formatDateLong } from "./formatters";
+
 export const mapInventoryType = (val) => {
   const v = val != null ? String(val).trim() : "";
   if (v === "1") return "Controller";
@@ -152,4 +154,15 @@ export const getQuoteStage = (row) => {
   } else {
     return { label: "Unknown Status", color: "bg-gray-400 text-white" };
   }
+};
+
+export const formatWarrantyDates = (warranty_data) => {
+  if (!warranty_data) return null;
+  return {
+    startDate: formatDateLong(warranty_data.start_date),
+    productYears: warranty_data.product_years,
+    productEndDate: formatDateLong(warranty_data.product_end_date),
+    labourYears: warranty_data.labour_years,
+    labourEndDate: formatDateLong(warranty_data.labour_end_date),
+  };
 };

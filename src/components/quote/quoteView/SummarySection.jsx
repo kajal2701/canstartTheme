@@ -1,6 +1,7 @@
 import React from "react";
 import Card from "@/components/ui/Card";
 import { SectionHeader } from "../../../utils/helperFunctions";
+import { formatWarrantyDates } from "../../../utils/mappers";
 import PriceRow from "./PriceRow";
 const SummarySection = ({
   quote,
@@ -93,6 +94,27 @@ const SummarySection = ({
             )}
           </div>
         )}
+
+        {/* Warranty Info */}
+        {quote?.warranty_data && (() => {
+          const w = formatWarrantyDates(quote.warranty_data);
+          return (
+            <div className="mt-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 space-y-1">
+              <p className="text-sm font-semibold text-green-700 dark:text-green-400 flex items-center gap-2 mb-2">
+                🛡️ Warranty Info
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Start Date: <span className="font-semibold">{w.startDate}</span>
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Product Warranty: <span className="font-semibold">{w.productYears} Years</span> — Ends <span className="font-semibold">{w.productEndDate}</span>
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Labour Warranty: <span className="font-semibold">{w.labourYears} Years</span> — Ends <span className="font-semibold">{w.labourEndDate}</span>
+              </p>
+            </div>
+          );
+        })()}
       </div>
     </Card>
   );
