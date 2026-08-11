@@ -18,6 +18,7 @@ import { getProductsData, addQuote } from "../../services/quoteService";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { scrollToFirstError } from "../../utils/mappers";
 
 const AddQuote = () => {
   const [customers, setCustomers] = useState([]);
@@ -200,8 +201,8 @@ const AddQuote = () => {
         formData: {
           identifyImageName: "",
           color: firstSectionData.color || "",
-          peaksCount: "",
-          jumpersCount: "",
+          peaksCount: "0",
+          jumpersCount: "0",
           sftCount: "",
           sqftSize: firstSectionData.sqftSize || "",
           total: "",
@@ -328,7 +329,10 @@ const AddQuote = () => {
   // ==================== SUBMIT HANDLER ====================
   const handleSubmit = async () => {
     const ok = validateQuote();
-    if (!ok) return;
+    if (!ok) {
+      scrollToFirstError();
+      return;
+    }
     setIsSubmitting(true);
     const toCurrencyString = (v) => Number(v || 0).toFixed(2);
     const requiredFlag = (opt) =>

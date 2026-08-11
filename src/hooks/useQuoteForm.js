@@ -44,8 +44,8 @@ export const useQuoteForm = () => {
       formData: {
         identifyImageName: "",
         color: "",
-        peaksCount: "",
-        jumpersCount: "",
+        peaksCount: "0",
+        jumpersCount: "0",
         sftCount: "",
         sqftSize: "",
         total: "",

@@ -62,6 +62,8 @@ const CustomProductRow = ({
       <div className="md:col-span-2">
         <Textinput
           type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           placeholder="0"
           value={product.quantity}
           onChange={(e) => {
@@ -80,6 +82,7 @@ const CustomProductRow = ({
       <div className="md:col-span-2">
         <Textinput
           type="text"
+          inputMode="decimal"
           placeholder="0.00"
           value={product.unitPrice}
           onChange={(e) => {

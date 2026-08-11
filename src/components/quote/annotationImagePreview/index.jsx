@@ -328,6 +328,8 @@ const AnnotationImagePreview = ({
             </label>
             <input
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={formData.peaksCount}
               onChange={(e) =>
                 handleFieldChange(
@@ -347,6 +349,8 @@ const AnnotationImagePreview = ({
             </label>
             <input
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={formData.jumpersCount}
               onChange={(e) =>
                 handleFieldChange(
@@ -392,6 +396,7 @@ const AnnotationImagePreview = ({
             <label className="block text-sm font-medium mb-2">SFT Size</label>
             <input
               type="text"
+              inputMode="decimal"
               value={formData.sqftSize}
               onChange={(e) =>
                 handleFieldChange(
@@ -409,6 +414,7 @@ const AnnotationImagePreview = ({
             <label className="block text-sm font-medium mb-2">Total</label>
             <input
               type="text"
+              inputMode="decimal"
               value={formData.total}
               onChange={(e) =>
                 handleFieldChange(
@@ -429,6 +435,7 @@ const AnnotationImagePreview = ({
             <label className="block text-sm font-medium mb-2">Unit Price</label>
             <input
               type="text"
+              inputMode="decimal"
               value={formData.unitPrice}
               onChange={(e) =>
                 handleFieldChange(

@@ -16,6 +16,7 @@ const DiscountInput = ({ discountPercent, setDiscountPercent, subtotal }) => {
         </label>
         <Textinput
           type="text"
+          inputMode="decimal"
           placeholder="0.00"
           value={
             localDiscountAmount !== null
@@ -49,6 +50,7 @@ const DiscountInput = ({ discountPercent, setDiscountPercent, subtotal }) => {
         </label>
         <Textinput
           type="text"
+          inputMode="decimal"
           placeholder="0"
           value={discountPercent}
           onChange={(e) => {

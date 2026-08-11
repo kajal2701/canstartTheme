@@ -7,7 +7,7 @@ const Modal = ({
   onClose,
   enterFrom,
   leaveFrom,
-  disableBackdrop,
+  disableBackdrop = true,
   className = "max-w-lg",
   children,
   footerContent,
@@ -48,24 +48,22 @@ const Modal = ({
             <Dialog
               as="div"
               className="relative z-[99999]"
-              onClose={!disableBackdrop ? closeModal : returnNull}
+              onClose={disableBackdrop ? returnNull : closeModal}
             >
-              {!disableBackdrop && (
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-out duration-300"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="ease-in duration-200"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <div
-                    className={`fixed inset-0 bg-gray-900/70 ${isBlur ? "backdrop-blur-sm" : ""
-                      } `}
-                  />
-                </Transition.Child>
-              )}
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div
+                  className={`fixed inset-0 bg-gray-900/70 ${isBlur ? "backdrop-blur-sm" : ""
+                    } `}
+                />
+              </Transition.Child>
 
               <div className="fixed inset-0 overflow-y-auto">
                 <div
@@ -117,7 +115,11 @@ const Modal = ({
         </>
       ) : (
         <Transition appear show={activeModal} as={Fragment}>
-          <Dialog as="div" className="relative z-[99999]" onClose={onClose}>
+          <Dialog
+            as="div"
+            className="relative z-[99999]"
+            onClose={disableBackdrop ? returnNull : onClose}
+          >
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"

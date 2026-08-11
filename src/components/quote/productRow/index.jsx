@@ -47,6 +47,8 @@ const ProductRow = ({ product, onChange, errors = {}, onErrorChange }) => {
       <div>
         <Textinput
           type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={product.quantity}
           onChange={(e) => {
             const value = e.target.value.replace(/[^0-9]/g, "");

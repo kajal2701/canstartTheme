@@ -39,7 +39,7 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
   // Calculate dynamic payable amount based on adjusted payload and payment percentage
   const dynamicMainTotal = parseFloat(adjustedPayload?.main_total ?? quote?.main_total ?? 0);
   const depositPercentage = parseFloat(paymentDetails.payment_percentage || 100);
-  const payableAmount = paymentType === "2" 
+  const payableAmount = paymentType === "2"
     ? (dynamicMainTotal * depositPercentage / 100).toFixed(2)
     : dynamicMainTotal.toFixed(2);
 
@@ -104,6 +104,7 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
 
       // ── Credit card fields ───────────────────────────────────────────────
       if (activeTab === "credit_card") {
+        formData.append("cc_name", ccForm.name);
         formData.append("cc_number", ccForm.number);
         formData.append("cc_expiry", ccForm.expiry);
         formData.append("cc_cvv", ccForm.cvv);
@@ -147,11 +148,10 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
           <button
             type="button"
             disabled={loading}
-            className={`px-4 py-2 rounded-md text-sm font-medium text-white transition-colors ${
-              loading
+            className={`px-4 py-2 rounded-md text-sm font-medium text-white transition-colors ${loading
                 ? "bg-blue-400 cursor-not-allowed opacity-80"
                 : "bg-green-500 hover:bg-green-600"
-            }`}
+              }`}
             onClick={handlePayNow}
           >
             {loading ? "Loading..." : "Pay Now"}
@@ -170,7 +170,7 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
                   name="pay-type"
                   value="1"
                   checked={paymentType === "1"}
-                  onChange={() => {}}
+                  onChange={() => { }}
                   disabled
                   className="accent-[#ee5d59]"
                 />
@@ -182,7 +182,7 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
                   name="pay-type"
                   value="2"
                   checked={paymentType === "2"}
-                  onChange={() => {}}
+                  onChange={() => { }}
                   disabled
                   className="accent-[#ee5d59]"
                 />
@@ -225,7 +225,7 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
                       activeTab === method
                         ? "border-[#ee5d59] text-[#ee5d59]"
                         : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                    }`}
+                      }`}
                   >
                     {TAB_LABELS[method] || method}
                   </button>

@@ -371,6 +371,8 @@ const LineItemsTable = ({
                 <div className="col-span-6 md:col-span-1">
                   <Textinput
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     placeholder="Qty"
                     className="h-[42px]"
                     value={row.quantity} // ← value not defaultValue
@@ -394,6 +396,7 @@ const LineItemsTable = ({
                 <div className="col-span-6 md:col-span-1">
                   <Textinput
                     type="text"
+                    inputMode="decimal"
                     placeholder="Unit Price"
                     className="h-[42px]"
                     value={row.unitCost} // ← value not defaultValue

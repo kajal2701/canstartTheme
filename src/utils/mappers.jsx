@@ -166,3 +166,14 @@ export const formatWarrantyDates = (warranty_data) => {
     labourEndDate: formatDateLong(warranty_data.labour_end_date),
   };
 };
+
+export const scrollToFirstError = (delay = 100) => {
+  setTimeout(() => {
+    const errorElement = document.querySelector(
+      ".text-red-500, .text-red-600, .border-red-500, [aria-invalid='true']"
+    );
+    if (errorElement) {
+      errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, delay);
+};

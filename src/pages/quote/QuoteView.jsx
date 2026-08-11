@@ -1,4 +1,4 @@
-// src/pages/invoice/QuoteView.jsx
+// src/pages/quote/QuoteView.jsx
 import Button from "@/components/ui/Button";
 import CanstarLogo from "@/assets/images/logo/new-canstar-logo.jpg";
 import { useNavigate, useParams } from "react-router-dom";
@@ -66,7 +66,7 @@ export default function QuoteView() {
         }
       } catch (e) {
         console.error(e);
-        setError("Failed to load invoice");
+        setError("Failed to load quote");
       } finally {
         setLoading(false);
       }
@@ -134,7 +134,7 @@ export default function QuoteView() {
   if (loading)
     return (
       <div className="min-h-screen bg-[#fff6f6] flex items-center justify-center">
-        <p className="text-gray-600 text-lg">Loading invoice...</p>
+        <p className="text-gray-600 text-lg">Loading quote...</p>
       </div>
     );
 
@@ -142,7 +142,7 @@ export default function QuoteView() {
     return (
       <div className="min-h-screen bg-[#fff6f6] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 text-lg">{error || "Invoice not found"}</p>
+          <p className="text-red-600 text-lg">{error || "Quote not found"}</p>
           <Button onClick={() => navigate(-1)} className="mt-4">
             Go Back
           </Button>

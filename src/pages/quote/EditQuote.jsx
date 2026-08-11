@@ -17,6 +17,7 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import CustomerForm from "../customer/CustomerForm";
 import { getImgSrc } from "../../utils/formatters";
+import { scrollToFirstError } from "../../utils/mappers";
 
 const EditQuote = () => {
   const { id } = useParams();
@@ -427,12 +428,14 @@ const EditQuote = () => {
     const isCustomerValid = await methods.trigger();
     if (!isCustomerValid) {
       toast.error("Please fix customer form errors");
+      scrollToFirstError();
       setIsUpdating(false);
       return;
     }
 
     const ok = validateQuote();
     if (!ok) {
+      scrollToFirstError();
       setIsUpdating(false);
       return;
     }

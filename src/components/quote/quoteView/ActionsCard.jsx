@@ -439,6 +439,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
             <Textinput
               label="Deposit Payment Percentage:"
               type="text"
+              inputMode="decimal"
               placeholder="0"
               value={depositPercent}
               onChange={(e) => {
@@ -458,6 +459,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
             <Textinput
               label="Deposit Payment Amount:"
               type="text"
+              inputMode="decimal"
               placeholder="0.00"
               value={depositAmount}
               onChange={(e) => {
