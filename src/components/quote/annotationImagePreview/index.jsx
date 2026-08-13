@@ -7,6 +7,7 @@ import confirmAction from "../../../utils/confirmAction";
 import ImageLineAnnotationEditor from "../imageLineAnnotationEditor";
 import ImageTextBoxAnnotationEditor from "../imageTextBoxAnnotationEditor";
 import { getColors } from "../../../services/quoteService";
+import { compressImage } from "../../../utils/compressImage";
 
 const AnnotationImagePreview = ({
   sectionId,
@@ -57,17 +58,35 @@ const AnnotationImagePreview = ({
   };
 
   // Handle file select
-  const handleChange = (e, index) => {
+  const handleChange = async (e, index) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
 
-    const updatedFiles = [...files];
-    updatedFiles[index] = {
-      ...updatedFiles[index],
-      file: selectedFile,
-      preview: URL.createObjectURL(selectedFile),
-    };
-    onFilesChange(updatedFiles);
+    try {
+      const compressedFile = await compressImage(selectedFile);
+
+      const updatedFiles = [...files];
+
+      updatedFiles[index] = {
+        ...updatedFiles[index],
+        file: compressedFile,
+        preview: URL.createObjectURL(compressedFile),
+      };
+
+      onFilesChange(updatedFiles);
+    } catch (error) {
+      console.error("Image compression failed:", error);
+
+      const updatedFiles = [...files];
+
+      updatedFiles[index] = {
+        ...updatedFiles[index],
+        file: selectedFile,
+        preview: URL.createObjectURL(selectedFile),
+      };
+
+      onFilesChange(updatedFiles);
+    }
   };
 
   // Remove input row

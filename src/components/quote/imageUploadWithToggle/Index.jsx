@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Switch from "@/components/ui/Switch";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
+import { compressImage } from "../../../utils/compressImage";
 
 const ImageUploadWithToggle = ({
   title,
@@ -15,21 +16,36 @@ const ImageUploadWithToggle = ({
   const [previewModal, setPreviewModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const handleFileChange = (id, e) => {
+  const handleFileChange = async (id, e) => {
     const selectedFile = e.target.files[0];
+
     if (!selectedFile) return;
 
-    const updatedFiles = files.map((file) =>
-      file.id === id
-        ? {
-          ...file,
-          file: selectedFile,
-          name: selectedFile.name,
-          preview: URL.createObjectURL(selectedFile)
-        }
-        : file,
-    );
-    onFilesChange(updatedFiles);
+    try {
+      const compressedFile = await compressImage(
+        selectedFile,
+        2000,
+        2000,
+        0.9
+      );
+
+      const previewUrl = URL.createObjectURL(compressedFile);
+
+      const updatedFiles = files.map((file) =>
+        file.id === id
+          ? {
+            ...file,
+            file: compressedFile,
+            name: compressedFile.name,
+            preview: previewUrl,
+          }
+          : file
+      );
+
+      onFilesChange(updatedFiles);
+    } catch (error) {
+      console.error("Image compression failed:", error);
+    }
   };
 
   const handleAddFile = () => {

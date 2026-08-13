@@ -10,6 +10,8 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
     const saved = localStorage.getItem("lineEditorStrokeWidth");
     return saved ? Number(saved) : 2;
   });
+  const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
 
   useEffect(() => {
     localStorage.setItem("lineEditorColor", color);
@@ -97,31 +99,43 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
   const zoomOut = () => setScale((prev) => Math.max(0.5, prev - 0.1));
 
   const handleSave = () => {
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
+    setIsSaving(true);
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext("2d");
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
 
-      ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0);
 
-      const renderedWidth = containerRef.current.offsetWidth;
-      const scaleX = img.naturalWidth / renderedWidth;
-      const scaleY = img.naturalHeight / containerRef.current.offsetHeight;
+        const renderedWidth = containerRef.current.offsetWidth;
+        const scaleX = img.naturalWidth / renderedWidth;
+        const scaleY = img.naturalHeight / containerRef.current.offsetHeight;
 
-      lines.forEach((line) => {
-        ctx.beginPath();
-        ctx.moveTo(line.x1 * scaleX, line.y1 * scaleY);
-        ctx.lineTo(line.x2 * scaleX, line.y2 * scaleY);
-        ctx.strokeStyle = line.color;
-        ctx.lineWidth = line.strokeWidth * scaleX;
-        ctx.stroke();
-      });
+        lines.forEach((line) => {
+          ctx.beginPath();
+          ctx.moveTo(line.x1 * scaleX, line.y1 * scaleY);
+          ctx.lineTo(line.x2 * scaleX, line.y2 * scaleY);
+          ctx.strokeStyle = line.color;
+          ctx.lineWidth = line.strokeWidth * scaleX;
+          ctx.stroke();
+        });
 
-      const finalImageUrl = canvas.toDataURL("image/webp", 0.92);
-      if (onSave) onSave(finalImageUrl);
+        const finalImageUrl = canvas.toDataURL("image/webp", 0.92);
+        if (onSave) onSave(finalImageUrl);
+      } finally {
+        isSavingRef.current = false;
+        setIsSaving(false);
+      }
+    };
+    img.onerror = () => {
+      isSavingRef.current = false;
+      setIsSaving(false);
     };
     img.src = image;
   };
@@ -194,7 +208,12 @@ export default function ImageLineAnnotationEditor({ image, onSave }) {
           icon="ph:magnifying-glass-plus"
           className="btn-danger h-9 w-9  p-3"
         />
-        <Button text="Save" className="btn-secondary " onClick={handleSave} />
+        <Button
+          text={isSaving ? "Saving..." : "Save"}
+          className="btn-secondary"
+          onClick={handleSave}
+          disabled={isSaving}
+        />
       </div>
 
       {/* ================= IMAGE + SVG ================= */}
