@@ -6,7 +6,6 @@ import Swal from "sweetalert2";
 import confirmAction from "../../../utils/confirmAction";
 import ImageLineAnnotationEditor from "../imageLineAnnotationEditor";
 import ImageTextBoxAnnotationEditor from "../imageTextBoxAnnotationEditor";
-import { getColors } from "../../../services/quoteService";
 import { compressImage } from "../../../utils/compressImage";
 
 const AnnotationImagePreview = ({
@@ -19,25 +18,13 @@ const AnnotationImagePreview = ({
   onFormDataChange,
   errors = {},
   onErrorChange,
+  colorOptions = [],
 }) => {
   // ✅ ONLY UI state kept local
   const [modal3, setModal3] = useState(false);
   const [textBoxModel, setTextBoxModel] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [colors, setColors] = useState([]);
-
-  useEffect(() => {
-    const fetchColors = async () => {
-      try {
-        const data = await getColors();
-        setColors(data);
-      } catch (error) {
-        console.error("Error fetching colors:", error);
-      }
-    };
-    fetchColors();
-  }, []);
 
   // ── Shared total-calculation helper ──
   // Formula: total = ceil((sftCount * sqftSize) / 12)
@@ -53,7 +40,7 @@ const AnnotationImagePreview = ({
   const handleAdd = () => {
     onFilesChange([
       ...files,
-      { file: null, preview: "", lineSaved: "", textSaved: "", textSum: 0 },
+      { file: null, preview: "", thumb: "", lineSaved: "", textSaved: "", textSum: 0 },
     ]);
   };
 
@@ -63,25 +50,35 @@ const AnnotationImagePreview = ({
     if (!selectedFile) return;
 
     try {
-      const compressedFile = await compressImage(selectedFile);
+      // Generate both in parallel:
+      // - thumb: small (300x300) for fast grid preview rendering
+      // - full: larger (2000x2000) for the annotation editor + final upload
+      const [thumb, full] = await Promise.all([
+        compressImage(selectedFile, 300, 300, 0.7),
+        compressImage(selectedFile, 2000, 2000, 0.7),
+      ]);
 
       const updatedFiles = [...files];
 
       updatedFiles[index] = {
         ...updatedFiles[index],
-        file: compressedFile,
-        preview: URL.createObjectURL(compressedFile),
+        file: full,
+        thumb: URL.createObjectURL(thumb),   // NEW — used by the preview grids
+        preview: URL.createObjectURL(full),  // kept for the editor modals
       };
 
       onFilesChange(updatedFiles);
     } catch (error) {
       console.error("Image compression failed:", error);
 
+      // Fallback: if compression fails for any reason, fall back to the
+      // original file so upload still works — just without the size win.
       const updatedFiles = [...files];
 
       updatedFiles[index] = {
         ...updatedFiles[index],
         file: selectedFile,
+        thumb: URL.createObjectURL(selectedFile),
         preview: URL.createObjectURL(selectedFile),
       };
 
@@ -237,8 +234,10 @@ const AnnotationImagePreview = ({
                 className="relative group w-full h-32 rounded-lg overflow-hidden border"
               >
                 <img
-                  src={item.lineSaved || item.preview}
+                  src={item.lineSaved || item.thumb || item.preview}
                   alt="preview"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
@@ -274,8 +273,10 @@ const AnnotationImagePreview = ({
                 className="relative group w-full h-32 rounded-lg overflow-hidden border"
               >
                 <img
-                  src={item.textSaved || item.preview}
+                  src={item.textSaved || item.thumb || item.preview}
                   alt="preview"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
@@ -327,9 +328,9 @@ const AnnotationImagePreview = ({
               className="w-full border border-gray-300 rounded-lg p-2 bg-white"
             >
               <option value="">-- Select color --</option>
-              {colors.map((color) => (
-                <option key={color.color_id} value={color.color_name}>
-                  {color.color_name
+              {colorOptions.map((color, idx) => (
+                <option key={idx} value={color.value}>
+                  {color.label
                     .toLowerCase()
                     .replace(/\b\w/g, (c) => c.toUpperCase())}
                 </option>

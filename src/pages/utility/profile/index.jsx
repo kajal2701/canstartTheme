@@ -3,11 +3,9 @@ import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Textinput from "@/components/ui/Textinput";
-import Avatar from "@/components/ui/Avatar";
 import { useSelector } from "react-redux";
 import { mapUserRole } from "@/utils/mappers";
-// import images
-import ProfileImage from "@/assets/images/avatar/avatar.jpg";
+import { getUserInitials } from "@/components/partials/header/Tools/Profile";
 
 const ProfilePage = () => {
   const user = useSelector((state) => state.auth.user);
@@ -42,12 +40,9 @@ const ProfilePage = () => {
               title={
                 <div className="flex items-center space-x-3 rtl:space-x-reverse">
                   <div className=" shrink-0">
-                    <Avatar
-                      src={user?.avatar || ProfileImage}
-                      className="h-14 w-14"
-                      imgClass=""
-                      alt="Profile"
-                    />
+                    <div className="h-14 w-14 rounded-full bg-primary text-white font-bold text-xl flex items-center justify-center select-none shadow-sm">
+                      {getUserInitials(user)}
+                    </div>
                   </div>
                   <div className="flex-1 text-gray-700 dark:text-white text-sm font-semibold  ">
                     <span className=" truncate w-full block">

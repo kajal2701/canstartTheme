@@ -2,27 +2,45 @@ import React from "react";
 import Dropdown from "@/components/ui/Dropdown";
 import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
-import { Menu, Transition } from "@headlessui/react";
+import { Menu } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/store/auth/authSlice";
 import { mapUserRole } from "@/utils/mappers";
 import clsx from "clsx";
-import UserAvatar from "@/assets/images/avatar/avatar.jpg";
+
+export const getUserInitials = (user) => {
+  if (user?.fname && user?.lname) {
+    return `${user.fname.charAt(0)}${user.lname.charAt(0)}`.toUpperCase();
+  }
+  const name = user?.name || user?.username || "";
+  if (name.trim()) {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+  if (user?.email) {
+    return user.email.charAt(0).toUpperCase();
+  }
+  return "";
+};
 
 const ProfileLabel = ({ sticky, user }) => {
+  const initials = getUserInitials(user);
+
   return (
     <div
-      className={clsx(" rounded-full transition-all duration-300", {
-        "h-9 w-9": sticky,
-        "lg:h-12 lg:w-12 h-7 w-7": !sticky,
-      })}
+      className={clsx(
+        "rounded-full transition-all duration-300 bg-primary text-white font-bold flex items-center justify-center select-none shadow-sm hover:opacity-90 ring-1 ring-primary ring-offset-4 dark:ring-offset-gray-700",
+        {
+          "h-9 w-9 text-sm": sticky,
+          "lg:h-11 lg:w-11 h-8 w-8 text-sm": !sticky,
+        }
+      )}
     >
-      <img
-        src={user?.avatar || UserAvatar}
-        alt=""
-        className="block w-full h-full object-cover rounded-full ring-1 ring-indigo-700 ring-offset-4 dark:ring-offset-gray-700"
-      />
+      {initials}
     </div>
   );
 };
@@ -42,7 +60,7 @@ const Profile = ({ sticky }) => {
         navigate("/profile");
       },
     },
-   
+
   ];
 
   const handleLogout = () => {
@@ -57,18 +75,14 @@ const Profile = ({ sticky }) => {
     >
       <div className="flex items-center px-4 py-3 border-b border-gray-10 mb-3">
         <div className="flex-none ltr:mr-[10px] rtl:ml-[10px]">
-          <div className="h-[46px] w-[46px] rounded-full">
-            <img
-              src={user?.avatar || UserAvatar}
-              alt=""
-              className="block w-full h-full object-cover rounded-full"
-            />
+          <div className="h-[46px] w-[46px] rounded-full bg-primary text-white font-bold text-base flex items-center justify-center select-none shadow-sm">
+            {getUserInitials(user)}
           </div>
         </div>
         <div className="flex-1 text-gray-700 dark:text-white text-sm font-semibold  ">
           <span className=" truncate w-full block">
-            {user?.fname && user?.lname 
-              ? `${user.fname} ${user.lname}` 
+            {user?.fname && user?.lname
+              ? `${user.fname} ${user.lname}`
               : user?.name || 'User'
             }
           </span>
@@ -83,11 +97,10 @@ const Profile = ({ sticky }) => {
             {({ active }) => (
               <div
                 onClick={() => item.action()}
-                className={`${
-                  active
+                className={`${active
                     ? " text-indigo-500 "
                     : "text-gray-600 dark:text-gray-300"
-                } block transition-all duration-150 group     `}
+                  } block transition-all duration-150 group     `}
               >
                 <div className={`block cursor-pointer px-4 `}>
                   <div className="flex items-center space-x-3 rtl:space-x-reverse ">
@@ -96,9 +109,8 @@ const Profile = ({ sticky }) => {
                        ${item.status === "cyan" ? "bg-cyan-500 " : ""} 
                        ${item.status === "blue" ? "bg-indigo-500 " : ""} 
                       ${item.status === "red" ? "bg-red-500 " : ""} 
-                      ${item.status === "green" ? "bg-green-500 " : ""}${
-                        item.status === "yellow" ? "bg-yellow-500 " : ""
-                      }
+                      ${item.status === "green" ? "bg-green-500 " : ""}${item.status === "yellow" ? "bg-yellow-500 " : ""
+                        }
                       `}
                     >
                       <Icon icon={item.icon} />
@@ -135,3 +147,4 @@ const Profile = ({ sticky }) => {
 };
 
 export default Profile;
+

@@ -14,7 +14,9 @@ import MobileFooter from "@/components/partials/footer/MobileFooter";
 import { useSelector } from "react-redux";
 import Loading from "@/components/Loading";
 import { motion, AnimatePresence } from "framer-motion";
+import useAutoLogout from "@/hooks/useAutoLogout";
 const Layout = () => {
+  useAutoLogout();
   const { width, breakpoints } = useWidth();
   const [collapsed] = useSidebar();
   const navigate = useNavigate();

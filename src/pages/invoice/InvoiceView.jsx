@@ -130,6 +130,7 @@ export default function InvoiceView() {
     );
 
   const items = buildQuoteItems(quote, { descriptionStyle: "php" });
+  const hasCreditCard = (quote?.payment_details?.select_payment_methods || "").includes("credit_card");
 
   return (
     <div className="min-h-screen bg-[#fff6f6] py-4 md:py-8 px-3 md:px-4 lg:px-8 flex flex-col items-center font-sans">
@@ -394,7 +395,7 @@ export default function InvoiceView() {
             onClick={() => setPayModalOpen(true)}
             className={`text-white font-semibold px-6 md:px-8 py-2 md:py-3 rounded-full shadow-lg transition-all ${(termsChecked && quote?.payment_details) ? "bg-[#ee5d59] hover:bg-[#ee5d59]/90 cursor-pointer" : "bg-[#ee5d59]/40 cursor-not-allowed opacity-60"}`}
           >
-            Confirm And Pay
+            {hasCreditCard ? "Confirm & Pay" : "Agree & Continue"}
           </Button>
           <Button
             size="lg"
@@ -440,6 +441,7 @@ export default function InvoiceView() {
         onClose={() => setPayModalOpen(false)}
         quote={quote}
         onSuccess={() => window.location.reload()}
+        hasCreditCard={hasCreditCard}
       />
     </div>
   );

@@ -25,7 +25,7 @@ const TAB_LABELS = {
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload, onSuccess }) {
+export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload, onSuccess, hasCreditCard }) {
   const paymentDetails = quote?.payment_details ?? {};
 
   // Derived — read-only, never changes (matches PHP: radios are display-only)
@@ -131,7 +131,7 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
     <Modal
       activeModal={isOpen}
       onClose={onClose}
-      title="Confirm and Pay"
+      title={hasCreditCard ? "Confirm and Pay" : "Confirm Order"}
       className="max-w-lg"
       footerContent={
         <div className="flex items-center gap-3 w-full justify-end">
@@ -140,21 +140,14 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
           )}
           <button
             type="button"
-            className="px-4 py-2 rounded-md text-sm font-medium bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
-            onClick={onClose}
-          >
-            Close
-          </button>
-          <button
-            type="button"
             disabled={loading}
             className={`px-4 py-2 rounded-md text-sm font-medium text-white transition-colors ${loading
-                ? "bg-blue-400 cursor-not-allowed opacity-80"
-                : "bg-green-500 hover:bg-green-600"
+              ? "bg-blue-400 cursor-not-allowed opacity-80"
+              : "bg-green-500 hover:bg-green-600"
               }`}
             onClick={handlePayNow}
           >
-            {loading ? "Loading..." : "Pay Now"}
+            {loading ? "Loading..." : hasCreditCard ? "Pay Now" : "Confirm Order"}
           </button>
         </div>
       }
@@ -221,10 +214,9 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
                   <button
                     type="button"
                     onClick={() => setActiveTab(method)}
-                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === method
-                        ? "border-[#ee5d59] text-[#ee5d59]"
-                        : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === method
+                      ? "border-[#ee5d59] text-[#ee5d59]"
+                      : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                       }`}
                   >
                     {TAB_LABELS[method] || method}
@@ -290,42 +282,8 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
               {activeTab === "etransfer" && (
                 <div>
                   <h6 className="font-semibold text-sm mb-3 text-gray-700 dark:text-gray-300">
-                    E-Transfer Details (info@canstarlight.ca)
+                    You need to complete the payment from your bank account. Please send the e-Transfer to <span className="font-semibold">info@canstarlight.ca</span>
                   </h6>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    Upload the screenshot of the transfer here.
-                  </p>
-                  <div
-                    className="text-center bg-white dark:bg-gray-700 p-5 border-2 border-dashed border-gray-300 dark:border-gray-500 rounded-lg cursor-pointer w-[300px] mx-auto mb-4 hover:border-[#ee5d59] transition-colors"
-                    onClick={() =>
-                      document.getElementById("etransfer-upload").click()
-                    }
-                  >
-                    <span className="text-gray-500 dark:text-gray-400 text-base block">
-                      Click to upload image
-                    </span>
-                    <input
-                      id="etransfer-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-                        setEtransferFile(file);
-                        setEtransferPreview(URL.createObjectURL(file));
-                      }}
-                    />
-                  </div>
-                  {etransferPreview && (
-                    <div className="max-h-[300px] overflow-hidden rounded-lg">
-                      <img
-                        src={etransferPreview}
-                        alt="Uploaded"
-                        className="w-full h-auto rounded-lg"
-                      />
-                    </div>
-                  )}
                 </div>
               )}
 

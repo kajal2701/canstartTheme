@@ -14,7 +14,7 @@ import PriceSummary from "@/components/quote/PriceSummary";
 import ImageUploadWithToggle from "../../components/quote/imageUploadWithToggle/Index";
 import DiscountInput from "@/components/quote/DiscountInput";
 import { getCustomers } from "../../services/customersService";
-import { getProductsData, addQuote } from "../../services/quoteService";
+import { getProductsData, addQuote, getColors } from "../../services/quoteService";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +24,7 @@ const AddQuote = () => {
   const [customers, setCustomers] = useState([]);
   const [customersLoading, setCustomersLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [colorOptions, setColorOptions] = useState([]);
   const { user } = useSelector((state) => state.auth);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -121,6 +122,18 @@ const AddQuote = () => {
       }
     };
     fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const fetchColors = async () => {
+      try {
+        const data = await getColors();
+        setColorOptions(data.map((c) => ({ value: c.color_name, label: c.color_name })));
+      } catch (error) {
+        console.error("Error fetching colors:", error);
+      }
+    };
+    fetchColors();
   }, []);
 
   // ==================== CUSTOMER HANDLER ====================
@@ -656,6 +669,7 @@ const AddQuote = () => {
                   onErrorChange={(field, message) =>
                     handleAnnotationErrorChange(section.id, field, message)
                   }
+                  colorOptions={colorOptions}
                 />
               </div>
             ))}

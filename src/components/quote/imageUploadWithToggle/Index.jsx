@@ -22,22 +22,25 @@ const ImageUploadWithToggle = ({
     if (!selectedFile) return;
 
     try {
-      const compressedFile = await compressImage(
-        selectedFile,
-        2000,
-        2000,
-        0.9
-      );
+      // Generate both in parallel:
+      // - thumb: small (300x300) for fast grid preview rendering
+      // - full: larger (2000x2000) for actual upload
+      const [thumb, full] = await Promise.all([
+        compressImage(selectedFile, 300, 300, 0.7),
+        compressImage(selectedFile, 2000, 2000, 0.7),
+      ]);
 
-      const previewUrl = URL.createObjectURL(compressedFile);
+      const thumbUrl = URL.createObjectURL(thumb);
+      const previewUrl = URL.createObjectURL(full);
 
       const updatedFiles = files.map((file) =>
         file.id === id
           ? {
             ...file,
-            file: compressedFile,
-            name: compressedFile.name,
-            preview: previewUrl,
+            file: full,
+            name: full.name,
+            thumb: thumbUrl,     // NEW — used by the preview grid
+            preview: previewUrl, // kept for the modal / final upload
           }
           : file
       );
@@ -45,6 +48,23 @@ const ImageUploadWithToggle = ({
       onFilesChange(updatedFiles);
     } catch (error) {
       console.error("Image compression failed:", error);
+
+      // Fallback: if compression fails, use the original file so upload
+      // still works, just without the size win.
+      const fallbackUrl = URL.createObjectURL(selectedFile);
+      const updatedFiles = files.map((file) =>
+        file.id === id
+          ? {
+            ...file,
+            file: selectedFile,
+            name: selectedFile.name,
+            thumb: fallbackUrl,
+            preview: fallbackUrl,
+          }
+          : file
+      );
+
+      onFilesChange(updatedFiles);
     }
   };
 
@@ -142,8 +162,10 @@ const ImageUploadWithToggle = ({
                   }}
                 >
                   <img
-                    src={item.preview}
+                    src={item.thumb || item.preview}
                     alt="preview"
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </div>

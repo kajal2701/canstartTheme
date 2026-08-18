@@ -19,11 +19,13 @@ const authSlice = createSlice({
       state.user = action.payload;
       state.isAuth = true;
       localStorage.setItem("user", JSON.stringify(action.payload));
+      localStorage.setItem("lastActivityTime", Date.now().toString());
     },
     logout: (state) => {
       state.user = null;
       state.isAuth = false;
       localStorage.removeItem("user");
+      localStorage.removeItem("lastActivityTime");
     },
   },
 });
