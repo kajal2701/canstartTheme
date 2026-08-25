@@ -58,10 +58,10 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
     if (onRefresh) await onRefresh();
   };
 
-  const handleSendFinalInvoice = async () => {
+  const handleSendFinalInvoice = async (quote_id) => {
     try {
       setIsSendingInvoice(true);
-      const result = await sendFinalQuote({ quote_id: jobs?.quote_id });
+      const result = await sendFinalQuote({ quote_id, send_email: true });
       result.success
         ? toast.success(result.message)
         : toast.error(result.message);
@@ -203,7 +203,7 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
               className="icon-btn hover:bg-orange-50 dark:hover:bg-orange-900"
               type="button"
               title="Send Invoice"
-              onClick={handleSendFinalInvoice}
+              onClick={() => handleSendFinalInvoice(value)}
             >
               <Icon icon="ph:paper-plane-tilt" />
             </button>

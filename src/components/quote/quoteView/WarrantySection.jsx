@@ -2,6 +2,7 @@ import { useState } from "react";
 import Icon from "@/components/ui/Icon";
 import Modal from "@/components/ui/Modal";
 import Textinput from "@/components/ui/Textinput";
+import Switch from "@/components/ui/Switch";
 import Button from "@/components/ui/Button";
 import QuoteButton from "./QuoteButton";
 import confirmAction from "../../../utils/confirmAction";
@@ -20,6 +21,9 @@ const WarrantySection = ({ quote, onSubmitSuccess }) => {
   const [labourYears, setLabourYears] = useState(
     quote?.warranty_data?.labour_years ?? 4
   );
+  const [warrantyVersion, setWarrantyVersion] = useState(
+    quote?.warranty_version ?? "new"
+  );
   const [isSavingWarranty, setIsSavingWarranty] = useState(false);
   const [isSendingWarrantyEmail, setIsSendingWarrantyEmail] = useState(false);
 
@@ -31,6 +35,7 @@ const WarrantySection = ({ quote, onSubmitSuccess }) => {
         quote_id: quote?.quote_id,
         product_years: Number(productYears),
         labour_years: Number(labourYears),
+        warranty_version: warrantyVersion,
       });
       toast.success(result.message);
       setWarrantyModalOpen(false);
@@ -97,6 +102,12 @@ const WarrantySection = ({ quote, onSubmitSuccess }) => {
         <div className="mt-3 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 space-y-1">
           <p className="text-sm font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-2 mb-2">
             <Icon icon="ph:shield-check" className="text-lg" /> Warranty Registered
+            <span className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${quote.warranty_version === "new"
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+              }`}>
+              {quote.warranty_version === "new" ? "New T&C" : "Old T&C"}
+            </span>
           </p>
           <p className="text-sm text-slate-600 dark:text-slate-300">
             Start Date: <span className="font-semibold">{formatDateLong(quote.warranty_data.start_date)}</span>
@@ -147,6 +158,27 @@ const WarrantySection = ({ quote, onSubmitSuccess }) => {
             value={labourYears}
             onChange={(e) => setLabourYears(e.target.value)}
           />
+
+          {/* ── Warranty Version Toggle ── */}
+          <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+              Terms & Conditions Version
+            </p>
+            <div className="flex items-center gap-3">
+              <span className={`text-sm font-medium ${warrantyVersion === "old" ? "text-orange-600" : "text-slate-500"}`}>
+                Old T&C
+              </span>
+              <Switch
+                value={warrantyVersion === "new"}
+                onChange={(e) => setWarrantyVersion(e.target.checked ? "new" : "old")}
+                activeClass="bg-green-500"
+              />
+              <span className={`text-sm font-medium ${warrantyVersion === "new" ? "text-green-600" : "text-slate-500"}`}>
+                New T&C
+              </span>
+            </div>
+          </div>
+
           {quote?.installation_date && productYears > 0 && labourYears > 0 && (
             <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 space-y-1">
               <p className="text-sm font-medium text-green-700 dark:text-green-400">Calculated End Dates:</p>
@@ -192,3 +224,4 @@ const WarrantySection = ({ quote, onSubmitSuccess }) => {
 };
 
 export default WarrantySection;
+

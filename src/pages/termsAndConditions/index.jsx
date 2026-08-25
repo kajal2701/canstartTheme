@@ -1,7 +1,16 @@
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 import CanstarLogo from "@/assets/images/logo/new-canstar-logo.jpg";
+import NewTermsAndConditions from "../newTermsAndConditions";
 
 const TermsAndConditions = () => {
+  const [searchParams] = useSearchParams();
+  const version = searchParams.get("v") || "old";
+
+  if (version === "new") {
+    return <NewTermsAndConditions />;
+  }
+
   return (
     <div className="min-h-screen bg-[#fff6f6] py-8 px-4">
       <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-8 md:p-10">
@@ -211,3 +220,4 @@ const TermsAndConditions = () => {
 };
 
 export default TermsAndConditions;
+

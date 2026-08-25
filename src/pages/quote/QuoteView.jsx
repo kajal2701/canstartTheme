@@ -403,6 +403,7 @@ export default function QuoteView() {
           termsChecked,
           isTermsDisabled(),
           (e) => !isTermsDisabled() && setTermsChecked(e.target.checked),
+          quote?.warranty_version || "old",
         )}
         {renderContactFooter()}
       </div>

@@ -90,7 +90,7 @@ const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
             <table className="w-full text-sm text-slate-600">
               <thead className="bg-slate-50 text-slate-500 text-xs uppercase border-b border-slate-200">
                 <tr>
-                  {["Rank", "Salesperson", "Quotes", "Total Revenue", "Avg Deal", "Best Deal"].map((h) => (
+                  {["Rank", "Salesperson", "Total Quotes", "Converted Quotes", "Revenue"].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
                   ))}
                 </tr>
@@ -122,14 +122,13 @@ const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
                         {row.total_quotes}
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                        {row.converted_quotes}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 font-semibold text-emerald-600">
                       {formatCurrency(row.total_revenue)}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500">
-                      {formatCurrency(row.avg_deal_size)}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500">
-                      {formatCurrency(row.max_deal)}
                     </td>
                   </tr>
                 ))}
@@ -140,10 +139,12 @@ const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
                   <td className="px-4 py-3 font-bold text-indigo-700">
                     {personData.reduce((s, d) => s + d.total_quotes, 0)}
                   </td>
+                  <td className="px-4 py-3 font-bold text-emerald-700">
+                    {personData.reduce((s, d) => s + d.converted_quotes, 0)}
+                  </td>
                   <td className="px-4 py-3 font-bold text-emerald-600">
                     {formatCurrency(personData.reduce((s, d) => s + d.total_revenue, 0))}
                   </td>
-                  <td colSpan="2" className="px-4 py-3 text-slate-500">—</td>
                 </tr>
               </tfoot>
             </table>
@@ -155,3 +156,4 @@ const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
 };
 
 export default SalesByPersonTab;
+

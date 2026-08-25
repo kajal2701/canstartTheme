@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import ReactApexChart from "react-apexcharts";
-import { formatCurrency } from "@/utils/formatters";
 import { getColorUsage } from "@/services/reportService";
 import { CHART_LIGHT_THEME, CHART_COLORS } from "@/utils/constants";
 
@@ -129,7 +128,7 @@ const ColorAnalysisTab = ({ selectedYear, selectedMonth }) => {
             <table className="w-full text-sm text-slate-600">
               <thead className="bg-slate-50 text-slate-500 text-xs uppercase border-b border-slate-200">
                 <tr>
-                  {["#", "Colour", "Times Used", "Total Boxes", "Revenue Generated"].map((h) => (
+                  {["#", "Colour", "Times Used", "Total Boxes"].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
                   ))}
                 </tr>
@@ -169,9 +168,6 @@ const ColorAnalysisTab = ({ selectedYear, selectedMonth }) => {
                         <span className="text-indigo-600 font-semibold">{row.total_boxes.toLocaleString()}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-semibold text-emerald-600">
-                      {formatCurrency(row.total_revenue)}
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -184,9 +180,6 @@ const ColorAnalysisTab = ({ selectedYear, selectedMonth }) => {
                   <td className="px-4 py-3 font-bold text-slate-500">
                     {colorData.reduce((s, d) => s + d.total_boxes, 0).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 font-bold text-emerald-600">
-                    {formatCurrency(colorData.reduce((s, d) => s + d.total_revenue, 0))}
-                  </td>
                 </tr>
               </tfoot>
             </table>
@@ -198,3 +191,4 @@ const ColorAnalysisTab = ({ selectedYear, selectedMonth }) => {
 };
 
 export default ColorAnalysisTab;
+

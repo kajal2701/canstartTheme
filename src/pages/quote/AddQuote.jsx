@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
-import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
-import Select from "@/components/ui/Select";
 import SearchableSelect from "@/components/ui/SearchableSelect";
+import YesNoRadioField from "@/components/ui/YesNoRadioField";
 
 import { useQuoteForm } from "@/hooks/useQuoteForm";
 import ProductRow from "@/components/quote/ProductRow";
@@ -27,6 +26,7 @@ const AddQuote = () => {
   const [colorOptions, setColorOptions] = useState([]);
   const { user } = useSelector((state) => state.auth);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fasciaAlignWithSoffit, setFasciaAlignWithSoffit] = useState("");
   const navigate = useNavigate();
 
   const {
@@ -80,6 +80,7 @@ const AddQuote = () => {
 
   const [errors, setErrors] = useState({
     customer: "",
+    fasciaAlign: "",
     products: [],
     customProducts: [],
     annotations: {},
@@ -243,6 +244,7 @@ const AddQuote = () => {
   const validateQuote = () => {
     const nextErrors = {
       customer: "",
+      fasciaAlign: "",
       products: [],
       customProducts: [],
       annotations: {},
@@ -252,6 +254,12 @@ const AddQuote = () => {
     if (!selectedCustomer || !selectedCustomer.cust_id) {
       nextErrors.customer = "Customer is required";
     }
+
+    // Fascia align with soffit — required
+    if (!fasciaAlignWithSoffit) {
+      nextErrors.fasciaAlign = "Please select Yes or No";
+    }
+
     const atLeastOneProduct = products.some(
       (p) => (parseInt(p?.quantity) || 0) > 0,
     );
@@ -313,6 +321,7 @@ const AddQuote = () => {
     // 5. Check if any errors exist
     const hasErrors =
       !!nextErrors.customer ||
+      !!nextErrors.fasciaAlign ||
       // At least one product must have qty > 0
       nextErrors.products.every((e) => e?.quantity) ||
       // Any product row has an error
@@ -556,6 +565,18 @@ const AddQuote = () => {
               />
             </div>
           </div>
+
+          {/* ==================== FASCIA ALIGN WITH SOFFIT ==================== */}
+          <YesNoRadioField
+            label="Does fascia align with Soffit?"
+            name="fasciaAlignWithSoffit"
+            value={fasciaAlignWithSoffit}
+            error={errors.fasciaAlign}
+            onChange={(e) => {
+              setFasciaAlignWithSoffit(e.target.value);
+              setErrors((prev) => ({ ...prev, fasciaAlign: "" }));
+            }}
+          />
 
           {/* ==================== PRODUCTS ==================== */}
           <div className="space-y-6">

@@ -78,6 +78,71 @@ export const renderCompanyAddress = (title = "Invoice From") => (
 
 export const renderReviews = (reviewIdx, setReviewIdx) => (
   <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-16">
+    {/* Google Verified Review Badge */}
+    <div className="flex justify-center mb-6">
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "10px",
+          background: "#1a1a1a",
+          borderRadius: "50px",
+          padding: "10px 24px",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+        }}
+      >
+        {/* Google G Logo */}
+        <svg width="30" height="30" viewBox="0 0 48 48" style={{ flexShrink: 0 }}>
+          <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
+          <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" />
+          <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0124 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z" />
+          <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" />
+        </svg>
+        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.3 }}>
+          <span style={{ fontWeight: 700, fontSize: "15px", color: "#ffffff", letterSpacing: "0.3px" }}>
+            Google Verified Review
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "1px" }}>
+            <span style={{ fontWeight: 700, fontSize: "14px", color: "#FBBC04" }}>5.0</span>
+            <div style={{ display: "flex", gap: "2px" }}>
+              {[...Array(5)].map((_, i) => (
+                <span key={i} style={{ color: "#FBBC04", fontSize: "15px" }}>★</span>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Verified Shield Icon */}
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+          <defs>
+            <radialGradient id="shieldGlowVerified" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#ff4444" stopOpacity="0.6" />
+              <stop offset="70%" stopColor="#ff4444" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#ff4444" stopOpacity="0" />
+            </radialGradient>
+            <linearGradient id="shieldGradVerified" x1="12" y1="3" x2="12" y2="21" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#ff5252" />
+              <stop offset="100%" stopColor="#d32f2f" />
+            </linearGradient>
+          </defs>
+          {/* Outer glow circle */}
+          <circle cx="12" cy="12" r="12" fill="url(#shieldGlowVerified)" />
+          {/* Red filled circle background */}
+          <circle cx="12" cy="12" r="11" fill="url(#shieldGradVerified)" />
+          {/* Shield path */}
+          <path
+            d="M12 4.5C12 4.5 7 6 5.5 6.5C5.5 6.5 5 12.5 7 15.5C9 18.5 12 20 12 20C12 20 15 18.5 17 15.5C19 12.5 18.5 6.5 18.5 6.5C17 6 12 4.5 12 4.5Z"
+            fill="rgba(255,255,255,0.2)"
+            stroke="#fff"
+            strokeWidth="1.2"
+            strokeLinejoin="round"
+          />
+          {/* Checkmark inside shield */}
+          <path d="M9 12.5l2 2 4-4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+    </div>
+
+    {/* Review Card */}
     <div className="border-2 border-gray-100 rounded-xl md:rounded-2xl p-4 md:p-6 relative bg-white shadow-sm">
       <div className="absolute -top-3 md:-top-3.5 left-4 md:left-6 bg-white px-2 md:px-3">
         <span className="text-[#ee5d59] font-bold text-xs md:text-base tracking-wide">
@@ -85,12 +150,20 @@ export const renderReviews = (reviewIdx, setReviewIdx) => (
         </span>
       </div>
       <div className="relative">
-        <div className="flex gap-1 mb-3">
-          {[...Array(5)].map((_, i) => (
-            <span key={i} className="text-yellow-400 text-lg md:text-xl">
-              ★
-            </span>
-          ))}
+        {/* Stars row with Google icon and verified badge */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex gap-1">
+            {[...Array(5)].map((_, i) => (
+              <span key={i} className="text-yellow-400 text-lg md:text-xl">
+                ★
+              </span>
+            ))}
+          </div>
+          {/* Small verified checkmark */}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+            <circle cx="12" cy="12" r="11" fill="#227cc5ff" />
+            <path d="M7.5 12.5l3 3 6-6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
         <p className="text-gray-600 text-sm md:text-base italic leading-relaxed mb-4 min-h-[80px]">
           "{REVIEW_DATA[reviewIdx]?.review_text}"
@@ -119,6 +192,7 @@ export const renderTermsAndPayment = (
   termsChecked,
   isTermsDisabled,
   onTermsChange,
+  warrantyVersion = "old",
 ) => (
   <div className="px-4 md:px-10 lg:px-14 mt-10 md:mt-12 flex flex-col lg:flex-row gap-6 md:gap-10">
     <div className="w-full lg:w-[70%]">
@@ -126,21 +200,29 @@ export const renderTermsAndPayment = (
         Terms & Conditions
       </h3>
       <p className="text-gray-600 text-xs md:text-base leading-relaxed mb-3 md:mb-4">
-        Our estimate includes the supply and installation of the
-        color-matched/best-match track along with the master control system. To
-        secure your booking, a deposit of 25% of the quoted amount or the full
-        amount is required. This deposit will prioritize your project in our
-        completion queue. Payments can be made via e-transfer to
-        info@canstarlight.ca, by check payable to CANSTAR LIGHT LTD, or in cash.
-        (Please note that if paying by credit card, an additional 3% will be
-        charged per transaction for processing fees.) The product comes with a
-        5-year warranty, and labor is covered for 4 years from the date of
-        installation.
+        {warrantyVersion === "new" ? (
+          <>
+            Our estimate includes the supply and professional installation of the color-matched or best-match track, along with the complete master control system. To secure your booking, a deposit of 25% of the quoted amount or the full amount is required. This deposit will reserve your project and prioritize it in our installation queue. Payments can be made via e-transfer to info@canstarlight.ca, by cheque payable to CANSTAR LIGHT LTD, or in cash. Please note that credit card payments may be subject to an additional 2.9% processing fee per transaction. This quotation is valid for 10 days from the date of issue. After this period, pricing and availability may be subject to change.
+          </>
+        ) : (
+          <>
+            Our estimate includes the supply and installation of the
+            color-matched/best-match track along with the master control system. To
+            secure your booking, a deposit of 25% of the quoted amount or the full
+            amount is required. This deposit will prioritize your project in our
+            completion queue. Payments can be made via e-transfer to
+            info@canstarlight.ca, by check payable to CANSTAR LIGHT LTD, or in cash.
+            (Please note that if paying by credit card, an additional 3% will be
+            charged per transaction for processing fees.) The product comes with a
+            5-year warranty, and labor is covered for 4 years from the date of
+            installation.
+          </>
+        )}
         <a
-          href="/quote/termsconditions"
+          href={`/quote/termsconditions?v=${warrantyVersion}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600  hover:text-blue-800"
+          className="text-blue-600  hover:text-blue-800 ml-1"
         >
           Read More...
         </a>

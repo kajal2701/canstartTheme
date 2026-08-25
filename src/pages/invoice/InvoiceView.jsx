@@ -381,7 +381,7 @@ export default function InvoiceView() {
 
         {/* ✅ Common functions used here */}
         {renderReviews(reviewIdx, setReviewIdx)}
-        {renderTermsAndPayment(termsChecked, true, () => { })}
+        {renderTermsAndPayment(termsChecked, true, () => { }, quote?.warranty_version || "old")}
         {renderContactFooter()}
       </div>
 

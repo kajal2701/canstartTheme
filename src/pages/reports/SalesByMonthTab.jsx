@@ -48,7 +48,7 @@ const SalesByMonthTab = ({ selectedYear, selectedMonth }) => {
         stops: [0, 90, 100],
       },
     },
-    colors: ["#6366f1", "#f59e0b"],
+    colors: ["#6366f1", "#f59e0b", "#10b981"],
     xaxis: {
       categories: monthData.map((d) => d.month_label),
       axisBorder: { show: false },
@@ -77,6 +77,7 @@ const SalesByMonthTab = ({ selectedYear, selectedMonth }) => {
       y: [
         { formatter: (v) => formatCurrency(v) },
         { formatter: (v) => `${v} quotes` },
+        { formatter: (v) => `${v} converted` },
       ],
     },
     grid: { borderColor: "#e2e8f0", strokeDashArray: 4 }, // slate-200
@@ -85,7 +86,8 @@ const SalesByMonthTab = ({ selectedYear, selectedMonth }) => {
 
   const monthChartSeries = [
     { name: "Revenue", data: monthData.map((d) => d.total_revenue) },
-    { name: "Quotes", data: monthData.map((d) => d.total_quotes), yAxisIndex: 1 },
+    { name: "Total Quotes", data: monthData.map((d) => d.total_quotes), yAxisIndex: 1 },
+    { name: "Converted Quotes", data: monthData.map((d) => d.converted_quotes), yAxisIndex: 1 },
   ];
 
   return (
@@ -114,7 +116,7 @@ const SalesByMonthTab = ({ selectedYear, selectedMonth }) => {
             <table className="w-full text-sm text-slate-600">
               <thead className="bg-slate-50 text-slate-500 text-xs uppercase border-b border-slate-200">
                 <tr>
-                  {["Month", "Quotes", "Revenue", "Avg Deal Size"].map((h) => (
+                  {["Month", "Total Quotes", "Converted Quotes", "Revenue"].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
                   ))}
                 </tr>
@@ -132,11 +134,13 @@ const SalesByMonthTab = ({ selectedYear, selectedMonth }) => {
                         {row.total_quotes}
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                        {row.converted_quotes}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 font-semibold text-emerald-600">
                       {formatCurrency(row.total_revenue)}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500">
-                      {formatCurrency(row.avg_deal_size)}
                     </td>
                   </tr>
                 ))}
@@ -147,10 +151,12 @@ const SalesByMonthTab = ({ selectedYear, selectedMonth }) => {
                   <td className="px-4 py-3 font-bold text-amber-700">
                     {monthData.reduce((s, d) => s + d.total_quotes, 0)}
                   </td>
+                  <td className="px-4 py-3 font-bold text-emerald-700">
+                    {monthData.reduce((s, d) => s + d.converted_quotes, 0)}
+                  </td>
                   <td className="px-4 py-3 font-bold text-emerald-600">
                     {formatCurrency(monthData.reduce((s, d) => s + d.total_revenue, 0))}
                   </td>
-                  <td className="px-4 py-3 text-slate-500">—</td>
                 </tr>
               </tfoot>
             </table>
@@ -162,3 +168,4 @@ const SalesByMonthTab = ({ selectedYear, selectedMonth }) => {
 };
 
 export default SalesByMonthTab;
+
