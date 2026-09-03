@@ -19,11 +19,10 @@ const EditTrack = () => {
           setInitialData({
             color: track.color || "",
             supplier: track.supplier || "",
-            totalLength: track.totalLength || "",
+            totalFeet: track.totalFeet || "",
             size: track.size || "",
-            cost: track.cost || "",
-            price: track.price || "",
-            quantity: String(track.quantity || ""),
+            pricePerUnit: track.pricePerUnit || "",
+            totalPrice: track.totalPrice || "",
           });
         } else {
           toast.error("Track not found");
@@ -46,11 +45,10 @@ const EditTrack = () => {
         track_id: parseInt(id, 10),
         color: formData.color,
         supplier: formData.supplier,
-        totalLength: formData.totalLength,
+        totalFeet: formData.totalFeet,
         size: formData.size,
-        cost: parseFloat(formData.cost),
-        price: parseFloat(formData.price),
-        quantity: parseInt(formData.quantity, 10),
+        pricePerUnit: parseFloat(formData.pricePerUnit),
+        totalPrice: parseFloat(formData.totalPrice),
       };
 
       const result = await editTrack(payload);

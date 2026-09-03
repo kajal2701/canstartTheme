@@ -61,9 +61,10 @@ const ScrewList = () => {
 
   const columns = useMemo(() => [
     { Header: "Color", accessor: "color" },
+    { Header: "Supplier", accessor: "supplier", Cell: ({ value }) => value || "—" },
     { Header: "Quantity", accessor: "quantity" },
-    { Header: "Cost", accessor: "cost", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
-    { Header: "Price", accessor: "price", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
+    { Header: "Price Per Unit", accessor: "pricePerUnit", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
+    { Header: "Total Price", accessor: "totalPrice", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
     {
       Header: "Actions",
       accessor: "actions",

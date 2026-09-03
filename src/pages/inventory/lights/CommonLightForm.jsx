@@ -1,91 +1,199 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Textinput from "@/components/ui/Textinput";
+import InputNumber from "@/components/ui/InputNumber";
 import Select from "@/components/ui/Select";
-import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { calculateTotalPrice } from "@/utils/helperFunctions";
+import { LIGHT_TYPES } from "@/utils/constants";
 
 const CommonLightForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState(() => ({ type: "", quantity: "", cost: "", purchaseInfo: "", notes: "", ...initialData }));
+
+  const [formData, setFormData] = useState(() => {
+    const initial = {
+      type: "",
+      supplier: "",
+      quantity: "",
+      pricePerUnit: "",
+      totalPrice: "",
+    };
+    return { ...initial, ...initialData };
+  });
+
   const [errors, setErrors] = useState({});
 
-  const types = [
-    { value: "LED Strip", label: "LED Strip" },
-    { value: "Spot Light", label: "Spot Light" },
-    { value: "Panel Light", label: "Panel Light" },
-    { value: "Flood Light", label: "Flood Light" },
-  ];
+  // Auto-calculate total price
+  useEffect(() => {
+    const total = calculateTotalPrice(formData.quantity, formData.pricePerUnit);
+    setFormData((prev) => ({
+      ...prev,
+      totalPrice: total,
+    }));
+  }, [formData.quantity, formData.pricePerUnit]);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: "" }));
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: "",
+      }));
+    }
   };
 
   const validateForm = () => {
-    const e = {};
-    if (!formData.type) e.type = "Light type is required";
-    if (!formData.quantity) e.quantity = "Quantity is required";
-    if (!formData.cost) e.cost = "Cost is required";
-    setErrors(e);
-    return Object.keys(e).length === 0;
+    const newErrors = {};
+
+    if (!formData.type) newErrors.type = "Light type is required";
+    if (!formData.quantity || !String(formData.quantity).trim()) newErrors.quantity = "Quantity is required";
+    else if (isNaN(formData.quantity) || parseFloat(formData.quantity) <= 0) newErrors.quantity = "Quantity must be greater than 0";
+    if (!formData.pricePerUnit) newErrors.pricePerUnit = "Price per unit is required";
+    else if (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0) newErrors.pricePerUnit = "Price per unit must be greater than 0";
+    if (!formData.totalPrice) newErrors.totalPrice = "Total price is required";
+    else if (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0) newErrors.totalPrice = "Enter a valid total price";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      if (onSubmit) await onSubmit(formData);
-      else { toast.success(`Light ${isEdit ? "updated" : "added"}!`); navigate("/inventory/lights"); }
-    } catch { toast.error(`Failed to ${isEdit ? "update" : "add"} light`); }
-    finally { setIsSubmitting(false); }
+      if (onSubmit) {
+        await onSubmit(formData);
+      } else {
+        toast.success(`Light ${isEdit ? "updated" : "added"} successfully!`);
+        navigate("/inventory/lights");
+      }
+    } catch (error) {
+      toast.error(`Failed to ${isEdit ? "update" : "add"} light`);
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleCancel = () => { onCancel ? onCancel() : navigate("/inventory/lights"); };
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      navigate("/inventory/lights");
+    }
+  };
 
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
-        <Button text="Back to Lights" icon="ph:arrow-left" className="btn-outline-primary" onClick={handleCancel} />
+        <Button
+          text="Back to Lights"
+          icon="ph:arrow-left"
+          className="btn-outline-primary"
+          onClick={handleCancel}
+        />
       </div>
+
       <Card>
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Light Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Light Type <span className="text-red-500">*</span></label>
-              <Select value={formData.type} onChange={(e) => handleInputChange("type", e.target.value)}
-                options={types} placeholder="Select Type" error={errors.type} />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Light Type <span className="text-red-500">*</span>
+              </label>
+              <Select
+                value={formData.type}
+                onChange={(e) => handleInputChange("type", e.target.value)}
+                options={LIGHT_TYPES}
+                placeholder="Select Type"
+                error={errors.type}
+              />
             </div>
+
+            {/* Supplier (Optional) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Quantity <span className="text-red-500">*</span></label>
-              <Textinput type="number" value={formData.quantity} onChange={(e) => handleInputChange("quantity", e.target.value)}
-                placeholder="Enter quantity" error={errors.quantity} />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Supplier
+              </label>
+              <Textinput
+                type="text"
+                value={formData.supplier}
+                onChange={(e) => handleInputChange("supplier", e.target.value)}
+                placeholder="Enter Supplier (optional)"
+                error={errors.supplier}
+              />
             </div>
+
+            {/* Quantity */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Cost ($)<span className="text-red-500">*</span></label>
-              <Textinput type="number" step="0.01" value={formData.cost} onChange={(e) => handleInputChange("cost", e.target.value)}
-                placeholder="Enter cost" error={errors.cost} />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Quantity <span className="text-red-500">*</span>
+              </label>
+              <InputNumber
+                value={formData.quantity}
+                onChange={(e) => handleInputChange("quantity", e.target.value)}
+                placeholder="Enter quantity"
+                error={errors.quantity}
+                step="1"
+                noDecimal
+              />
             </div>
+
+            {/* Price Per Unit */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Purchase Info</label>
-              <Textinput type="text" value={formData.purchaseInfo} onChange={(e) => handleInputChange("purchaseInfo", e.target.value)}
-                placeholder="Enter purchase info (optional)" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Price Per Unit ($)<span className="text-red-500">*</span>
+              </label>
+              <InputNumber
+                value={formData.pricePerUnit}
+                onChange={(e) => handleInputChange("pricePerUnit", e.target.value)}
+                placeholder="Enter price per unit"
+                error={errors.pricePerUnit}
+              />
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-              <Textarea value={formData.notes} onChange={(e) => handleInputChange("notes", e.target.value)}
-                placeholder="Enter notes (optional)" rows={3} />
+
+            {/* Total Price */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Total Price ($)<span className="text-red-500">*</span>
+              </label>
+              <InputNumber
+                value={formData.totalPrice}
+                onChange={(e) => handleInputChange("totalPrice", e.target.value)}
+                placeholder="Auto-calculated total"
+                error={errors.totalPrice}
+                disabled={true}
+              />
             </div>
           </div>
+
           <div className="flex justify-end space-x-3 mt-8">
-            <Button text="Cancel" className="btn-outline-dark" onClick={handleCancel} type="button" />
-            <Button text={isSubmitting ? (isEdit ? "Updating..." : "Adding...") : (isEdit ? "Update" : "Add")}
-              className="btn-primary" type="submit" disabled={isSubmitting} />
+            <Button
+              text="Cancel"
+              className="btn-outline-dark"
+              onClick={handleCancel}
+              type="button"
+            />
+            <Button
+              text={isSubmitting ? (isEdit ? "Updating..." : "Adding...") : (isEdit ? "Update" : "Add")}
+              className="btn-primary"
+              type="submit"
+              disabled={isSubmitting}
+            />
           </div>
         </form>
       </Card>

@@ -9,9 +9,10 @@ const AddScrew = () => {
   const handleSubmit = async (formData) => {
     const payload = {
       color: formData.color,
+      supplier: formData.supplier,
       quantity: parseInt(formData.quantity, 10),
-      cost: parseFloat(formData.cost),
-      price: parseFloat(formData.price),
+      pricePerUnit: parseFloat(formData.pricePerUnit),
+      totalPrice: parseFloat(formData.totalPrice),
     };
     const result = await addScrew(payload);
     if (result?.success) { toast.success("Screw added successfully!"); navigate("/inventory/screws"); }

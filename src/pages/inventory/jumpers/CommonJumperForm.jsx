@@ -1,35 +1,58 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Textinput from "@/components/ui/Textinput";
 import Select from "@/components/ui/Select";
-import Textarea from "@/components/ui/Textarea";
+import InputNumber from "@/components/ui/InputNumber";
 import Button from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { JUMPER_TYPES } from "@/utils/constants";
+import { calculateTotalPrice } from "@/utils/helperFunctions";
 
 const CommonJumperForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState(() => ({ type: "", quantity: "", notes: "", ...initialData }));
+  const [formData, setFormData] = useState(() => ({
+    type: "",
+    supplier: "",
+    quantity: "",
+    pricePerUnit: "",
+    totalPrice: "",
+    ...initialData
+  }));
   const [errors, setErrors] = useState({});
 
-  const types = [
-    { value: "LED Jumpers", label: "LED Jumpers" },
-    { value: "RGB Jumpers", label: "RGB Jumpers" },
-    { value: "Extension Jumpers", label: "Extension Jumpers" },
-    { value: "Connector Jumpers", label: "Connector Jumpers" },
-    { value: "Adapter Jumpers", label: "Adapter Jumpers" },
-  ];
+  // Auto-calculate total price
+  useEffect(() => {
+    const total = calculateTotalPrice(formData.quantity, formData.pricePerUnit);
+    setFormData((prev) => ({
+      ...prev,
+      totalPrice: total,
+    }));
+  }, [formData.quantity, formData.pricePerUnit]);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: "" }));
   };
 
   const validateForm = () => {
     const e = {};
+
     if (!formData.type) e.type = "Type is required";
-    if (!formData.quantity) e.quantity = "Quantity is required";
+
+    if (!formData.quantity || !String(formData.quantity).trim()) e.quantity = "Quantity is required";
+    else if (isNaN(formData.quantity) || parseFloat(formData.quantity) <= 0) e.quantity = "Quantity must be greater than 0";
+
+    if (!formData.pricePerUnit) e.pricePerUnit = "Price per unit is required";
+    else if (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0) e.pricePerUnit = "Price per unit must be greater than 0";
+
+    if (!formData.totalPrice) e.totalPrice = "Total price is required";
+    else if (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0) e.totalPrice = "Enter a valid total price";
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -59,17 +82,24 @@ const CommonJumperForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Type <span className="text-red-500">*</span></label>
               <Select value={formData.type} onChange={(e) => handleInputChange("type", e.target.value)}
-                options={types} placeholder="Select Type" error={errors.type} />
+                options={JUMPER_TYPES} placeholder="Select Type" error={errors.type} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Quantity <span className="text-red-500">*</span></label>
-              <Textinput type="number" value={formData.quantity} onChange={(e) => handleInputChange("quantity", e.target.value)}
-                placeholder="Enter quantity" error={errors.quantity} />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Supplier</label>
+              <Textinput value={formData.supplier} onChange={(e) => handleInputChange("supplier", e.target.value)}
+                placeholder="Enter supplier (optional)" error={errors.supplier} />
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-              <Textarea value={formData.notes} onChange={(e) => handleInputChange("notes", e.target.value)}
-                placeholder="Enter notes (optional)" rows={3} />
+            <div>
+              <InputNumber label="Quantity *" value={formData.quantity} onChange={(e) => handleInputChange("quantity", e.target.value)}
+                placeholder="Enter quantity" error={errors.quantity} min="0" noDecimal={true} />
+            </div>
+            <div>
+              <InputNumber label="Price Per Unit *" value={formData.pricePerUnit} onChange={(e) => handleInputChange("pricePerUnit", e.target.value)}
+                placeholder="Enter price per unit" error={errors.pricePerUnit} min="0" />
+            </div>
+            <div>
+              <InputNumber label="Total Price" value={formData.totalPrice} onChange={(e) => handleInputChange("totalPrice", e.target.value)}
+                placeholder="0.00" disabled />
             </div>
           </div>
           <div className="flex justify-end space-x-3 mt-8">

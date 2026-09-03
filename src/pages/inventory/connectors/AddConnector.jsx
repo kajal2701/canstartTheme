@@ -7,7 +7,13 @@ import { addConnector } from "@/services/inventoryService";
 const AddConnector = () => {
   const navigate = useNavigate();
   const handleSubmit = async (formData) => {
-    const payload = { name: formData.name, type: formData.type, cost: parseFloat(formData.cost), notes: formData.notes || null };
+    const payload = { 
+      type: formData.type, 
+      supplier: formData.supplier || null, 
+      quantity: parseInt(formData.quantity, 10), 
+      pricePerUnit: parseFloat(formData.pricePerUnit), 
+      totalPrice: parseFloat(formData.totalPrice) 
+    };
     const result = await addConnector(payload);
     if (result?.success) { toast.success("Connector added!"); navigate("/inventory/connectors"); }
     else toast.error(result?.message || "Failed to add connector.");

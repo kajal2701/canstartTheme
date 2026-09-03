@@ -15,7 +15,13 @@ const EditPlug = () => {
       try {
         const items = await getPlugs();
         const item = items.find(i => i.plug_id === parseInt(id, 10));
-        if (item) setInitialData({ type: item.type || "", quantity: String(item.quantity || ""), notes: item.notes || "" });
+        if (item) setInitialData({ 
+          type: item.type || "", 
+          supplier: item.supplier || "",
+          quantity: String(item.quantity || ""), 
+          pricePerUnit: String(item.pricePerUnit || ""),
+          totalPrice: String(item.totalPrice || "")
+        });
         else { toast.error("Plug not found"); navigate("/inventory/plugs", { replace: true }); }
       } catch { toast.error("Failed to load data"); navigate("/inventory/plugs", { replace: true }); }
       finally { setLoading(false); }
@@ -24,7 +30,14 @@ const EditPlug = () => {
   }, [id, navigate]);
 
   const handleSubmit = async (formData) => {
-    const payload = { plug_id: parseInt(id, 10), type: formData.type, quantity: parseInt(formData.quantity, 10), notes: formData.notes || null };
+    const payload = { 
+      plug_id: parseInt(id, 10), 
+      type: formData.type, 
+      supplier: formData.supplier || null,
+      quantity: parseInt(formData.quantity, 10), 
+      pricePerUnit: parseFloat(formData.pricePerUnit),
+      totalPrice: parseFloat(formData.totalPrice)
+    };
     const result = await editPlug(payload);
     if (result?.success) { toast.success("Plug updated!"); navigate("/inventory/plugs"); }
     else toast.error(result?.message || "Failed to update.");

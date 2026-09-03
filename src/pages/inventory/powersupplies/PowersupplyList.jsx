@@ -6,9 +6,9 @@ import DataTable from "@/components/ui/DataTable";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getConnectors, deleteConnector } from "@/services/inventoryService";
+import { getPowersupplies, deletePowersupply } from "@/services/inventoryService";
 
-const ConnectorList = () => {
+const PowersupplyList = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,23 +20,23 @@ const ConnectorList = () => {
 
   const fetchData = async () => {
     setLoading(true); setError(null);
-    try { setData(await getConnectors()); }
-    catch { setError("Failed to load connectors. Please try again."); }
+    try { setData(await getPowersupplies()); }
+    catch { setError("Failed to load power supplies. Please try again."); }
     finally { setLoading(false); }
   };
   useEffect(() => { fetchData(); }, []);
 
-  const openDeleteModal = (item) => { setDeleteId(item.connector_id); setDeleteName(item.type); setDeleteModalOpen(true); };
+  const openDeleteModal = (item) => { setDeleteId(item.powersupply_id); setDeleteName(item.type); setDeleteModalOpen(true); };
   const closeDeleteModal = () => { setDeleteModalOpen(false); setDeleteId(null); setDeleteName(""); };
 
   const handleConfirmDelete = async () => {
     if (!deleteId) return;
     setIsDeleting(true);
     try {
-      const result = await deleteConnector(deleteId);
-      if (result?.success) { toast.success("Connector deleted!"); await fetchData(); }
+      const result = await deletePowersupply(deleteId);
+      if (result?.success) { toast.success("Power Supply deleted!"); await fetchData(); }
       else toast.error(result?.message || "Failed to delete.");
-    } catch { toast.error("Failed to delete connector."); }
+    } catch { toast.error("Failed to delete power supply."); }
     finally { setIsDeleting(false); closeDeleteModal(); }
   };
 
@@ -44,14 +44,14 @@ const ConnectorList = () => {
     { Header: "Type", accessor: "type" },
     { Header: "Supplier", accessor: "supplier", Cell: ({ value }) => value || "—" },
     { Header: "Quantity", accessor: "quantity" },
-    { Header: "Price/Unit", accessor: "pricePerUnit", Cell: ({ value }) => `$${parseFloat(value || 0).toFixed(2)}` },
-    { Header: "Total Price", accessor: "totalPrice", Cell: ({ value }) => `$${parseFloat(value || 0).toFixed(2)}` },
+    { Header: "Price Per Unit", accessor: "pricePerUnit", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
+    { Header: "Total Price", accessor: "totalPrice", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
     {
       Header: "Actions", accessor: "actions",
       Cell: ({ row }) => (
         <div className="flex items-center justify-center gap-1">
           <Button icon="ph:pencil-simple" className="btn-warning h-9 w-9 p-0"
-            onClick={() => navigate(`/inventory/connectors/edit/${row.original.connector_id}`)} />
+            onClick={() => navigate(`/inventory/powersupplies/edit/${row.original.powersupply_id}`)} />
           <Button icon="ph:trash" className="btn-danger h-9 w-9 p-0"
             onClick={() => openDeleteModal(row.original)} />
         </div>
@@ -68,12 +68,12 @@ const ConnectorList = () => {
           </button>
           <span className="text-gray-300">/</span>
           <div className="flex items-center gap-2">
-            <Icon icon="ph:plug" className="text-xl text-indigo-600" />
-            <h1 className="text-xl font-bold">Connectors</h1>
+            <Icon icon="ph:lightning" className="text-xl text-amber-600" />
+            <h1 className="text-xl font-bold">Power Supplies</h1>
           </div>
         </div>
-        <Button text="Add Connector" icon="ph:plus" className="btn-primary w-full sm:w-auto"
-          onClick={() => navigate("/inventory/connectors/add")} />
+        <Button text="Add Power Supply" icon="ph:plus" className="btn-primary w-full sm:w-auto"
+          onClick={() => navigate("/inventory/powersupplies/add")} />
       </div>
       <Card className="overflow-hidden">
         {error ? (
@@ -82,7 +82,7 @@ const ConnectorList = () => {
             <Button text="Retry" className="btn-sm btn-outline" onClick={fetchData} />
           </div>
         ) : (
-          <DataTable title="Connectors List" columns={columns} data={data} loading={loading} />
+          <DataTable title="Power Supplies List" columns={columns} data={data} loading={loading} />
         )}
       </Card>
       <ConfirmModal activeModal={deleteModalOpen} onClose={closeDeleteModal}
@@ -91,4 +91,4 @@ const ConnectorList = () => {
   );
 };
 
-export default ConnectorList;
+export default PowersupplyList;

@@ -74,20 +74,19 @@ const TrackList = () => {
   const columns = useMemo(
     () => [
       { Header: "Color", accessor: "color" },
-      { Header: "Supplier", accessor: "supplier" },
-      { Header: "Total Length", accessor: "totalLength" },
+      { Header: "Supplier", accessor: "supplier", Cell: ({ value }) => value || "—" },
+      { Header: "Total Feet", accessor: "totalFeet" },
       { Header: "Size", accessor: "size" },
       {
-        Header: "Cost",
-        accessor: "cost",
+        Header: "Price Per Unit",
+        accessor: "pricePerUnit",
         Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}`,
       },
       {
-        Header: "Price",
-        accessor: "price",
+        Header: "Total Price",
+        accessor: "totalPrice",
         Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}`,
       },
-      { Header: "Quantity", accessor: "quantity" },
       {
         Header: "Actions",
         accessor: "actions",
@@ -152,11 +151,11 @@ const TrackList = () => {
           </div>
         ) : (
           <DataTable
-              title="Tracks List"
-              columns={columns}
-              data={data}
-              loading={loading}
-            />
+            title="Tracks List"
+            columns={columns}
+            data={data}
+            loading={loading}
+          />
         )}
       </Card>
 

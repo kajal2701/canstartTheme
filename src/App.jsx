@@ -58,6 +58,15 @@ const AddPlug = lazy(() => import("./pages/inventory/plugs/AddPlug"));
 const EditPlug = lazy(() => import("./pages/inventory/plugs/EditPlug"));
 const AddPowerCord = lazy(() => import("./pages/inventory/powercord/AddPowerCord"));
 const EditPowerCord = lazy(() => import("./pages/inventory/powercord/EditPowerCord"));
+const OutercaseList = lazy(() => import("./pages/inventory/outercases/OutercaseList"));
+const AddOutercase = lazy(() => import("./pages/inventory/outercases/AddOutercase"));
+const EditOutercase = lazy(() => import("./pages/inventory/outercases/EditOutercase"));
+const AppcontrollerList = lazy(() => import("./pages/inventory/appcontrollers/AppcontrollerList"));
+const AddAppcontroller = lazy(() => import("./pages/inventory/appcontrollers/AddAppcontroller"));
+const EditAppcontroller = lazy(() => import("./pages/inventory/appcontrollers/EditAppcontroller"));
+const PowersupplyList = lazy(() => import("./pages/inventory/powersupplies/PowersupplyList"));
+const AddPowersupply = lazy(() => import("./pages/inventory/powersupplies/AddPowersupply"));
+const EditPowersupply = lazy(() => import("./pages/inventory/powersupplies/EditPowersupply"));
 
 // Reports Module
 const Reports = lazy(() => import("./pages/reports/Index"));
@@ -473,6 +482,78 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={ADMIN_ONLY}>
                     <EditPowerCord />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="outercases"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <OutercaseList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="outercases/add"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <AddOutercase />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="outercases/edit/:id"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <EditOutercase />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="appcontrollers"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <AppcontrollerList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="appcontrollers/add"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <AddAppcontroller />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="appcontrollers/edit/:id"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <EditAppcontroller />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="powersupplies"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <PowersupplyList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="powersupplies/add"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <AddPowersupply />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="powersupplies/edit/:id"
+                element={
+                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                    <EditPowersupply />
                   </ProtectedRoute>
                 }
               />

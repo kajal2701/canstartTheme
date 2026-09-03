@@ -12,11 +12,10 @@ const AddTrack = () => {
       const payload = {
         color: formData.color,
         supplier: formData.supplier,
-        totalLength: formData.totalLength,
+        totalFeet: formData.totalFeet,
         size: formData.size,
-        cost: parseFloat(formData.cost),
-        price: parseFloat(formData.price),
-        quantity: parseInt(formData.quantity, 10),
+        pricePerUnit: parseFloat(formData.pricePerUnit),
+        totalPrice: parseFloat(formData.totalPrice),
       };
 
       const result = await addTrack(payload);

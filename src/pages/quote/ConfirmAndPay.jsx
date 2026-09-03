@@ -55,7 +55,6 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
   const [etransferPreview, setEtransferPreview] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   // ── Pay Now ───────────────────────────────────────────────────────────────
   const handlePayNow = async () => {
     setError("");
@@ -147,7 +146,7 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
               }`}
             onClick={handlePayNow}
           >
-            {loading ? "Loading..." : hasCreditCard ? "Pay Now" : "Confirm Order"}
+            {loading ? "Loading..." : activeTab === "credit_card" ? "Pay Now" : "Confirm Order"}
           </button>
         </div>
       }

@@ -6,16 +6,16 @@ import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getColors } from "@/services/quoteService";
 import { calculateTotalPrice } from "@/utils/helperFunctions";
+import { POWER_SUPPLY_TYPES } from "@/utils/constants";
 
-const CommonScrewForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
+const CommonPowersupplyForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState(() => {
     const initial = {
-      color: "",
+      type: "",
       supplier: "",
       quantity: "",
       pricePerUnit: "",
@@ -25,29 +25,6 @@ const CommonScrewForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
   });
 
   const [errors, setErrors] = useState({});
-  const [colorOptions, setColorOptions] = useState([]);
-
-  // Fetch colors from API
-  useEffect(() => {
-    const loadColors = async () => {
-      try {
-        const rows = await getColors();
-        if (Array.isArray(rows)) {
-          const mapped = rows.map((c) => ({
-            value: c.color_name,
-            label: c.color_name,
-          }));
-          setColorOptions(mapped);
-        } else {
-          setColorOptions([]);
-        }
-      } catch (e) {
-        console.error("Failed to load colors", e);
-        setColorOptions([]);
-      }
-    };
-    loadColors();
-  }, []);
 
   // Auto-calculate total price
   useEffect(() => {
@@ -75,7 +52,7 @@ const CommonScrewForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.color) newErrors.color = "Color is required";
+    if (!formData.type) newErrors.type = "Type is required";
     if (!formData.quantity || !String(formData.quantity).trim()) newErrors.quantity = "Quantity is required";
     else if (isNaN(formData.quantity) || parseFloat(formData.quantity) <= 0) newErrors.quantity = "Quantity must be greater than 0";
     if (!formData.pricePerUnit) newErrors.pricePerUnit = "Price per unit is required";
@@ -99,11 +76,11 @@ const CommonScrewForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
       if (onSubmit) {
         await onSubmit(formData);
       } else {
-        toast.success(`Screw ${isEdit ? "updated" : "added"} successfully!`);
-        navigate("/inventory/screws");
+        toast.success(`Power Supply ${isEdit ? "updated" : "added"} successfully!`);
+        navigate("/inventory/powersupplies");
       }
     } catch (error) {
-      toast.error(`Failed to ${isEdit ? "update" : "add"} screw`);
+      toast.error(`Failed to ${isEdit ? "update" : "add"} power supply`);
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -114,7 +91,7 @@ const CommonScrewForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
     if (onCancel) {
       onCancel();
     } else {
-      navigate("/inventory/screws");
+      navigate("/inventory/powersupplies");
     }
   };
 
@@ -123,7 +100,7 @@ const CommonScrewForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{title}</h1>
         <Button
-          text="Back to Screws"
+          text="Back to Power Supplies"
           icon="ph:arrow-left"
           className="btn-outline-primary"
           onClick={handleCancel}
@@ -133,17 +110,17 @@ const CommonScrewForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
       <Card>
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Color */}
+            {/* Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Color <span className="text-red-500">*</span>
+                Type <span className="text-red-500">*</span>
               </label>
               <Select
-                value={formData.color}
-                onChange={(e) => handleInputChange("color", e.target.value)}
-                options={colorOptions}
-                placeholder="Select Color"
-                error={errors.color}
+                value={formData.type}
+                onChange={(e) => handleInputChange("type", e.target.value)}
+                options={POWER_SUPPLY_TYPES}
+                placeholder="Select Type"
+                error={errors.type}
               />
             </div>
 
@@ -224,4 +201,4 @@ const CommonScrewForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
   );
 };
 
-export default CommonScrewForm;
+export default CommonPowersupplyForm;

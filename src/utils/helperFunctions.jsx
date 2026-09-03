@@ -100,7 +100,7 @@ export const renderReviews = (reviewIdx, setReviewIdx) => (
         </svg>
         <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.3 }}>
           <span style={{ fontWeight: 700, fontSize: "15px", color: "#ffffff", letterSpacing: "0.3px" }}>
-            Google Verified Review
+            Google Verified Reviews
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "1px" }}>
             <span style={{ fontWeight: 700, fontSize: "14px", color: "#FBBC04" }}>5.0</span>
@@ -434,6 +434,15 @@ export const calculateAutoQuantities = (linearFeet) => {
     numberOfTracks: Math.ceil(lf * 1),
     numberOfScrews: Math.ceil(lf * 1),
   };
+};
+
+export const calculateTotalPrice = (quantity, pricePerUnit) => {
+  const qty = parseFloat(quantity) || 0;
+  const price = parseFloat(pricePerUnit) || 0;
+  if (qty >= 0 && price >= 0) {
+    return (qty * price).toFixed(2);
+  }
+  return "0.00";
 };
 
 export const blockInvalidNumberKeys = (e) => {

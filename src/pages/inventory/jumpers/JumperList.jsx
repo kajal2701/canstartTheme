@@ -42,8 +42,10 @@ const JumperList = () => {
 
   const columns = useMemo(() => [
     { Header: "Type", accessor: "type" },
+    { Header: "Supplier", accessor: "supplier", Cell: ({ value }) => value || "—" },
     { Header: "Quantity", accessor: "quantity" },
-    { Header: "Notes", accessor: "notes", Cell: ({ value }) => value || "—" },
+    { Header: "Price/Unit", accessor: "pricePerUnit", Cell: ({ value }) => `$${Number(value).toFixed(2)}` },
+    { Header: "Total Price", accessor: "totalPrice", Cell: ({ value }) => `$${Number(value).toFixed(2)}` },
     {
       Header: "Actions", accessor: "actions",
       Cell: ({ row }) => (

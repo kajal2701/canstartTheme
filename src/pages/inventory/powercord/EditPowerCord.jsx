@@ -15,7 +15,13 @@ const EditPowerCord = () => {
       try {
         const items = await getPowercords();
         const item = items.find(i => i.powercord_id === parseInt(id, 10));
-        if (item) setInitialData({ type: item.type || "", quantity: String(item.quantity || ""), notes: item.notes || "" });
+        if (item) setInitialData({ 
+          type: item.type || "", 
+          supplier: item.supplier || "",
+          quantity: String(item.quantity || ""), 
+          pricePerUnit: String(item.pricePerUnit || ""),
+          totalPrice: String(item.totalPrice || "")
+        });
         else { toast.error("Power cord not found"); navigate("/inventory/powercord", { replace: true }); }
       } catch { toast.error("Failed to load data"); navigate("/inventory/powercord", { replace: true }); }
       finally { setLoading(false); }
@@ -24,7 +30,14 @@ const EditPowerCord = () => {
   }, [id, navigate]);
 
   const handleSubmit = async (formData) => {
-    const payload = { powercord_id: parseInt(id, 10), type: formData.type, quantity: parseInt(formData.quantity, 10), notes: formData.notes || null };
+    const payload = { 
+      powercord_id: parseInt(id, 10), 
+      type: formData.type, 
+      supplier: formData.supplier || null,
+      quantity: parseInt(formData.quantity, 10), 
+      pricePerUnit: parseFloat(formData.pricePerUnit),
+      totalPrice: parseFloat(formData.totalPrice)
+    };
     const result = await editPowercord(payload);
     if (result?.success) { toast.success("Power cord updated!"); navigate("/inventory/powercord"); }
     else toast.error(result?.message || "Failed to update.");

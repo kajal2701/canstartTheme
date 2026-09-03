@@ -96,3 +96,30 @@ export const getCables = async () => {
 export const addCable = (payload) => api("/inventory/cables/add", "POST", payload);
 export const editCable = (payload) => api("/inventory/cables/edit", "POST", payload);
 export const deleteCable = (id) => api("/inventory/cables/delete", "POST", { cable_id: id });
+
+// ─── OUTER CASES ───────────────────────────────────────────
+export const getOutercases = async () => {
+  const result = await api("/inventory/outercases");
+  return result?.success ? result.data || [] : [];
+};
+export const addOutercase = (payload) => api("/inventory/outercases/add", "POST", payload);
+export const editOutercase = (payload) => api("/inventory/outercases/edit", "POST", payload);
+export const deleteOutercase = (id) => api("/inventory/outercases/delete", "POST", { outercase_id: id });
+
+// ─── APP CONTROLLERS ───────────────────────────────────────────
+export const getAppcontrollers = async () => {
+  const result = await api("/inventory/appcontrollers");
+  return result?.success ? result.data || [] : [];
+};
+export const addAppcontroller = (payload) => api("/inventory/appcontrollers/add", "POST", payload);
+export const editAppcontroller = (payload) => api("/inventory/appcontrollers/edit", "POST", payload);
+export const deleteAppcontroller = (id) => api("/inventory/appcontrollers/delete", "POST", { appcontroller_id: id });
+
+// ─── POWER SUPPLIES ───────────────────────────────────────────
+export const getPowersupplies = async () => {
+  const result = await api("/inventory/powersupplies");
+  return result?.success ? result.data || [] : [];
+};
+export const addPowersupply = (payload) => api("/inventory/powersupplies/add", "POST", payload);
+export const editPowersupply = (payload) => api("/inventory/powersupplies/edit", "POST", payload);
+export const deletePowersupply = (id) => api("/inventory/powersupplies/delete", "POST", { powersupply_id: id });

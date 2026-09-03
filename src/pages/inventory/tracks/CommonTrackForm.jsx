@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Textinput from "@/components/ui/Textinput";
+import InputNumber from "@/components/ui/InputNumber";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getColors } from "@/services/quoteService";
+import { TRACK_SIZES_OPTIONS } from "@/utils/constants";
+import { calculateTotalPrice } from "@/utils/helperFunctions";
 
 const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
   const navigate = useNavigate();
@@ -14,41 +18,49 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
     const initial = {
       color: "",
       supplier: "",
-      totalLength: "",
+      totalFeet: "",
       size: "",
-      cost: "",
-      price: "",
-      quantity: "",
+      pricePerUnit: "",
+      totalPrice: "",
     };
     return { ...initial, ...initialData };
   });
 
   const [errors, setErrors] = useState({});
+  const [colorOptions, setColorOptions] = useState([]);
 
-  const colors = [
-    { value: "White", label: "White" },
-    { value: "Black", label: "Black" },
-    { value: "Silver", label: "Silver" },
-    { value: "Gold", label: "Gold" },
-    { value: "Bronze", label: "Bronze" },
-    { value: "Grey", label: "Grey" },
-    { value: "Red", label: "Red" },
-    { value: "Blue", label: "Blue" },
-  ];
+  // Fetch colors from API
+  useEffect(() => {
+    const loadColors = async () => {
+      try {
+        const rows = await getColors();
+        if (Array.isArray(rows)) {
+          const mapped = rows.map((c) => ({
+            value: c.color_name,
+            label: c.color_name,
+          }));
+          setColorOptions(mapped);
+        } else {
+          setColorOptions([]);
+        }
+      } catch (e) {
+        console.error("Failed to load colors", e);
+        setColorOptions([]);
+      }
+    };
+    loadColors();
+  }, []);
 
-  const sizes = [
-    { value: "1 inch", label: "1 inch" },
-    { value: "1.5 inch", label: "1.5 inch" },
-    { value: "2 inch", label: "2 inch" },
-    { value: "2.5 inch", label: "2.5 inch" },
-    { value: "3 inch", label: "3 inch" },
-  ];
+  // Auto-calculate total price
+  useEffect(() => {
+    const total = calculateTotalPrice(formData.totalFeet, formData.pricePerUnit);
+    setFormData((prev) => ({
+      ...prev,
+      totalPrice: total,
+    }));
+  }, [formData.totalFeet, formData.pricePerUnit]);
 
-  const suppliers = [
-    { value: "Track Supplier A", label: "Track Supplier A" },
-    { value: "Track Supplier B", label: "Track Supplier B" },
-    { value: "Track Supplier C", label: "Track Supplier C" },
-  ];
+
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -64,19 +76,18 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
     }
   };
 
+
   const validateForm = () => {
     const newErrors = {};
 
     if (!formData.color) newErrors.color = "Color is required";
-    if (!formData.supplier) newErrors.supplier = "Supplier is required";
-    if (!formData.totalLength.trim()) newErrors.totalLength = "Total length is required";
+    if (!formData.totalFeet || !String(formData.totalFeet).trim()) newErrors.totalFeet = "Total feet is required";
+    else if (isNaN(formData.totalFeet) || parseFloat(formData.totalFeet) <= 0) newErrors.totalFeet = "Total feet must be greater than 0";
     if (!formData.size) newErrors.size = "Size is required";
-    if (!formData.cost) newErrors.cost = "Cost is required";
-    else if (isNaN(formData.cost) || parseFloat(formData.cost) < 0) newErrors.cost = "Enter a valid cost";
-    if (!formData.price) newErrors.price = "Price is required";
-    else if (isNaN(formData.price) || parseFloat(formData.price) < 0) newErrors.price = "Enter a valid price";
-    if (!formData.quantity) newErrors.quantity = "Quantity is required";
-    else if (isNaN(formData.quantity) || parseInt(formData.quantity, 10) < 0) newErrors.quantity = "Enter a valid quantity";
+    if (!formData.pricePerUnit) newErrors.pricePerUnit = "Price per unit is required";
+    else if (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0) newErrors.pricePerUnit = "Price per unit must be greater than 0";
+    if (!formData.totalPrice) newErrors.totalPrice = "Total price is required";
+    else if (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0) newErrors.totalPrice = "Enter a valid total price";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -136,37 +147,36 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
               <Select
                 value={formData.color}
                 onChange={(e) => handleInputChange("color", e.target.value)}
-                options={colors}
+                options={colorOptions}
                 placeholder="Select Color"
                 error={errors.color}
               />
             </div>
 
-            {/* Supplier */}
+            {/* Supplier (Optional) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Supplier <span className="text-red-500">*</span>
+                Supplier
               </label>
-              <Select
+              <Textinput
+                type="text"
                 value={formData.supplier}
                 onChange={(e) => handleInputChange("supplier", e.target.value)}
-                options={suppliers}
-                placeholder="Select Supplier"
+                placeholder="Enter Supplier (optional)"
                 error={errors.supplier}
               />
             </div>
 
-            {/* Total Length */}
+            {/* Total Feet */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Length <span className="text-red-500">*</span>
+                Total Feet <span className="text-red-500">*</span>
               </label>
-              <Textinput
-                type="text"
-                value={formData.totalLength}
-                onChange={(e) => handleInputChange("totalLength", e.target.value)}
-                placeholder="Enter total length (e.g. 50m)"
-                error={errors.totalLength}
+              <InputNumber
+                value={formData.totalFeet}
+                onChange={(e) => handleInputChange("totalFeet", e.target.value)}
+                placeholder="Enter total feet"
+                error={errors.totalFeet}
               />
             </div>
 
@@ -178,53 +188,36 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
               <Select
                 value={formData.size}
                 onChange={(e) => handleInputChange("size", e.target.value)}
-                options={sizes}
+                options={TRACK_SIZES_OPTIONS}
                 placeholder="Select Size"
                 error={errors.size}
               />
             </div>
 
-            {/* Cost */}
+            {/* Price Per Unit */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cost ($)<span className="text-red-500">*</span>
+                Price Per Unit ($)<span className="text-red-500">*</span>
               </label>
-              <Textinput
-                type="number"
-                step="0.01"
-                value={formData.cost}
-                onChange={(e) => handleInputChange("cost", e.target.value)}
-                placeholder="Enter cost"
-                error={errors.cost}
+              <InputNumber
+                value={formData.pricePerUnit}
+                onChange={(e) => handleInputChange("pricePerUnit", e.target.value)}
+                placeholder="Enter price per unit"
+                error={errors.pricePerUnit}
               />
             </div>
 
-            {/* Price */}
+            {/* Total Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price ($)<span className="text-red-500">*</span>
+                Total Price ($)<span className="text-red-500">*</span>
               </label>
-              <Textinput
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => handleInputChange("price", e.target.value)}
-                placeholder="Enter price"
-                error={errors.price}
-              />
-            </div>
-
-            {/* Quantity */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quantity <span className="text-red-500">*</span>
-              </label>
-              <Textinput
-                type="number"
-                value={formData.quantity}
-                onChange={(e) => handleInputChange("quantity", e.target.value)}
-                placeholder="Enter quantity"
-                error={errors.quantity}
+              <InputNumber
+                value={formData.totalPrice}
+                onChange={(e) => handleInputChange("totalPrice", e.target.value)}
+                placeholder="Auto-calculated total"
+                error={errors.totalPrice}
+                disabled={true}
               />
             </div>
           </div>

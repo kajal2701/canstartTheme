@@ -15,7 +15,13 @@ const EditCable = () => {
       try {
         const items = await getCables();
         const item = items.find(i => i.cable_id === parseInt(id, 10));
-        if (item) setInitialData({ type: item.type || "", quantity: String(item.quantity || ""), notes: item.notes || "" });
+        if (item) setInitialData({ 
+          type: item.type || "", 
+          supplier: item.supplier || "",
+          quantity: String(item.quantity || ""), 
+          pricePerUnit: String(item.pricePerUnit || ""),
+          totalPrice: String(item.totalPrice || "")
+        });
         else { toast.error("Cable not found"); navigate("/inventory/cables", { replace: true }); }
       } catch { toast.error("Failed to load data"); navigate("/inventory/cables", { replace: true }); }
       finally { setLoading(false); }
@@ -24,7 +30,14 @@ const EditCable = () => {
   }, [id, navigate]);
 
   const handleSubmit = async (formData) => {
-    const payload = { cable_id: parseInt(id, 10), type: formData.type, quantity: parseInt(formData.quantity, 10), notes: formData.notes || null };
+    const payload = { 
+      cable_id: parseInt(id, 10), 
+      type: formData.type, 
+      supplier: formData.supplier || null,
+      quantity: parseInt(formData.quantity, 10), 
+      pricePerUnit: parseFloat(formData.pricePerUnit),
+      totalPrice: parseFloat(formData.totalPrice)
+    };
     const result = await editCable(payload);
     if (result?.success) { toast.success("Cable updated!"); navigate("/inventory/cables"); }
     else toast.error(result?.message || "Failed to update.");

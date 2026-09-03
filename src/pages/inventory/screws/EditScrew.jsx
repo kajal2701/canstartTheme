@@ -17,8 +17,9 @@ const EditScrew = () => {
         const item = items.find((i) => i.screw_id === parseInt(id, 10));
         if (item) {
           setInitialData({
-            color: item.color || "", quantity: String(item.quantity || ""),
-            cost: item.cost || "", price: item.price || "",
+            color: item.color || "", supplier: item.supplier || "",
+            quantity: String(item.quantity || ""),
+            pricePerUnit: item.pricePerUnit || "", totalPrice: item.totalPrice || "",
           });
         } else { toast.error("Screw not found"); navigate("/inventory/screws", { replace: true }); }
       } catch { toast.error("Failed to load screw data"); navigate("/inventory/screws", { replace: true }); }
@@ -31,9 +32,10 @@ const EditScrew = () => {
     const payload = {
       screw_id: parseInt(id, 10),
       color: formData.color,
+      supplier: formData.supplier,
       quantity: parseInt(formData.quantity, 10),
-      cost: parseFloat(formData.cost),
-      price: parseFloat(formData.price),
+      pricePerUnit: parseFloat(formData.pricePerUnit),
+      totalPrice: parseFloat(formData.totalPrice),
     };
     const result = await editScrew(payload);
     if (result?.success) { toast.success("Screw updated successfully!"); navigate("/inventory/screws"); }

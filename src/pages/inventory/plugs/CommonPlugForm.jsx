@@ -1,35 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Textinput from "@/components/ui/Textinput";
+import InputNumber from "@/components/ui/InputNumber";
 import Select from "@/components/ui/Select";
-import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { calculateTotalPrice } from "@/utils/helperFunctions";
+import { PLUG_TYPES } from "@/utils/constants";
 
 const CommonPlugForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState(() => ({ type: "", quantity: "", notes: "", ...initialData }));
+  const [formData, setFormData] = useState(() => ({
+    type: "",
+    supplier: "",
+    quantity: "",
+    pricePerUnit: "",
+    totalPrice: "",
+    ...initialData
+  }));
   const [errors, setErrors] = useState({});
 
-  const types = [
-    { value: "3-Pin Plug", label: "3-Pin Plug" },
-    { value: "4-Pin Plug", label: "4-Pin Plug" },
-    { value: "USB Plug", label: "USB Plug" },
-    { value: "DC Plug", label: "DC Plug" },
-    { value: "Audio Plug", label: "Audio Plug" },
-  ];
+  // Auto-calculate total price when quantity or pricePerUnit changes
+  useEffect(() => {
+    const total = calculateTotalPrice(formData.quantity, formData.pricePerUnit);
+    setFormData((prev) => ({ ...prev, totalPrice: total }));
+  }, [formData.quantity, formData.pricePerUnit]);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: "" }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   const validateForm = () => {
     const e = {};
     if (!formData.type) e.type = "Type is required";
-    if (!formData.quantity) e.quantity = "Quantity is required";
+    if (formData.quantity === "" || formData.quantity === null) e.quantity = "Quantity is required";
+    else if (isNaN(formData.quantity) || parseFloat(formData.quantity) <= 0) e.quantity = "Quantity must be greater than 0";
+
+    if (formData.pricePerUnit === "" || formData.pricePerUnit === null) e.pricePerUnit = "Price per unit is required";
+    else if (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0) e.pricePerUnit = "Price per unit must be greater than 0";
+
+    if (!formData.totalPrice) e.totalPrice = "Total price is required";
+    else if (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0) e.totalPrice = "Enter a valid total price";
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -59,17 +74,27 @@ const CommonPlugForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Type <span className="text-red-500">*</span></label>
               <Select value={formData.type} onChange={(e) => handleInputChange("type", e.target.value)}
-                options={types} placeholder="Select Type" error={errors.type} />
+                options={PLUG_TYPES} placeholder="Select Type" error={errors.type} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Supplier</label>
+              <Textinput type="text" value={formData.supplier} onChange={(e) => handleInputChange("supplier", e.target.value)}
+                placeholder="Enter supplier (optional)" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Quantity <span className="text-red-500">*</span></label>
-              <Textinput type="number" value={formData.quantity} onChange={(e) => handleInputChange("quantity", e.target.value)}
-                placeholder="Enter quantity" error={errors.quantity} />
+              <InputNumber value={formData.quantity} onChange={(e) => handleInputChange("quantity", e.target.value)}
+                placeholder="Enter quantity" error={errors.quantity} step="1" noDecimal />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Price Per Unit ($)<span className="text-red-500">*</span></label>
+              <InputNumber value={formData.pricePerUnit} onChange={(e) => handleInputChange("pricePerUnit", e.target.value)}
+                placeholder="Enter price per unit" error={errors.pricePerUnit} />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-              <Textarea value={formData.notes} onChange={(e) => handleInputChange("notes", e.target.value)}
-                placeholder="Enter notes (optional)" rows={3} />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Total Price ($)<span className="text-red-500">*</span></label>
+              <InputNumber value={formData.totalPrice} onChange={(e) => handleInputChange("totalPrice", e.target.value)} disabled={true}
+                placeholder="Auto calculated" />
             </div>
           </div>
           <div className="flex justify-end space-x-3 mt-8">

@@ -15,8 +15,15 @@ const EditController = () => {
       try {
         const items = await getControllers();
         const item = items.find(i => i.controller_id === parseInt(id, 10));
-        if (item) setInitialData({ type: item.type || "", boostBox: String(item.boostBox || ""), cost: item.cost || "", price: item.price || "" });
-        else { toast.error("Controller not found"); navigate("/inventory/controllers", { replace: true }); }
+        if (item) {
+          setInitialData({
+            type: item.type || "",
+            supplier: item.supplier || "",
+            quantity: String(item.quantity || ""),
+            pricePerUnit: item.pricePerUnit || "",
+            totalPrice: item.totalPrice || "",
+          });
+        } else { toast.error("Controller not found"); navigate("/inventory/controllers", { replace: true }); }
       } catch { toast.error("Failed to load data"); navigate("/inventory/controllers", { replace: true }); }
       finally { setLoading(false); }
     };
@@ -24,10 +31,17 @@ const EditController = () => {
   }, [id, navigate]);
 
   const handleSubmit = async (formData) => {
-    const payload = { controller_id: parseInt(id, 10), type: formData.type, boostBox: formData.boostBox, cost: parseFloat(formData.cost), price: parseFloat(formData.price) };
+    const payload = {
+      controller_id: parseInt(id, 10),
+      type: formData.type,
+      supplier: formData.supplier,
+      quantity: parseInt(formData.quantity, 10),
+      pricePerUnit: parseFloat(formData.pricePerUnit),
+      totalPrice: parseFloat(formData.totalPrice),
+    };
     const result = await editController(payload);
-    if (result?.success) { toast.success("Controller updated!"); navigate("/inventory/controllers"); }
-    else toast.error(result?.message || "Failed to update.");
+    if (result?.success) { toast.success("Controller updated successfully!"); navigate("/inventory/controllers"); }
+    else toast.error(result?.message || "Failed to update controller.");
   };
 
   if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div></div>;

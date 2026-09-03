@@ -160,7 +160,7 @@ export default function FinalConfirmAndPay({
               }`}
             onClick={handlePayNow}
           >
-            {loading ? "Loading..." : hasCreditCard ? "Pay Now" : "Confirm"}
+            {loading ? "Loading..." : activeTab === "credit_card" ? "Pay Now" : "Confirm Order"}
           </button>
         </div>
       }

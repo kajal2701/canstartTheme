@@ -7,11 +7,18 @@ import { addController } from "@/services/inventoryService";
 const AddController = () => {
   const navigate = useNavigate();
   const handleSubmit = async (formData) => {
-    const payload = { type: formData.type, boostBox: formData.boostBox, cost: parseFloat(formData.cost), price: parseFloat(formData.price) };
+    const payload = {
+      type: formData.type,
+      supplier: formData.supplier,
+      quantity: parseInt(formData.quantity, 10),
+      pricePerUnit: parseFloat(formData.pricePerUnit),
+      totalPrice: parseFloat(formData.totalPrice),
+    };
     const result = await addController(payload);
-    if (result?.success) { toast.success("Controller added!"); navigate("/inventory/controllers"); }
+    if (result?.success) { toast.success("Controller added successfully!"); navigate("/inventory/controllers"); }
     else toast.error(result?.message || "Failed to add controller.");
   };
+
   return <CommonControllerForm isEdit={false} title="Add Controller" onSubmit={handleSubmit} />;
 };
 

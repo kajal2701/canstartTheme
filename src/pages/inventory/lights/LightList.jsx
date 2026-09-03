@@ -42,10 +42,10 @@ const LightList = () => {
 
   const columns = useMemo(() => [
     { Header: "Type", accessor: "type" },
+    { Header: "Supplier", accessor: "supplier", Cell: ({ value }) => value || "—" },
     { Header: "Quantity", accessor: "quantity" },
-    { Header: "Cost", accessor: "cost", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
-    { Header: "Purchase Info", accessor: "purchaseInfo", Cell: ({ value }) => value || "—" },
-    { Header: "Notes", accessor: "notes", Cell: ({ value }) => value || "—" },
+    { Header: "Price Per Unit", accessor: "pricePerUnit", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
+    { Header: "Total Price", accessor: "totalPrice", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
     {
       Header: "Actions", accessor: "actions",
       Cell: ({ row }) => (
