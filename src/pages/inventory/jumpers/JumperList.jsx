@@ -6,10 +6,13 @@ import DataTable from "@/components/ui/DataTable";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import { getJumpers, deleteJumper } from "@/services/inventoryService";
 
 const JumperList = () => {
   const navigate = useNavigate();
+  const { user } = useSelector((s) => s.auth);
+  const isAdmin = user?.role === 1;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,6 +62,8 @@ const JumperList = () => {
     },
   ], [navigate]);
 
+  const filteredColumns = isAdmin ? columns : columns.filter(c => c.accessor !== "pricePerUnit" && c.accessor !== "totalPrice");
+
   return (
     <>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -72,8 +77,10 @@ const JumperList = () => {
             <h1 className="text-xl font-bold">Jumpers</h1>
           </div>
         </div>
-        <Button text="Add Jumper" icon="ph:plus" className="btn-primary w-full sm:w-auto"
-          onClick={() => navigate("/inventory/jumpers/add")} />
+        {isAdmin && (
+          <Button text="Add Jumper" icon="ph:plus" className="btn-primary w-full sm:w-auto"
+            onClick={() => navigate("/inventory/jumpers/add")} />
+        )}
       </div>
       <Card className="overflow-hidden">
         {error ? (
@@ -82,7 +89,7 @@ const JumperList = () => {
             <Button text="Retry" className="btn-sm btn-outline" onClick={fetchData} />
           </div>
         ) : (
-          <DataTable title="Jumpers List" columns={columns} data={data} loading={loading} />
+          <DataTable title="Jumpers List" columns={filteredColumns} data={data} loading={loading} />
         )}
       </Card>
       <ConfirmModal activeModal={deleteModalOpen} onClose={closeDeleteModal}

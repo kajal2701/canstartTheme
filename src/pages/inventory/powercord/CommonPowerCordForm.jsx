@@ -91,7 +91,7 @@ const CommonPowerCordForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
               <InputNumber value={formData.pricePerUnit} onChange={(e) => handleInputChange("pricePerUnit", e.target.value)}
                 placeholder="Enter price per unit" error={errors.pricePerUnit} />
             </div>
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Total Price ($)<span className="text-red-500">*</span></label>
               <InputNumber value={formData.totalPrice} onChange={(e) => handleInputChange("totalPrice", e.target.value)} disabled={true}
                 placeholder="Auto calculated" />

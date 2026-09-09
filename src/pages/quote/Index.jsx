@@ -4,7 +4,7 @@ import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
 import LoadingIcon from "@/components/LoadingIcon";
 import DataTable from "@/components/ui/DataTable";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getQuotes, exportAllQuotes } from "@/services/quoteService";
 import { useSelector } from "react-redux";
 import { AddressCell } from "@/utils/mappers";
@@ -61,21 +61,22 @@ const mapQuoteData = (quote) => {
 };
 const Quote = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useSelector((state) => state.auth);
 
-  // Pagination State
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  // Pagination State — initialise from URL so filters survive navigation
+  const [page, setPage] = useState(() => Number(searchParams.get("page")) || 1);
+  const [limit, setLimit] = useState(() => Number(searchParams.get("limit")) || 10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
 
-  // Filter State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [salesmanFilter, setSalesmanFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState("");
-  const [installationFilter, setInstallationFilter] = useState("");
+  // Filter State — initialise from URL search params
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get("search") || "");
+  const [debouncedSearch, setDebouncedSearch] = useState(() => searchParams.get("search") || "");
+  const [statusFilter, setStatusFilter] = useState(() => searchParams.get("status") || "");
+  const [salesmanFilter, setSalesmanFilter] = useState(() => searchParams.get("salesman") || "all");
+  const [dateFilter, setDateFilter] = useState(() => searchParams.get("date") || "");
+  const [installationFilter, setInstallationFilter] = useState(() => searchParams.get("installation") || "");
 
   const [quotesData, setQuotesData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -103,9 +104,35 @@ const Quote = () => {
     setPage(1);
   }, [debouncedSearch, statusFilter, salesmanFilter, dateFilter, installationFilter, limit]);
 
-  // Load unique salesmen once on mount
+  // Sync filter state → URL search params (replace to avoid history spam)
+  useEffect(() => {
+    const params = {};
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (statusFilter) params.status = statusFilter;
+    if (salesmanFilter && salesmanFilter !== "all") params.salesman = salesmanFilter;
+    if (dateFilter) params.date = dateFilter;
+    if (installationFilter) params.installation = installationFilter;
+    if (page > 1) params.page = String(page);
+    if (limit !== 10) params.limit = String(limit);
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearch, statusFilter, salesmanFilter, dateFilter, installationFilter, page, limit, setSearchParams]);
+
+  // Load unique salesmen — use cached list when available to avoid extra API call
   useEffect(() => {
     let mounted = true;
+    const CACHE_KEY = "quote_salesmen_list";
+
+    const cached = sessionStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setUniqueSalesmen(parsed);
+          return;
+        }
+      } catch { /* ignore bad cache */ }
+    }
+
     const fetchSalesmen = async () => {
       const uid = user?.user_id ?? "";
       const role = user?.role ?? "";
@@ -114,6 +141,7 @@ const Quote = () => {
         if (mounted && all.length > 0) {
           const salesmen = [...new Set(all.map(q => q.salesman))].filter(Boolean).sort();
           setUniqueSalesmen(salesmen);
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify(salesmen));
         }
       } catch (e) {
         console.error("Failed to load salesmen", e);
@@ -172,10 +200,13 @@ const Quote = () => {
 
   const onClearAll = () => {
     setSearchQuery("");
+    setDebouncedSearch("");
     setStatusFilter("");
     setSalesmanFilter("all");
     setDateFilter("");
     setInstallationFilter("");
+    setPage(1);
+    setLimit(10);
   };
 
   const COLUMNS = [

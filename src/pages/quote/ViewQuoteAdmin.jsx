@@ -94,7 +94,13 @@ const ViewQuoteAdmin = () => {
   }, [quote?.annotation_image, quote?.products, quote?.custom_product_data]);
 
   const handleNavigateBack = useCallback(() => {
-    navigate("/quote");
+    // Go back in browser history to preserve the filter query-string.
+    // Fallback to /quote if the user landed here directly (no prior entry).
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/quote");
+    }
   }, [navigate]);
 
   const [extraWorkTotal, setExtraWorkTotal] = useState(0);

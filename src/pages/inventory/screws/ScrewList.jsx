@@ -6,10 +6,13 @@ import DataTable from "@/components/ui/DataTable";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import { getScrews, deleteScrew } from "@/services/inventoryService";
 
 const ScrewList = () => {
   const navigate = useNavigate();
+  const { user } = useSelector((s) => s.auth);
+  const isAdmin = user?.role === 1;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -79,6 +82,8 @@ const ScrewList = () => {
     },
   ], [navigate]);
 
+  const filteredColumns = isAdmin ? columns : columns.filter(c => c.accessor !== "pricePerUnit" && c.accessor !== "totalPrice");
+
   return (
     <>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -92,8 +97,10 @@ const ScrewList = () => {
             <h1 className="text-xl font-bold">Screws</h1>
           </div>
         </div>
-        <Button text="Add Screw" icon="ph:plus" className="btn-primary w-full sm:w-auto"
-          onClick={() => navigate("/inventory/screws/add")} />
+        {isAdmin && (
+          <Button text="Add Screw" icon="ph:plus" className="btn-primary w-full sm:w-auto"
+            onClick={() => navigate("/inventory/screws/add")} />
+        )}
       </div>
 
       <Card className="overflow-hidden">
@@ -104,7 +111,7 @@ const ScrewList = () => {
             <Button text="Retry" className="btn-sm btn-outline" onClick={fetchData} />
           </div>
         ) : (
-          <DataTable title="Screws List" columns={columns} data={data} loading={loading} />
+          <DataTable title="Screws List" columns={filteredColumns} data={data} loading={loading} />
         )}
       </Card>
 

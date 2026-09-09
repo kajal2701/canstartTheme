@@ -6,11 +6,14 @@ import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import { calculateTotalPrice } from "@/utils/helperFunctions";
 import { CONNECTOR_TYPES } from "@/utils/constants";
 
 const CommonConnectorForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
   const navigate = useNavigate();
+  const { user } = useSelector((s) => s.auth);
+  const isAdmin = user?.role === 1;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState(() => ({
     type: "",
@@ -50,10 +53,10 @@ const CommonConnectorForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
     if (!formData.type) newErrors.type = "Connector type is required";
     if (!formData.quantity || !String(formData.quantity).trim()) newErrors.quantity = "Quantity is required";
     else if (isNaN(formData.quantity) || parseFloat(formData.quantity) <= 0) newErrors.quantity = "Quantity must be greater than 0";
-    if (!formData.pricePerUnit) newErrors.pricePerUnit = "Price per unit is required";
-    else if (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0) newErrors.pricePerUnit = "Price per unit must be greater than 0";
-    if (!formData.totalPrice) newErrors.totalPrice = "Total price is required";
-    else if (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0) newErrors.totalPrice = "Enter a valid total price";
+    if (!formData.pricePerUnit && isAdmin) newErrors.pricePerUnit = "Price per unit is required";
+    else if (isAdmin && (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0)) newErrors.pricePerUnit = "Price per unit must be greater than 0";
+    if (!formData.totalPrice && isAdmin) newErrors.totalPrice = "Total price is required";
+    else if (isAdmin && (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0)) newErrors.totalPrice = "Enter a valid total price";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -102,6 +105,7 @@ const CommonConnectorForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
                 noDecimal
               />
             </div>
+            {isAdmin && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Price Per Unit ($)<span className="text-red-500">*</span></label>
               <InputNumber
@@ -111,6 +115,8 @@ const CommonConnectorForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
                 error={errors.pricePerUnit}
               />
             </div>
+            )}
+            {isAdmin && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Total Price ($)</label>
               <InputNumber
@@ -120,6 +126,7 @@ const CommonConnectorForm = ({ isEdit = false, initialData = {}, onSubmit, onCan
                 disabled={true}
               />
             </div>
+            )}
           </div>
           <div className="flex justify-end space-x-3 mt-8">
             <Button text="Cancel" className="btn-outline-dark" onClick={handleCancel} type="button" />

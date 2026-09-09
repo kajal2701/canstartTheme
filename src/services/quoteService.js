@@ -218,6 +218,17 @@ export const sendFinalQuote = async (payload) => {
   return data;
 };
 
+export const resendFinalQuote = async (payload) => {
+  const response = await fetch(`${BASE_URL}/quote/resend_invoice`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || "Failed to resend invoice");
+  return data;
+};
+
 
 export const resendQuote = async (payload) => {
   const response = await fetch(`${BASE_URL}/quote/resend_quote`, {

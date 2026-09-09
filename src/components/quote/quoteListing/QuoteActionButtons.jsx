@@ -1,11 +1,12 @@
 import Icon from "@/components/ui/Icon";
 import ConfirmModal from "@/components/ui/ConfirmModal";
-import { deleteQuote } from "../../../services/quoteService";
+import { deleteQuote, resendFinalQuote } from "../../../services/quoteService";
 import { useState } from "react";
 import { encodeId } from "../../../utils/mappers";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import ScheduleInstallationModal from "./ScheduleInstallationModal";
+import confirmAction from "../../../utils/confirmAction";
 
 const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
   const { user } = useSelector((state) => state.auth);
@@ -14,8 +15,10 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [isResendingInvoice, setIsResendingInvoice] = useState(false);
 
   const canSchedule = rowData?.status === "Confirmed - Deposit Paid";
+  const canResendInvoice = ["Invoice Sent", "Invoice Sent - Awaiting Confirmation", "Fully Paid"].includes(rowData?.status);
   const handleView = () => navigate(`/quote/view_quote_admin/${id}`);
   const handleEdit = () => navigate(`/quote/edit_quote/${id}`);
 
@@ -40,6 +43,28 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
   const handleScheduled = async () => {
     toast.success("Installation scheduled & email sent successfully!");
     if (fetchQuotes) await fetchQuotes(); // ✅ refetch quotes
+  };
+
+  const handleResendInvoice = async () => {
+    const confirmResult = await confirmAction({
+      text: "Do you want to resend the invoice?",
+      confirmButtonText: "Yes, resend it!",
+    });
+    if (!confirmResult || (confirmResult.isConfirmed === false && confirmResult !== true)) return;
+
+    try {
+      setIsResendingInvoice(true);
+      const result = await resendFinalQuote({ quote_id: id, send_email: true });
+      if (result.success) {
+        toast.success(result.message || "Invoice resent successfully.");
+      } else {
+        toast.error(result.message || "Failed to resend invoice.");
+      }
+    } catch (err) {
+      toast.error(err.message || "An error occurred.");
+    } finally {
+      setIsResendingInvoice(false);
+    }
   };
 
   return (
@@ -95,6 +120,19 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
             disabled={!canSchedule}
           >
             <Icon icon="ph:calendar-check" />
+          </button>
+        )}
+
+        {/* ✅ Resend Invoice button */}
+        {canResendInvoice && (
+          <button
+            className="icon-btn hover:bg-teal-50 dark:hover:bg-teal-900"
+            type="button"
+            title="Resend Invoice"
+            onClick={handleResendInvoice}
+            disabled={isResendingInvoice}
+          >
+            <Icon icon="ph:paper-plane-right" />
           </button>
         )}
       </div>

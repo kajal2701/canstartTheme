@@ -121,11 +121,9 @@ export const DB_COLUMN_MAP = {
 export const TRACK_TYPES = ["5.33ft Track", "6ft Track", "6.67ft Track", "7ft Track"];
 
 export const TRACK_SIZES_OPTIONS = [
-  { value: "1 inch", label: "1 inch" },
-  { value: "1.5 inch", label: "1.5 inch" },
-  { value: "2 inch", label: "2 inch" },
-  { value: "2.5 inch", label: "2.5 inch" },
-  { value: "3 inch", label: "3 inch" },
+  { value: "Residential 48\"", label: "Residential 48\"" },
+  { value: "Residential 72\"", label: "Residential 72\"" },
+  { value: "Special profile", label: "Special profile" },
 ];
 
 // ── Jumper/Connector Sizes for Post-Install ──────────────────────

@@ -1,75 +1,92 @@
 import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-// ✅ All lazy imports
-const Dashboard = lazy(() => import("./pages/dashboard"));
-const Login = lazy(() => import("./pages/auth/login"));
-const ForgotPass = lazy(() => import("./pages/auth/forgot-password"));
-const ForgotPass2 = lazy(() => import("./pages/auth/forgot-password2"));
-const Error = lazy(() => import("./pages/404"));
-const Profile = lazy(() => import("./pages/utility/profile"));
-const Users = lazy(() => import("./pages/users"));
-const AddUser = lazy(() => import("./pages/users/AddUser"));
-const EditUser = lazy(() => import("./pages/users/EditUser"));
-const Customer = lazy(() => import("./pages/customer/Index"));
-const AddCustomer = lazy(() => import("./pages/customer/AddCustomer"));
-const EditCustomer = lazy(() => import("./pages/customer/EditCustomer"));
-const Quote = lazy(() => import("./pages/quote/Index"));
-const AddQuote = lazy(() => import("./pages/quote/AddQuote"));
-const EditQuote = lazy(() => import("./pages/quote/EditQuote"));
-const ViewQuoteAdmin = lazy(() => import("./pages/quote/ViewQuoteAdmin"));
-const QuoteView = lazy(() => import("./pages/quote/QuoteView"));
-const TermsAndConditions = lazy(() => import("./pages/termsAndConditions"));
-const Install = lazy(() => import("./pages/install/Index"));
-const CalendarView = lazy(() => import("./pages/install/CalendarView"));
-const InstallationProcess = lazy(() => import("./pages/install/InstallationProcess"));
-const Product = lazy(() => import("./pages/product/Index"));
-const AddProduct = lazy(() => import("./pages/product/AddProduct"));
-const EditProduct = lazy(() => import("./pages/product/EditProduct"));
-const Invoice = lazy(() => import("./pages/invoice/Index"));
-const InvoiceView = lazy(() => import("./pages/invoice/InvoiceView"));
+// ✅ Helper: Auto-reload on failed dynamic import (fixes stale chunk errors after deployment)
+const lazyRetry = (componentImport) => {
+  return lazy(() =>
+    componentImport().catch((error) => {
+      // Check if we've already tried reloading to prevent infinite loops
+      const hasReloaded = sessionStorage.getItem("retry-lazy-refreshed");
+      if (!hasReloaded) {
+        sessionStorage.setItem("retry-lazy-refreshed", "true");
+        window.location.reload();
+        return; // will reload before this resolves
+      }
+      sessionStorage.removeItem("retry-lazy-refreshed");
+      throw error; // if reload didn't fix it, throw the original error
+    })
+  );
+};
+
+// ✅ All lazy imports (with auto-retry on chunk load failure)
+const Dashboard = lazyRetry(() => import("./pages/dashboard"));
+const Login = lazyRetry(() => import("./pages/auth/login"));
+const ForgotPass = lazyRetry(() => import("./pages/auth/forgot-password"));
+const ForgotPass2 = lazyRetry(() => import("./pages/auth/forgot-password2"));
+const Error = lazyRetry(() => import("./pages/404"));
+const Profile = lazyRetry(() => import("./pages/utility/profile"));
+const Users = lazyRetry(() => import("./pages/users"));
+const AddUser = lazyRetry(() => import("./pages/users/AddUser"));
+const EditUser = lazyRetry(() => import("./pages/users/EditUser"));
+const Customer = lazyRetry(() => import("./pages/customer/Index"));
+const AddCustomer = lazyRetry(() => import("./pages/customer/AddCustomer"));
+const EditCustomer = lazyRetry(() => import("./pages/customer/EditCustomer"));
+const Quote = lazyRetry(() => import("./pages/quote/Index"));
+const AddQuote = lazyRetry(() => import("./pages/quote/AddQuote"));
+const EditQuote = lazyRetry(() => import("./pages/quote/EditQuote"));
+const ViewQuoteAdmin = lazyRetry(() => import("./pages/quote/ViewQuoteAdmin"));
+const QuoteView = lazyRetry(() => import("./pages/quote/QuoteView"));
+const TermsAndConditions = lazyRetry(() => import("./pages/termsAndConditions"));
+const Install = lazyRetry(() => import("./pages/install/Index"));
+const CalendarView = lazyRetry(() => import("./pages/install/CalendarView"));
+const InstallationProcess = lazyRetry(() => import("./pages/install/InstallationProcess"));
+const Product = lazyRetry(() => import("./pages/product/Index"));
+const AddProduct = lazyRetry(() => import("./pages/product/AddProduct"));
+const EditProduct = lazyRetry(() => import("./pages/product/EditProduct"));
+const Invoice = lazyRetry(() => import("./pages/invoice/Index"));
+const InvoiceView = lazyRetry(() => import("./pages/invoice/InvoiceView"));
 
 // Inventory Module
-const Inventory = lazy(() => import("./pages/inventory/Index"));
-const TrackList = lazy(() => import("./pages/inventory/tracks/TrackList"));
-const ScrewList = lazy(() => import("./pages/inventory/screws/ScrewList"));
-const ControllerList = lazy(() => import("./pages/inventory/controllers/ControllerList"));
-const ConnectorList = lazy(() => import("./pages/inventory/connectors/ConnectorList"));
-const LightList = lazy(() => import("./pages/inventory/lights/LightList"));
-const CableList = lazy(() => import("./pages/inventory/cables/CableList"));
-const JumperList = lazy(() => import("./pages/inventory/jumpers/JumperList"));
-const PlugList = lazy(() => import("./pages/inventory/plugs/PlugList"));
-const PowerCordList = lazy(() => import("./pages/inventory/powercord/PowerCordList"));
-const AddTrack = lazy(() => import("./pages/inventory/tracks/AddTrack"));
-const EditTrack = lazy(() => import("./pages/inventory/tracks/EditTrack"));
-const AddScrew = lazy(() => import("./pages/inventory/screws/AddScrew"));
-const EditScrew = lazy(() => import("./pages/inventory/screws/EditScrew"));
-const AddController = lazy(() => import("./pages/inventory/controllers/AddController"));
-const EditController = lazy(() => import("./pages/inventory/controllers/EditController"));
-const AddConnector = lazy(() => import("./pages/inventory/connectors/AddConnector"));
-const EditConnector = lazy(() => import("./pages/inventory/connectors/EditConnector"));
-const AddLight = lazy(() => import("./pages/inventory/lights/AddLight"));
-const EditLight = lazy(() => import("./pages/inventory/lights/EditLight"));
-const AddCable = lazy(() => import("./pages/inventory/cables/AddCable"));
-const EditCable = lazy(() => import("./pages/inventory/cables/EditCable"));
-const AddJumper = lazy(() => import("./pages/inventory/jumpers/AddJumper"));
-const EditJumper = lazy(() => import("./pages/inventory/jumpers/EditJumper"));
-const AddPlug = lazy(() => import("./pages/inventory/plugs/AddPlug"));
-const EditPlug = lazy(() => import("./pages/inventory/plugs/EditPlug"));
-const AddPowerCord = lazy(() => import("./pages/inventory/powercord/AddPowerCord"));
-const EditPowerCord = lazy(() => import("./pages/inventory/powercord/EditPowerCord"));
-const OutercaseList = lazy(() => import("./pages/inventory/outercases/OutercaseList"));
-const AddOutercase = lazy(() => import("./pages/inventory/outercases/AddOutercase"));
-const EditOutercase = lazy(() => import("./pages/inventory/outercases/EditOutercase"));
-const AppcontrollerList = lazy(() => import("./pages/inventory/appcontrollers/AppcontrollerList"));
-const AddAppcontroller = lazy(() => import("./pages/inventory/appcontrollers/AddAppcontroller"));
-const EditAppcontroller = lazy(() => import("./pages/inventory/appcontrollers/EditAppcontroller"));
-const PowersupplyList = lazy(() => import("./pages/inventory/powersupplies/PowersupplyList"));
-const AddPowersupply = lazy(() => import("./pages/inventory/powersupplies/AddPowersupply"));
-const EditPowersupply = lazy(() => import("./pages/inventory/powersupplies/EditPowersupply"));
+const Inventory = lazyRetry(() => import("./pages/inventory/Index"));
+const TrackList = lazyRetry(() => import("./pages/inventory/tracks/TrackList"));
+const ScrewList = lazyRetry(() => import("./pages/inventory/screws/ScrewList"));
+const ControllerList = lazyRetry(() => import("./pages/inventory/controllers/ControllerList"));
+const ConnectorList = lazyRetry(() => import("./pages/inventory/connectors/ConnectorList"));
+const LightList = lazyRetry(() => import("./pages/inventory/lights/LightList"));
+const CableList = lazyRetry(() => import("./pages/inventory/cables/CableList"));
+const JumperList = lazyRetry(() => import("./pages/inventory/jumpers/JumperList"));
+const PlugList = lazyRetry(() => import("./pages/inventory/plugs/PlugList"));
+const PowerCordList = lazyRetry(() => import("./pages/inventory/powercord/PowerCordList"));
+const AddTrack = lazyRetry(() => import("./pages/inventory/tracks/AddTrack"));
+const EditTrack = lazyRetry(() => import("./pages/inventory/tracks/EditTrack"));
+const AddScrew = lazyRetry(() => import("./pages/inventory/screws/AddScrew"));
+const EditScrew = lazyRetry(() => import("./pages/inventory/screws/EditScrew"));
+const AddController = lazyRetry(() => import("./pages/inventory/controllers/AddController"));
+const EditController = lazyRetry(() => import("./pages/inventory/controllers/EditController"));
+const AddConnector = lazyRetry(() => import("./pages/inventory/connectors/AddConnector"));
+const EditConnector = lazyRetry(() => import("./pages/inventory/connectors/EditConnector"));
+const AddLight = lazyRetry(() => import("./pages/inventory/lights/AddLight"));
+const EditLight = lazyRetry(() => import("./pages/inventory/lights/EditLight"));
+const AddCable = lazyRetry(() => import("./pages/inventory/cables/AddCable"));
+const EditCable = lazyRetry(() => import("./pages/inventory/cables/EditCable"));
+const AddJumper = lazyRetry(() => import("./pages/inventory/jumpers/AddJumper"));
+const EditJumper = lazyRetry(() => import("./pages/inventory/jumpers/EditJumper"));
+const AddPlug = lazyRetry(() => import("./pages/inventory/plugs/AddPlug"));
+const EditPlug = lazyRetry(() => import("./pages/inventory/plugs/EditPlug"));
+const AddPowerCord = lazyRetry(() => import("./pages/inventory/powercord/AddPowerCord"));
+const EditPowerCord = lazyRetry(() => import("./pages/inventory/powercord/EditPowerCord"));
+const OutercaseList = lazyRetry(() => import("./pages/inventory/outercases/OutercaseList"));
+const AddOutercase = lazyRetry(() => import("./pages/inventory/outercases/AddOutercase"));
+const EditOutercase = lazyRetry(() => import("./pages/inventory/outercases/EditOutercase"));
+const AppcontrollerList = lazyRetry(() => import("./pages/inventory/appcontrollers/AppcontrollerList"));
+const AddAppcontroller = lazyRetry(() => import("./pages/inventory/appcontrollers/AddAppcontroller"));
+const EditAppcontroller = lazyRetry(() => import("./pages/inventory/appcontrollers/EditAppcontroller"));
+const PowersupplyList = lazyRetry(() => import("./pages/inventory/powersupplies/PowersupplyList"));
+const AddPowersupply = lazyRetry(() => import("./pages/inventory/powersupplies/AddPowersupply"));
+const EditPowersupply = lazyRetry(() => import("./pages/inventory/powersupplies/EditPowersupply"));
 
 // Reports Module
-const Reports = lazy(() => import("./pages/reports/Index"));
+const Reports = lazyRetry(() => import("./pages/reports/Index"));
 
 // ✅ Keep these as normal imports (not lazy - they are layout/utility components)
 import Layout from "./layout/Layout";
@@ -80,6 +97,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 const ADMIN_ONLY = [1];
 const SALES_AND_ADMIN = [1, 4];
 const ADMIN_AND_INSTALLER = [1, 2];
+const ALL_ROLES = [1, 2, 3, 4];
 
 function App() {
   return (
@@ -253,7 +271,7 @@ function App() {
             <Route
               path="inventory"
               element={
-                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                <ProtectedRoute allowedRoles={ALL_ROLES}>
                   <Inventory />
                 </ProtectedRoute>
               }
@@ -268,7 +286,7 @@ function App() {
               <Route
                 path="tracks"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <TrackList />
                   </ProtectedRoute>
                 }
@@ -286,7 +304,7 @@ function App() {
               <Route
                 path="tracks/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditTrack />
                   </ProtectedRoute>
                 }
@@ -294,7 +312,7 @@ function App() {
               <Route
                 path="screws"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <ScrewList />
                   </ProtectedRoute>
                 }
@@ -310,7 +328,7 @@ function App() {
               <Route
                 path="screws/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditScrew />
                   </ProtectedRoute>
                 }
@@ -318,7 +336,7 @@ function App() {
               <Route
                 path="controllers"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <ControllerList />
                   </ProtectedRoute>
                 }
@@ -334,16 +352,16 @@ function App() {
               <Route
                 path="controllers/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditController />
                   </ProtectedRoute>
                 }
               />
-             
+
               <Route
                 path="connectors"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <ConnectorList />
                   </ProtectedRoute>
                 }
@@ -359,7 +377,7 @@ function App() {
               <Route
                 path="connectors/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditConnector />
                   </ProtectedRoute>
                 }
@@ -367,7 +385,7 @@ function App() {
               <Route
                 path="lights"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <LightList />
                   </ProtectedRoute>
                 }
@@ -383,7 +401,7 @@ function App() {
               <Route
                 path="lights/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditLight />
                   </ProtectedRoute>
                 }
@@ -391,7 +409,7 @@ function App() {
               <Route
                 path="cables"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <CableList />
                   </ProtectedRoute>
                 }
@@ -407,7 +425,7 @@ function App() {
               <Route
                 path="cables/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditCable />
                   </ProtectedRoute>
                 }
@@ -415,7 +433,7 @@ function App() {
               <Route
                 path="jumpers"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <JumperList />
                   </ProtectedRoute>
                 }
@@ -432,7 +450,7 @@ function App() {
               <Route
                 path="jumpers/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditJumper />
                   </ProtectedRoute>
                 }
@@ -440,7 +458,7 @@ function App() {
               <Route
                 path="plugs"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <PlugList />
                   </ProtectedRoute>
                 }
@@ -456,7 +474,7 @@ function App() {
               <Route
                 path="plugs/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditPlug />
                   </ProtectedRoute>
                 }
@@ -464,7 +482,7 @@ function App() {
               <Route
                 path="powercord"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <PowerCordList />
                   </ProtectedRoute>
                 }
@@ -480,7 +498,7 @@ function App() {
               <Route
                 path="powercord/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditPowerCord />
                   </ProtectedRoute>
                 }
@@ -488,7 +506,7 @@ function App() {
               <Route
                 path="outercases"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <OutercaseList />
                   </ProtectedRoute>
                 }
@@ -504,7 +522,7 @@ function App() {
               <Route
                 path="outercases/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditOutercase />
                   </ProtectedRoute>
                 }
@@ -512,7 +530,7 @@ function App() {
               <Route
                 path="appcontrollers"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <AppcontrollerList />
                   </ProtectedRoute>
                 }
@@ -528,7 +546,7 @@ function App() {
               <Route
                 path="appcontrollers/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditAppcontroller />
                   </ProtectedRoute>
                 }
@@ -536,7 +554,7 @@ function App() {
               <Route
                 path="powersupplies"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <PowersupplyList />
                   </ProtectedRoute>
                 }
@@ -552,7 +570,7 @@ function App() {
               <Route
                 path="powersupplies/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
                     <EditPowersupply />
                   </ProtectedRoute>
                 }

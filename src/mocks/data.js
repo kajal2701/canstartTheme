@@ -80,7 +80,7 @@ export const menuItems = [
     isHide: true,
     icon: "ph:package",
     link: "inventory",
-    roles: [1], // admin only
+    roles: [1, 2, 3, 4], // all roles
   },
   {
     title: "Reports",

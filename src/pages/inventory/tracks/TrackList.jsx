@@ -6,10 +6,13 @@ import DataTable from "@/components/ui/DataTable";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import { getTracks, deleteTrack } from "@/services/inventoryService";
 
 const TrackList = () => {
   const navigate = useNavigate();
+  const { user } = useSelector((s) => s.auth);
+  const isAdmin = user?.role === 1;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,7 +43,7 @@ const TrackList = () => {
   // Open confirmation modal
   const openDeleteModal = (track) => {
     setDeleteTrackId(track.track_id);
-    setDeleteTrackName(`${track.color} - ${track.size}`);
+    setDeleteTrackName(`${track.color} - ${track.size || "—"}`);
     setDeleteModalOpen(true);
   };
 
@@ -76,7 +79,7 @@ const TrackList = () => {
       { Header: "Color", accessor: "color" },
       { Header: "Supplier", accessor: "supplier", Cell: ({ value }) => value || "—" },
       { Header: "Total Feet", accessor: "totalFeet" },
-      { Header: "Size", accessor: "size" },
+      { Header: "Size", accessor: "size", Cell: ({ value }) => value || "—" },
       {
         Header: "Price Per Unit",
         accessor: "pricePerUnit",
@@ -111,6 +114,8 @@ const TrackList = () => {
     [navigate]
   );
 
+  const filteredColumns = isAdmin ? columns : columns.filter(c => c.accessor !== "pricePerUnit" && c.accessor !== "totalPrice");
+
   return (
     <>
       {/* Header */}
@@ -129,12 +134,14 @@ const TrackList = () => {
             <h1 className="text-xl font-bold">Tracks</h1>
           </div>
         </div>
-        <Button
-          text="Add Track"
-          icon="ph:plus"
-          className="btn-primary w-full sm:w-auto"
-          onClick={() => navigate("/inventory/tracks/add")}
-        />
+        {isAdmin && (
+          <Button
+            text="Add Track"
+            icon="ph:plus"
+            className="btn-primary w-full sm:w-auto"
+            onClick={() => navigate("/inventory/tracks/add")}
+          />
+        )}
       </div>
 
       {/* Table Card */}
@@ -152,7 +159,7 @@ const TrackList = () => {
         ) : (
           <DataTable
             title="Tracks List"
-            columns={columns}
+            columns={filteredColumns}
             data={data}
             loading={loading}
           />

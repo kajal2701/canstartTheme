@@ -6,11 +6,14 @@ import InputNumber from "@/components/ui/InputNumber";
 import Button from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import { JUMPER_TYPES } from "@/utils/constants";
 import { calculateTotalPrice } from "@/utils/helperFunctions";
 
 const CommonJumperForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
   const navigate = useNavigate();
+  const { user } = useSelector((s) => s.auth);
+  const isAdmin = user?.role === 1;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState(() => ({
     type: "",
@@ -47,11 +50,11 @@ const CommonJumperForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel
     if (!formData.quantity || !String(formData.quantity).trim()) e.quantity = "Quantity is required";
     else if (isNaN(formData.quantity) || parseFloat(formData.quantity) <= 0) e.quantity = "Quantity must be greater than 0";
 
-    if (!formData.pricePerUnit) e.pricePerUnit = "Price per unit is required";
-    else if (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0) e.pricePerUnit = "Price per unit must be greater than 0";
+    if (!formData.pricePerUnit && isAdmin) e.pricePerUnit = "Price per unit is required";
+    else if (isAdmin && (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0)) e.pricePerUnit = "Price per unit must be greater than 0";
 
-    if (!formData.totalPrice) e.totalPrice = "Total price is required";
-    else if (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0) e.totalPrice = "Enter a valid total price";
+    if (!formData.totalPrice && isAdmin) e.totalPrice = "Total price is required";
+    else if (isAdmin && (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0)) e.totalPrice = "Enter a valid total price";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -93,14 +96,18 @@ const CommonJumperForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel
               <InputNumber label="Quantity *" value={formData.quantity} onChange={(e) => handleInputChange("quantity", e.target.value)}
                 placeholder="Enter quantity" error={errors.quantity} min="0" noDecimal={true} />
             </div>
+            {isAdmin && (
             <div>
               <InputNumber label="Price Per Unit *" value={formData.pricePerUnit} onChange={(e) => handleInputChange("pricePerUnit", e.target.value)}
                 placeholder="Enter price per unit" error={errors.pricePerUnit} min="0" />
             </div>
+            )}
+            {isAdmin && (
             <div>
               <InputNumber label="Total Price" value={formData.totalPrice} onChange={(e) => handleInputChange("totalPrice", e.target.value)}
                 placeholder="0.00" disabled />
             </div>
+            )}
           </div>
           <div className="flex justify-end space-x-3 mt-8">
             <Button text="Cancel" className="btn-outline-dark" onClick={handleCancel} type="button" />

@@ -6,12 +6,15 @@ import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import { getColors } from "@/services/quoteService";
 import { TRACK_SIZES_OPTIONS } from "@/utils/constants";
 import { calculateTotalPrice } from "@/utils/helperFunctions";
 
 const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
   const navigate = useNavigate();
+  const { user } = useSelector((s) => s.auth);
+  const isAdmin = user?.role === 1;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState(() => {
@@ -61,7 +64,6 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
   }, [formData.totalFeet, formData.pricePerUnit]);
 
 
-
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -83,11 +85,11 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
     if (!formData.color) newErrors.color = "Color is required";
     if (!formData.totalFeet || !String(formData.totalFeet).trim()) newErrors.totalFeet = "Total feet is required";
     else if (isNaN(formData.totalFeet) || parseFloat(formData.totalFeet) <= 0) newErrors.totalFeet = "Total feet must be greater than 0";
-    if (!formData.size) newErrors.size = "Size is required";
-    if (!formData.pricePerUnit) newErrors.pricePerUnit = "Price per unit is required";
-    else if (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0) newErrors.pricePerUnit = "Price per unit must be greater than 0";
-    if (!formData.totalPrice) newErrors.totalPrice = "Total price is required";
-    else if (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0) newErrors.totalPrice = "Enter a valid total price";
+
+    if (!formData.pricePerUnit && isAdmin) newErrors.pricePerUnit = "Price per unit is required";
+    else if (isAdmin && (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0)) newErrors.pricePerUnit = "Price per unit must be greater than 0";
+    if (!formData.totalPrice && isAdmin) newErrors.totalPrice = "Total price is required";
+    else if (isAdmin && (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0)) newErrors.totalPrice = "Enter a valid total price";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -183,7 +185,7 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
             {/* Size */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Size <span className="text-red-500">*</span>
+                Size
               </label>
               <Select
                 value={formData.size}
@@ -195,31 +197,35 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
             </div>
 
             {/* Price Per Unit */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price Per Unit ($)<span className="text-red-500">*</span>
-              </label>
-              <InputNumber
-                value={formData.pricePerUnit}
-                onChange={(e) => handleInputChange("pricePerUnit", e.target.value)}
-                placeholder="Enter price per unit"
-                error={errors.pricePerUnit}
-              />
-            </div>
+            {isAdmin && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Price Per Unit ($)<span className="text-red-500">*</span>
+                </label>
+                <InputNumber
+                  value={formData.pricePerUnit}
+                  onChange={(e) => handleInputChange("pricePerUnit", e.target.value)}
+                  placeholder="Enter price per unit"
+                  error={errors.pricePerUnit}
+                />
+              </div>
+            )}
 
             {/* Total Price */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Price ($)<span className="text-red-500">*</span>
-              </label>
-              <InputNumber
-                value={formData.totalPrice}
-                onChange={(e) => handleInputChange("totalPrice", e.target.value)}
-                placeholder="Auto-calculated total"
-                error={errors.totalPrice}
-                disabled={true}
-              />
-            </div>
+            {isAdmin && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Total Price ($)<span className="text-red-500">*</span>
+                </label>
+                <InputNumber
+                  value={formData.totalPrice}
+                  onChange={(e) => handleInputChange("totalPrice", e.target.value)}
+                  placeholder="Auto-calculated total"
+                  error={errors.totalPrice}
+                  disabled={true}
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-3 mt-8">

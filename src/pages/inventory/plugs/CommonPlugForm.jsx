@@ -6,11 +6,14 @@ import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import { calculateTotalPrice } from "@/utils/helperFunctions";
 import { PLUG_TYPES } from "@/utils/constants";
 
 const CommonPlugForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, title }) => {
   const navigate = useNavigate();
+  const { user } = useSelector((s) => s.auth);
+  const isAdmin = user?.role === 1;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState(() => ({
     type: "",
@@ -39,11 +42,11 @@ const CommonPlugForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, 
     if (formData.quantity === "" || formData.quantity === null) e.quantity = "Quantity is required";
     else if (isNaN(formData.quantity) || parseFloat(formData.quantity) <= 0) e.quantity = "Quantity must be greater than 0";
 
-    if (formData.pricePerUnit === "" || formData.pricePerUnit === null) e.pricePerUnit = "Price per unit is required";
-    else if (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0) e.pricePerUnit = "Price per unit must be greater than 0";
+    if ((formData.pricePerUnit === "" || formData.pricePerUnit === null) && isAdmin) e.pricePerUnit = "Price per unit is required";
+    else if (isAdmin && (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0)) e.pricePerUnit = "Price per unit must be greater than 0";
 
-    if (!formData.totalPrice) e.totalPrice = "Total price is required";
-    else if (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0) e.totalPrice = "Enter a valid total price";
+    if (!formData.totalPrice && isAdmin) e.totalPrice = "Total price is required";
+    else if (isAdmin && (isNaN(formData.totalPrice) || parseFloat(formData.totalPrice) < 0)) e.totalPrice = "Enter a valid total price";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -86,16 +89,20 @@ const CommonPlugForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel, 
               <InputNumber value={formData.quantity} onChange={(e) => handleInputChange("quantity", e.target.value)}
                 placeholder="Enter quantity" error={errors.quantity} step="1" noDecimal />
             </div>
+            {isAdmin && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Price Per Unit ($)<span className="text-red-500">*</span></label>
               <InputNumber value={formData.pricePerUnit} onChange={(e) => handleInputChange("pricePerUnit", e.target.value)}
                 placeholder="Enter price per unit" error={errors.pricePerUnit} />
             </div>
-            <div className="md:col-span-2">
+            )}
+            {isAdmin && (
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Total Price ($)<span className="text-red-500">*</span></label>
               <InputNumber value={formData.totalPrice} onChange={(e) => handleInputChange("totalPrice", e.target.value)} disabled={true}
                 placeholder="Auto calculated" />
             </div>
+            )}
           </div>
           <div className="flex justify-end space-x-3 mt-8">
             <Button text="Cancel" className="btn-outline-dark" onClick={handleCancel} type="button" />
