@@ -71,6 +71,8 @@ const EditQuote = () => {
     setAdminNotes,
     discountPercent,
     setDiscountPercent,
+    discountExcludesController,
+    setDiscountExcludesController,
     totalLinearFeet,
     totalControllerPrice,
     totalLinearFeetPrice,
@@ -223,6 +225,7 @@ const EditQuote = () => {
         setCustomerNotes(quote.notes || "");
         setAdminNotes(quote.adminnotes || "");
         setDiscountPercent(quote.discount_percentage || 0);
+        setDiscountExcludesController(Boolean(quote.discount_excludes_controller));
 
         // ── Easy plug / Controller access images ──
         const prefillAccessImage = (accessObj, setEnabled, setFiles, setNotes) => {
@@ -489,6 +492,7 @@ const EditQuote = () => {
     );
     formData.append("total_feet_price", toCurrencyString(totalLinearFeetPrice));
     formData.append("discount_percentage", String(discountPercent || 0));
+    formData.append("discount_excludes_controller", discountExcludesController ? "1" : "0");
     formData.append("gst_percentage", String(selectedCustomer?.gst || 0));
     formData.append("gst", toCurrencyString(calculateGST()));
     formData.append("main_total", toCurrencyString(calculateMainTotal()));
@@ -814,7 +818,7 @@ const EditQuote = () => {
           <DiscountInput
             discountPercent={discountPercent}
             setDiscountPercent={setDiscountPercent}
-            subtotal={totalControllerPrice + totalLinearFeetPrice}
+            subtotal={discountExcludesController ? totalLinearFeetPrice : (totalControllerPrice + totalLinearFeetPrice)}
           />
 
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">

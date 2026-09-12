@@ -121,8 +121,8 @@ export const DB_COLUMN_MAP = {
 export const TRACK_TYPES = ["5.33ft Track", "6ft Track", "6.67ft Track", "7ft Track"];
 
 export const TRACK_SIZES_OPTIONS = [
-  { value: "Residential 48\"", label: "Residential 48\"" },
-  { value: "Residential 72\"", label: "Residential 72\"" },
+  { value: "Residential 48\" (6 holes)", label: "Residential 48\" (6 holes)" },
+  { value: "Residential 72\" (9 holes)", label: "Residential 72\" (9 holes)" },
   { value: "Special profile", label: "Special profile" },
 ];
 

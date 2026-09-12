@@ -132,7 +132,8 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
     const discountPercentage = Number(quote?.discount_percentage || 0);
     const gstPercentage = Number(quote?.gst_percentage || 0);
     const subtotal = totalFeetPrice + totalControllerPrice;
-    const discountAmount = (subtotal * discountPercentage) / 100;
+    const discountBase = quote?.discount_excludes_controller ? totalFeetPrice : subtotal;
+    const discountAmount = (discountBase * discountPercentage) / 100;
     const taxableBase = subtotal - discountAmount;
     const gstValue = (taxableBase * gstPercentage) / 100;
     return Number(quote?.main_total ?? taxableBase + gstValue) || 0;

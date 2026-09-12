@@ -271,8 +271,7 @@ export default function InvoiceView() {
               <span>
                 {formatCurrency(
                   quote.discount_amount ||
-                  ((parseFloat(quote.total_feet_price) +
-                    parseFloat(quote.total_controller_price)) *
+                  ((quote.discount_excludes_controller ? parseFloat(quote.total_feet_price) : (parseFloat(quote.total_feet_price) + parseFloat(quote.total_controller_price))) *
                     parseFloat(quote.discount_percentage)) /
                   100,
                 )}

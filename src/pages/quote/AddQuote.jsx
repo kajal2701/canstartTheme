@@ -71,6 +71,7 @@ const AddQuote = () => {
     totalLinearFeet,
     discountPercent,
     setDiscountPercent,
+    discountExcludesController,
     totalControllerPrice,
     totalLinearFeetPrice,
     calculateDiscount,
@@ -735,7 +736,7 @@ const AddQuote = () => {
           <DiscountInput
             discountPercent={discountPercent}
             setDiscountPercent={setDiscountPercent}
-            subtotal={totalControllerPrice + totalLinearFeetPrice}
+            subtotal={discountExcludesController ? totalLinearFeetPrice : (totalControllerPrice + totalLinearFeetPrice)}
           />
 
           {/* ==================== SUBMIT & SUMMARY ==================== */}

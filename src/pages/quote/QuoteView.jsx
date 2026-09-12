@@ -178,7 +178,8 @@ export default function QuoteView() {
   const dynamicExtraWork = parseFloat(quote.total_extra_work || 0) - excludedExtraWork;
 
   const dynamicSubtotal = dynamicFeetPrice + dynamicControllerPrice;
-  const dynamicDiscount = (dynamicSubtotal * parseFloat(quote.discount_percentage || 0)) / 100;
+  const dynamicDiscountBase = quote.discount_excludes_controller ? dynamicFeetPrice : dynamicSubtotal;
+  const dynamicDiscount = (dynamicDiscountBase * parseFloat(quote.discount_percentage || 0)) / 100;
 
   // Calculate base for GST
   const baseForGst = dynamicSubtotal + dynamicExtraWork - dynamicDiscount;

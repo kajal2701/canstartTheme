@@ -5,6 +5,8 @@ export const useQuoteForm = () => {
   // Customer selection
   const [selectedCustomer, setSelectedCustomer] = useState("");
 
+  const [discountExcludesController, setDiscountExcludesController] = useState(true);
+
   // Image details - Easy Plug
   const [isEasyPlugEnabled, setIsEasyPlugEnabled] = useState(true);
   const [easyPlugFiles, setEasyPlugFiles] = useState([{ id: Date.now() }]);
@@ -98,7 +100,7 @@ export const useQuoteForm = () => {
 
   // Calculated values
   const calculateDiscount = () => {
-    const subtotal = totalControllerPrice + totalLinearFeetPrice;
+    const subtotal = discountExcludesController ? totalLinearFeetPrice : (totalControllerPrice + totalLinearFeetPrice);
     return (subtotal * discountPercent) / 100;
   };
 
@@ -161,6 +163,8 @@ export const useQuoteForm = () => {
     totalLinearFeet,
     discountPercent,
     setDiscountPercent,
+    discountExcludesController,
+    setDiscountExcludesController,
     totalControllerPrice,
     totalLinearFeetPrice,
     // setTotalLinearFeetPrice,
