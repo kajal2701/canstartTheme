@@ -104,10 +104,26 @@ const EditQuote = () => {
         );
 
         // ── CustomerForm prefill ──
+        let extraEmails = [];
+        if (quote.customer_email_json) {
+          try {
+            const parsed =
+              typeof quote.customer_email_json === "string"
+                ? JSON.parse(quote.customer_email_json)
+                : quote.customer_email_json;
+            extraEmails = parsed
+              .filter((email) => email !== quote.email)
+              .map((email) => ({ value: email }));
+          } catch (e) {
+            console.error("Failed to parse customer_email_json", e);
+          }
+        }
+
         methods.reset({
           firstName: quote.fname || "",
           lastName: quote.lname || "",
           email: quote.email || "",
+          extraEmails,
           phoneNumber: quote.phone || "",
           street: quote.address || "",
           city: quote.city || "",
@@ -480,6 +496,13 @@ const EditQuote = () => {
     formData.append("fname", formValues.firstName || "");
     formData.append("lname", formValues.lastName || "");
     formData.append("email", formValues.email || "");
+
+    const allEmails = [
+      formValues.email,
+      ...(formValues.extraEmails || []).map((e) => e.value).filter(Boolean),
+    ].filter(Boolean);
+    formData.append("email_json", JSON.stringify(allEmails));
+
     formData.append("phone", formValues.phoneNumber || "");
     formData.append("street", formValues.street || "");
     formData.append("city", formValues.city || "");

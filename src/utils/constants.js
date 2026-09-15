@@ -180,10 +180,12 @@ export const CHART_COLORS = [
 ];
 
 export const CONTROLLER_TYPES = [
-  { value: "350W", label: "350W" },
-  { value: "450W", label: "450W" },
-  { value: "500W", label: "500W" },
-  { value: "600W", label: "600W" },
+  { value: "2026 24–350 (Less Than 205 Feet)", label: "2026 24–350 (Less Than 205 Feet)" },
+  { value: "2026 24–450 (Less Than 268 Feet)", label: "2026 24–450 (Less Than 268 Feet)" },
+  { value: "2026 24–350 Boost", label: "2026 24–350 Boost" },
+  { value: "2026 24–600 (Less Than 336 Feet)", label: "2026 24–600 (Less Than 336 Feet)" },
+  { value: "450 W", label: "450 W" },
+  { value: "Boost Box", label: "Boost Box" },
 ];
 
 export const CONNECTOR_TYPES = [
