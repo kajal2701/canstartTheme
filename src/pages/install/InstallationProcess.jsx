@@ -43,7 +43,12 @@ const InstallationProcess = () => {
       try {
         // Fetch job data
         const data = await getInstalls(user?.user_id || "", user?.role || "");
-        const allJobs = data?.upcoming_installations || [];
+        const allJobs = [
+          ...(data?.upcoming_installations || []),
+          ...(data?.past_installations_pending_invoice || []),
+          ...(data?.non_scheduled_jobs || []),
+          ...(data?.in_progress_installations || []),
+        ];
         const found = allJobs.find((j) => String(j.quote_id) === String(id));
 
         if (found) {
