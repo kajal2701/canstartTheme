@@ -7,6 +7,8 @@ import Icon from "@/components/ui/Icon";
 import { scheduleInstallation } from "../../../services/quoteService";
 import { getUsers } from "@/services/usersService";
 import { isPastDate } from "../../../utils/formatters";
+import Select from "react-select";
+import { CheckboxOption } from "../../../utils/helperFunctions";
 
 const ScheduleInstallationModal = ({
   activeModal,
@@ -17,7 +19,7 @@ const ScheduleInstallationModal = ({
   prefillInstallerId = null,
 }) => {
   const [installationDate, setInstallationDate] = useState("");
-  const [installerId, setInstallerId] = useState("");
+  const [installerIds, setInstallerIds] = useState([]);
   const [installers, setInstallers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingInstallers, setIsFetchingInstallers] = useState(false);
@@ -54,9 +56,15 @@ const ScheduleInstallationModal = ({
         setInstallationDate("");
       }
       if (prefillInstallerId) {
-        setInstallerId(prefillInstallerId);
+        try {
+          // prefillInstallerId could be a JSON string from backend or an array
+          const parsed = typeof prefillInstallerId === 'string' ? JSON.parse(prefillInstallerId) : prefillInstallerId;
+          setInstallerIds(Array.isArray(parsed) ? parsed : [parsed]);
+        } catch {
+          setInstallerIds([prefillInstallerId]);
+        }
       } else {
-        setInstallerId("");
+        setInstallerIds([]);
       }
     }
   }, [activeModal, prefillDate, prefillInstallerId]);
@@ -69,12 +77,12 @@ const ScheduleInstallationModal = ({
       await scheduleInstallation({
         quote_id: quoteData?.id,
         installation_date: installationDate,
-        installer_id: installerId,
+        installer_ids: installerIds,
       });
       onScheduled();
       onClose();
       setInstallationDate("");
-      setInstallerId("");
+      setInstallerIds([]);
     } catch (error) {
       console.error("Schedule failed:", error);
     } finally {
@@ -85,7 +93,7 @@ const ScheduleInstallationModal = ({
   const handleClose = () => {
     if (!isLoading) {
       setInstallationDate("");
-      setInstallerId("");
+      setInstallerIds([]);
       onClose();
     }
   };
@@ -115,6 +123,7 @@ const ScheduleInstallationModal = ({
             onClick={handleSchedule}
             disabled={
               !installationDate ||
+              installerIds.length === 0 ||
               isLoading ||
               // ✅ For reschedule: disable if user picked the same date as already scheduled
               (prefillDate && installationDate === prefillDate.split("T")[0])
@@ -162,33 +171,34 @@ const ScheduleInstallationModal = ({
       {/* Installer Field */}
       <div>
         <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          <Icon icon="ph:user-list" />
-          Assign Installer <span className="text-gray-400 font-normal">(Optional)</span>
+          <Icon icon="ph:users" />
+          Assign Installers <span className="text-red-500">*</span>
         </label>
-        <select
-          value={installerId}
-          onChange={(e) => setInstallerId(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          required
-          disabled={isFetchingInstallers}
-        >
-          <option value="" disabled>
-            {isFetchingInstallers ? "Loading installers..." : "Select an installer"}
-          </option>
-          {installers.map((inst) => (
-            <option key={inst.id} value={inst.id}>
-              {inst.name}
-            </option>
-          ))}
-        </select>
+        <Select
+          isMulti
+          options={installers.map((inst) => ({ value: inst.id, label: inst.name }))}
+          value={installers
+            .filter((inst) => installerIds.includes(String(inst.id)))
+            .map((inst) => ({ value: inst.id, label: inst.name }))}
+          onChange={(selected) => {
+            setInstallerIds(selected ? selected.map((s) => String(s.value)) : []);
+          }}
+          components={{ Option: CheckboxOption }}
+          hideSelectedOptions={false}
+          closeMenuOnSelect={false}
+          isDisabled={isFetchingInstallers}
+          placeholder={isFetchingInstallers ? "Loading installers..." : "Select installers"}
+          className="react-select"
+          classNamePrefix="select"
+        />
         {/* ✅ Different helper text for reschedule */}
         <p className="text-xs text-gray-500 mt-2">
           {prefillDate
-            ? installerId
-              ? "The customer and installer will receive an email with the updated details."
+            ? installerIds.length > 0
+              ? "The customer and installer(s) will receive an email with the updated details."
               : "The customer will receive an email with the updated details."
-            : installerId
-              ? "The customer and installer will receive an email notification with the scheduled date."
+            : installerIds.length > 0
+              ? "The customer and installer(s) will receive an email notification with the scheduled date."
               : "The customer will receive an email notification with the scheduled date."}
         </p>
       </div>

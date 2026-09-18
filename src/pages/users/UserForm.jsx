@@ -6,6 +6,7 @@ import Select from "@/components/ui/Select";
 import { useNavigate } from "react-router-dom";
 
 const roles = [
+  { value: "1", label: "Admin" },
   { value: "2", label: "Installer" },
   { value: "3", label: "Operations" },
   { value: "4", label: "Sales" },
@@ -73,6 +74,7 @@ const UserForm = ({ methods, onSubmit, title, submitText, isEdit = false }) => {
                   name="email"
                   register={register}
                   error={errors.email}
+                  autoComplete="off"
                   options={{
                     required: "Email is required",
                     pattern: {
@@ -88,6 +90,7 @@ const UserForm = ({ methods, onSubmit, title, submitText, isEdit = false }) => {
                 <Textinput
                   label="Password"
                   type="password"
+                  autoComplete="new-password"
                   // ← different placeholder for add vs edit
                   placeholder={
                     isEdit ? "Leave blank to keep current" : "Password"
@@ -98,18 +101,18 @@ const UserForm = ({ methods, onSubmit, title, submitText, isEdit = false }) => {
                   options={
                     isEdit
                       ? {
-                          minLength: {
-                            value: 8,
-                            message: "Password must be at least 8 characters",
-                          },
-                        }
+                        minLength: {
+                          value: 8,
+                          message: "Password must be at least 8 characters",
+                        },
+                      }
                       : {
-                          required: "Password is required",
-                          minLength: {
-                            value: 8,
-                            message: "Password must be at least 8 characters",
-                          },
-                        }
+                        required: "Password is required",
+                        minLength: {
+                          value: 8,
+                          message: "Password must be at least 8 characters",
+                        },
+                      }
                   }
                 />
               </div>

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { getLights, deleteLight } from "@/services/inventoryService";
+import { calculateAvailableInventory } from "@/utils/helperFunctions";
 
 const LightList = () => {
   const navigate = useNavigate();
@@ -46,7 +47,20 @@ const LightList = () => {
   const columns = useMemo(() => [
     { Header: "Type", accessor: "type" },
     { Header: "Supplier", accessor: "supplier", Cell: ({ value }) => value || "—" },
-    { Header: "Quantity", accessor: "quantity" },
+    { Header: "Total Qty", accessor: "quantity" },
+    { Header: "Held", accessor: "held_quantity", Cell: ({ value }) => value || 0 },
+    { Header: "Used", accessor: "used_quantity", Cell: ({ value }) => value || 0 },
+    {
+      Header: "Available",
+      accessor: "available",
+      Cell: ({ row }) => {
+        return calculateAvailableInventory(
+          row.original.quantity,
+          row.original.held_quantity,
+          row.original.used_quantity
+        );
+      },
+    },
     { Header: "Price Per Unit", accessor: "pricePerUnit", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
     { Header: "Total Price", accessor: "totalPrice", Cell: ({ value }) => `$${parseFloat(value).toFixed(2)}` },
     {

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { getTracks, deleteTrack } from "@/services/inventoryService";
+import { calculateAvailableInventory } from "@/utils/helperFunctions";
 
 const TrackList = () => {
   const navigate = useNavigate();
@@ -79,6 +80,19 @@ const TrackList = () => {
       { Header: "Color", accessor: "color" },
       { Header: "Supplier", accessor: "supplier", Cell: ({ value }) => value || "—" },
       { Header: "Total Feet", accessor: "totalFeet" },
+      { Header: "Held", accessor: "held_quantity", Cell: ({ value }) => value || 0 },
+      { Header: "Used", accessor: "used_quantity", Cell: ({ value }) => value || 0 },
+      {
+        Header: "Available",
+        accessor: "available",
+        Cell: ({ row }) => {
+          return calculateAvailableInventory(
+            row.original.totalFeet,
+            row.original.held_quantity,
+            row.original.used_quantity
+          );
+        },
+      },
       { Header: "Size", accessor: "size", Cell: ({ value }) => value || "—" },
       {
         Header: "Price Per Unit",

@@ -3,15 +3,15 @@ import { getTakenItemsList } from "@/components/install/process/PostInstallation
 export const validateStep = (step, processState) => {
   if (step === 1) {
     const d = processState?.prep || {};
-    // Required: track type and screws must be selected
-    if (!d.trackType || !d.screws) return false;
+    // Required: track type must be selected
+    if (!d.trackType) return false;
 
     // All quote products must be picked
     const quoteProducts = d.quoteProducts || [];
     if (quoteProducts.length > 0 && quoteProducts.some((p) => !p.picked)) return false;
 
     // Checked optional items must have qty > 0
-    const optionalKeys = ["conduit", "cableTie", "connectorsBag"];
+    const optionalKeys = ["screws", "connectorsBag"];
     for (const key of optionalKeys) {
       if (d[key] && (!d[`${key}Qty`] || Number(d[`${key}Qty`]) <= 0)) {
         return false;

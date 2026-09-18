@@ -5,6 +5,7 @@ import { useState } from "react";
 import { encodeId } from "../../../utils/mappers";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import ScheduleInstallationModal from "./ScheduleInstallationModal";
 import confirmAction from "../../../utils/confirmAction";
 
@@ -19,8 +20,9 @@ const QuoteActionButtons = ({ id, navigate, fetchQuotes, rowData }) => {
 
   const canSchedule = rowData?.status === "Confirmed - Deposit Paid";
   const canResendInvoice = ["Invoice Sent", "Invoice Sent - Awaiting Confirmation", "Fully Paid"].includes(rowData?.status);
+  const location = useLocation();
   const handleView = () => navigate(`/quote/view_quote_admin/${id}`);
-  const handleEdit = () => navigate(`/quote/edit_quote/${id}`);
+  const handleEdit = () => navigate(`/quote/edit_quote/${id}`, { state: { returnUrl: location.pathname + location.search } });
 
   const handleConfirmDelete = async () => {
     try {

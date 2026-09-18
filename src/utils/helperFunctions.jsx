@@ -1,6 +1,23 @@
 import React from "react";
 import Icon from "@/components/ui/Icon";
 import { REVIEW_DATA } from "./constants";
+import { components } from "react-select";
+
+export const CheckboxOption = (props) => {
+  return (
+    <components.Option {...props}>
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={props.isSelected}
+          onChange={() => null}
+          className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+        />
+        <span>{props.label}</span>
+      </div>
+    </components.Option>
+  );
+};
 
 export const RichDescription = ({ text }) => {
   const parts = text.split(/\*\*(.*?)\*\*/g);
@@ -537,4 +554,11 @@ export const getDefaultProcessState = (job) => {
     // Step 7 — Completion
     completed: false,
   };
+};
+
+export const calculateAvailableInventory = (quantity, heldQuantity, usedQuantity) => {
+  const total = Number(quantity) || 0;
+  const held = Number(heldQuantity) || 0;
+  const used = Number(usedQuantity) || 0;
+  return Math.max(0, total - held - used);
 };

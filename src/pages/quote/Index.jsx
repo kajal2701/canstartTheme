@@ -78,6 +78,26 @@ const Quote = () => {
   const [dateFilter, setDateFilter] = useState(() => searchParams.get("date") || "");
   const [installationFilter, setInstallationFilter] = useState(() => searchParams.get("installation") || "");
 
+  // Sort State
+  const [sortBy, setSortBy] = useState("");
+  const [sortOrder, setSortOrder] = useState("");
+
+  // Map react-table accessor IDs to backend sort column keys
+  const ACCESSOR_TO_SORT_KEY = useMemo(() => ({
+    srNumber: "quote_id",
+    customerName: "customer_name",
+    total: "total",
+    date: "created_at",
+    installationSchedule: "installation_date",
+  }), []);
+
+  const handleSortChange = useCallback((columnId, direction) => {
+    const backendKey = ACCESSOR_TO_SORT_KEY[columnId] || "";
+    setSortBy(backendKey);
+    setSortOrder(direction);
+    setPage(1);
+  }, [ACCESSOR_TO_SORT_KEY]);
+
   const [quotesData, setQuotesData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uniqueSalesmen, setUniqueSalesmen] = useState([]);
@@ -166,7 +186,9 @@ const Quote = () => {
         status: statusFilter,
         salesman: salesmanFilter === "all" ? "" : salesmanFilter,
         date: dateFilter,
-        installation_date: installationFilter
+        installation_date: installationFilter,
+        sortBy,
+        sortOrder
       });
 
       if (res && res.data) {
@@ -182,7 +204,7 @@ const Quote = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, page, limit, debouncedSearch, statusFilter, salesmanFilter, dateFilter, installationFilter]);
+  }, [user, page, limit, debouncedSearch, statusFilter, salesmanFilter, dateFilter, installationFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     let mounted = true;
@@ -450,58 +472,56 @@ const Quote = () => {
 
   return (
     <>
-      {loading ? (
-        <div className="flex justify-center items-center min-h-[200px]">
-          <LoadingIcon className="h-12 w-12 text-indigo-500" />
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <Card noborder>
-            <FilterSection
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              salesmanFilter={salesmanFilter}
-              setSalesmanFilter={setSalesmanFilter}
-              dateFilter={dateFilter}
-              setDateFilter={setDateFilter}
-              installationFilter={installationFilter}
-              setInstallationFilter={setInstallationFilter}
-              uniqueSalesmen={uniqueSalesmen}
-              STATUS_OPTIONS={quoteStatusList}
-              onClearAll={onClearAll}
-              limit={limit}
-              setLimit={setLimit}
-            />
-            <div className="flex gap-2">
-              <Button
-                text="Export"
-                icon="ph:download-simple"
-                className="btn-warning"
-                onClick={handleExport}
-              />
-              <Button
-                text="Add Quote"
-                icon="ph:plus"
-                className="btn-primary"
-                onClick={() => navigate("/quote/add")}
-              />
-            </div>
-          </Card>
-
-          <DataTable
-            title={`Quote List (${totalRecords})`}
-            columns={columns}
-            data={data}
-            loading={loading}
-            serverSidePagination={true}
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
+      <div className="space-y-4">
+        <Card noborder>
+          <FilterSection
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            salesmanFilter={salesmanFilter}
+            setSalesmanFilter={setSalesmanFilter}
+            dateFilter={dateFilter}
+            setDateFilter={setDateFilter}
+            installationFilter={installationFilter}
+            setInstallationFilter={setInstallationFilter}
+            uniqueSalesmen={uniqueSalesmen}
+            STATUS_OPTIONS={quoteStatusList}
+            onClearAll={onClearAll}
+            limit={limit}
+            setLimit={setLimit}
           />
-        </div>
-      )}
+
+          <div className="flex gap-2">
+            <Button
+              text="Export"
+              icon="ph:download-simple"
+              className="btn-warning"
+              onClick={handleExport}
+            />
+
+            <Button
+              text="Add Quote"
+              icon="ph:plus"
+              className="btn-primary"
+              onClick={() => navigate("/quote/add")}
+            />
+          </div>
+        </Card>
+
+        <DataTable
+          title={`Quote List (${totalRecords})`}
+          columns={columns}
+          data={data}
+          loading={loading}
+          serverSidePagination={true}
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onSortChange={handleSortChange}
+          initialSortBy={[]}
+        />
+      </div>
 
       <FutureReferenceModal
         activeModal={futureRefModal.open}

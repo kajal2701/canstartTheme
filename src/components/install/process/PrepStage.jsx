@@ -1,12 +1,26 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Icon from "@/components/ui/Icon";
 import Card from "@/components/ui/Card";
 import StepHeader from "./StepHeader";
-import { TRACK_TYPES } from "@/utils/constants";
+import { TRACK_SIZES_OPTIONS } from "@/utils/constants";
 import { calculateAutoQuantities, blockInvalidNumberKeys } from "@/utils/helperFunctions";
+import { getHeldInventory } from "@/services/inventoryService";
+import HeldInventorySection from "./HeldInventorySection";
 
-const PrepStage = ({ data, onChange }) => {
+const PrepStage = ({ quoteId, data, onChange }) => {
   const [showTrackPicker, setShowTrackPicker] = useState(false);
+  const [heldItems, setHeldItems] = useState([]);
+  const [isFetchingHolds, setIsFetchingHolds] = useState(false);
+
+  useEffect(() => {
+    if (quoteId) {
+      setIsFetchingHolds(true);
+      getHeldInventory(quoteId)
+        .then(res => setHeldItems(res || []))
+        .catch(err => console.error("Failed to fetch held inventory", err))
+        .finally(() => setIsFetchingHolds(false));
+    }
+  }, [quoteId]);
 
   const update = useCallback((field, value) => {
     onChange({ ...data, [field]: value });
@@ -31,7 +45,7 @@ const PrepStage = ({ data, onChange }) => {
   }, [otherItems, update]);
 
   const linearFeet = data?.linearFeet || 0;
-  const { numberOfLights, numberOfScrews, numberOfTracks } = calculateAutoQuantities(linearFeet);
+  const { numberOfLights, numberOfTracks } = calculateAutoQuantities(linearFeet);
 
   return (
     <div className="space-y-6">
@@ -79,6 +93,9 @@ const PrepStage = ({ data, onChange }) => {
         ))}
       </div>
 
+      {/* ── Held Inventory ── */}
+      <HeldInventorySection quoteId={quoteId} isFetchingHolds={isFetchingHolds} heldItems={heldItems} />
+
       {/* ── Checklist ── */}
       <Card title="Pick-up Checklist" className="!shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="space-y-3">
@@ -114,20 +131,20 @@ const PrepStage = ({ data, onChange }) => {
               <div className="px-4 pb-3 pt-1 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                 <p className="text-xs text-gray-500 mb-2">Select which track type the installer is picking up:</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {TRACK_TYPES.map((type) => (
+                  {TRACK_SIZES_OPTIONS.map((option) => (
                     <button
-                      key={type}
+                      key={option.value}
                       type="button"
-                      onClick={() => { 
-                        onChange({ ...data, trackType: type, trackQty: numberOfTracks }); 
-                        setShowTrackPicker(false); 
+                      onClick={() => {
+                        onChange({ ...data, trackType: option.value, trackQty: numberOfTracks });
+                        setShowTrackPicker(false);
                       }}
-                      className={`text-sm px-3 py-2 rounded-lg border transition-all ${data?.trackType === type
+                      className={`text-sm px-3 py-2 rounded-lg border transition-all ${data?.trackType === option.value
                         ? "bg-indigo-500 text-white border-indigo-500"
                         : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-indigo-300"
                         }`}
                     >
-                      {type}
+                      {option.label}
                     </button>
                   ))}
                 </div>
@@ -170,9 +187,9 @@ const PrepStage = ({ data, onChange }) => {
 
           {/* Other checkbox items */}
           {[
-            { key: "screws", label: "Screws", icon: "ph:wrench", color: "gray", qty: numberOfScrews },
-            { key: "conduit", label: "Conduit", icon: "ph:pipe", color: "sky", optional: true },
-            { key: "cableTie", label: "Cable Tie", icon: "ph:link", color: "teal", optional: true },
+            { key: "screws", label: "Screws", icon: "ph:wrench", color: "gray", optional: true },
+            // { key: "conduit", label: "Conduit", icon: "ph:pipe", color: "sky", optional: true },
+            // { key: "cableTie", label: "Cable Tie", icon: "ph:link", color: "teal", optional: true },
             { key: "connectorsBag", label: "Connectors Bag", icon: "ph:plugs-connected", color: "orange", optional: true },
           ].map((item) => (
             <div
@@ -187,12 +204,7 @@ const PrepStage = ({ data, onChange }) => {
                   type="checkbox"
                   checked={!!data?.[item.key]}
                   onChange={(e) => {
-                    const isChecked = e.target.checked;
-                    if (item.key === "screws") {
-                      update(item.key, isChecked ? item.qty : false);
-                    } else {
-                      update(item.key, isChecked);
-                    }
+                    update(item.key, e.target.checked);
                   }}
                   className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
                 />

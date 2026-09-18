@@ -123,3 +123,19 @@ export const getPowersupplies = async () => {
 export const addPowersupply = (payload) => api("/inventory/powersupplies/add", "POST", payload);
 export const editPowersupply = (payload) => api("/inventory/powersupplies/edit", "POST", payload);
 export const deletePowersupply = (id) => api("/inventory/powersupplies/delete", "POST", { powersupply_id: id });
+
+// -----------------------------------------
+// Inventory Holds
+// -----------------------------------------
+
+export const getHoldOptions = async (quoteId) => {
+  const result = await api(`/inventory/hold-options/${quoteId}`);
+  return result?.success ? result.data || [] : [];
+};
+
+export const holdInventory = (data) => api("/inventory/hold", "POST", data);
+
+export const getHeldInventory = async (quoteId) => {
+  const result = await api(`/inventory/held/${quoteId}`);
+  return result?.success ? result.data || [] : [];
+};

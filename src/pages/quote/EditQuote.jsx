@@ -4,7 +4,7 @@ import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 import { useForm } from "react-hook-form";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuoteForm } from "@/hooks/useQuoteForm";
 import ProductRow from "@/components/quote/ProductRow";
 import CustomProductRow from "@/components/quote/CustomProductRow";
@@ -22,7 +22,10 @@ import { scrollToFirstError } from "../../utils/mappers";
 const EditQuote = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useSelector((state) => state.auth);
+
+  const returnUrl = location.state?.returnUrl || "/quote";
 
   const [pageLoading, setPageLoading] = useState(true);
   const [quoteData, setQuoteData] = useState(null);
@@ -273,7 +276,7 @@ const EditQuote = () => {
       } catch (e) {
         console.error(e);
         toast.error("Failed to load quote");
-        navigate("/quote");
+        navigate(returnUrl);
       } finally {
         setPageLoading(false);
       }
@@ -652,7 +655,7 @@ const EditQuote = () => {
       localStorage.removeItem("lineEditorColor");
       localStorage.removeItem("lineEditorStrokeWidth");
       toast.success(result?.message || "Quote updated successfully.");
-      navigate("/quote");
+      navigate(returnUrl);
     } catch (e) {
       toast.error(e.message || "Failed to update quote");
     } finally {

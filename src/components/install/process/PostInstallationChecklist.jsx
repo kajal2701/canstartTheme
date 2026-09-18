@@ -20,10 +20,9 @@ export const getTakenItemsList = (prepData) => {
     items.push({ key: "tracks", label: "Tracks", icon: "ph:arrow-line-down", taken: trackQty });
   }
 
-  // 3. Screws — use stored qty from prep (now a number, not boolean)
-  const screwsVal = prepData?.screws;
-  if (screwsVal && screwsVal !== false) {
-    const screwQty = typeof screwsVal === "number" ? screwsVal : (parseInt(screwsVal) || 0);
+  // 3. Screws — now optional, uses screwsQty like other optional items
+  if (prepData?.screws) {
+    const screwQty = parseInt(prepData?.screwsQty) || 0;
     if (screwQty > 0) {
       items.push({ key: "screws", label: "Screws", icon: "ph:wrench", taken: screwQty });
     }

@@ -29,7 +29,6 @@ const EditUser = () => {
       if (result.success) {
         const u = result.data;
         const decodedPassword = atob(u.password);
-        const isAdminRole = Number(u.role) === 1;
         originalPassword.current = decodedPassword ?? "";
 
         reset({
@@ -37,7 +36,7 @@ const EditUser = () => {
           lastName: u.lname ?? "",
           email: u.email ?? "",
           password: "",
-          role: isAdminRole ? "" : String(u.role),
+          role: String(u.role),
         });
       } else {
         toast.error("Failed to load user");

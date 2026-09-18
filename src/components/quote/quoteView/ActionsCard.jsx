@@ -3,8 +3,9 @@ import { useSelector } from "react-redux";
 import Icon from "@/components/ui/Icon";
 import confirmAction from "../../../utils/confirmAction";
 import Card from "@/components/ui/Card";
-import { SectionHeader } from "../../../utils/helperFunctions";
+import { SectionHeader, CheckboxOption } from "../../../utils/helperFunctions";
 import QuoteButton from "./QuoteButton";
+import Select from "react-select";
 import PaymentInfo from "./PaymentInfo";
 import { BUTTON_ICONS } from "./constants";
 import Modal from "@/components/ui/Modal";
@@ -26,6 +27,7 @@ import {
 } from "../../../services/quoteService";
 import { getUsers } from "@/services/usersService";
 import WarrantySection from "./WarrantySection";
+import InventoryHoldSection from "./InventoryHoldSection";
 
 const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   const { user } = useSelector((state) => state.auth);
@@ -53,7 +55,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
   const [installationDate, setInstallationDate] = useState(
     quote?.installation_date || "",
   );
-  const [installerId, setInstallerId] = useState("");
+  const [installerIds, setInstallerIds] = useState([]);
   const [installers, setInstallers] = useState([]);
   const [isFetchingInstallers, setIsFetchingInstallers] = useState(false);
 
@@ -113,6 +115,9 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
     quote?.installation_date &&
     !quote?.invoice_date &&
     Number(pd?.pending_payment_amount) > 0;
+
+  // Inventory Hold logic
+  const showHoldInventory = quoteStatus === 3 && quote?.installation_date;
 
   // Stage 7: invoice sent, awaiting full payment
   const showAwaitingFullPayment =
@@ -331,7 +336,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
       const result = await scheduleInstallation({
         quote_id: quote?.quote_id,
         installation_date: installationDate,
-        installer_id: installerId,
+        installer_ids: installerIds,
       });
       toast.success(result.message);
       onSubmitSuccess?.();
@@ -718,36 +723,44 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
               />
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Assign Installer (Optional):
+                  Assign Installers (*):
                 </label>
-                <select
-                  value={installerId}
-                  onChange={(e) => setInstallerId(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  required
-                  disabled={isFetchingInstallers}
-                >
-                  <option value="" disabled>
-                    {isFetchingInstallers ? "Loading installers..." : "Select an installer"}
-                  </option>
-                  {installers.map((inst) => (
-                    <option key={inst.id} value={inst.id}>
-                      {inst.name}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  isMulti
+                  options={installers.map((inst) => ({ value: inst.id, label: inst.name }))}
+                  value={installers
+                    .filter((inst) => installerIds.includes(String(inst.id)))
+                    .map((inst) => ({ value: inst.id, label: inst.name }))}
+                  onChange={(selected) => {
+                    setInstallerIds(selected ? selected.map((s) => String(s.value)) : []);
+                  }}
+                  components={{ Option: CheckboxOption }}
+                  hideSelectedOptions={false}
+                  closeMenuOnSelect={false}
+                  isDisabled={isFetchingInstallers}
+                  placeholder={isFetchingInstallers ? "Loading installers..." : "Select installers"}
+                  className="react-select"
+                  classNamePrefix="select"
+                />
               </div>
             </div>
             <Button
               text={isScheduling ? "Scheduling..." : "Schedule Installation"}
               className="bg-blue-500 hover:bg-blue-600 text-white mt-3"
               type="button"
-              disabled={isScheduling || !installationDate}
+              disabled={isScheduling || !installationDate || installerIds.length === 0}
               onClick={handleScheduleInstallation}
             />
           </div>
         </>
       )}
+
+      {/* ── Inventory Hold Section ── */}
+      <InventoryHoldSection
+        quote={quote}
+        showHoldInventory={showHoldInventory}
+        hasActionAccess={hasActionAccess}
+      />
 
       {/* ── Stage 6: Send Final Invoice ── */}
       {showSendInvoice && hasActionAccess && (

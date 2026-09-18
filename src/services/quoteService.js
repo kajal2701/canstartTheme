@@ -1,6 +1,6 @@
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const getQuotes = async ({ userId, role, page = 1, limit = 10, search = "", status = "", salesman = "", date = "", installation_date = "" }) => {
+export const getQuotes = async ({ userId, role, page = 1, limit = 10, search = "", status = "", salesman = "", date = "", installation_date = "", sortBy = "", sortOrder = "" }) => {
   try {
     const params = new URLSearchParams();
     if (userId != null && userId !== "") params.append("user_id", userId);
@@ -12,6 +12,9 @@ export const getQuotes = async ({ userId, role, page = 1, limit = 10, search = "
     if (salesman) params.append("salesman", salesman);
     if (date) params.append("date", date);
     if (installation_date) params.append("installation_date", installation_date);
+    if (sortBy) params.append("sort_by", sortBy);
+    if (sortOrder) params.append("sort_order", sortOrder);
+
 
     const res = await fetch(
       `${BASE_URL}/quote/manage_quote?${params.toString()}`,

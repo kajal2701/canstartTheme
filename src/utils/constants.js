@@ -141,8 +141,8 @@ export const CORE_ITEMS = [
 
 // Checkbox items from prep stage — only shown if selected in prep
 export const PREP_CHECKBOX_ITEMS = [
-  { key: "conduit", prepKey: "conduit", label: "Conduit", icon: "ph:pipe", qtyKey: "conduitQty" },
-  { key: "cableTie", prepKey: "cableTie", label: "Cable Tie", icon: "ph:link", qtyKey: "cableTieQty" },
+  // { key: "conduit", prepKey: "conduit", label: "Conduit", icon: "ph:pipe", qtyKey: "conduitQty" },
+  // { key: "cableTie", prepKey: "cableTie", label: "Cable Tie", icon: "ph:link", qtyKey: "cableTieQty" },
   { key: "connectorsBag", prepKey: "connectorsBag", label: "Connectors Bag", icon: "ph:plugs-connected", qtyKey: "connectorsBagQty" },
 ];
 

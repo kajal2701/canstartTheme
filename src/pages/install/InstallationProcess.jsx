@@ -228,7 +228,7 @@ const InstallationProcess = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <PrepStage data={processState.prep} onChange={(v) => updateStep("prep", v)} />;
+        return <PrepStage quoteId={id} data={processState.prep} onChange={(v) => updateStep("prep", v)} />;
       case 2:
         return <OnTheWay data={processState.onTheWay} onChange={(v) => updateStep("onTheWay", v)} job={job} />;
       case 3:

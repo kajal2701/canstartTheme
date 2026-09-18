@@ -1,5 +1,6 @@
 import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
+import React, { useEffect } from "react";
 import {
   useTable,
   useSortBy,
@@ -21,14 +22,23 @@ const DataTable = ({
   currentPage = 1,
   totalPages = 1,
   onPageChange = () => { },
+  onSortChange,
+  initialSortBy = [],
 }) => {
+  const isServerSort = serverSidePagination && typeof onSortChange === "function";
+
+
   const tableInstance = useTable(
     {
       columns,
       data,
       initialState: {
         pageSize: serverSidePagination ? data.length || 10 : initialPageSize,
+        sortBy: initialSortBy,
       },
+      manualSortBy: isServerSort,
+      disableMultiSort: true,
+      disableSortRemove: true,
     },
     useGlobalFilter,
     useSortBy,
@@ -51,7 +61,18 @@ const DataTable = ({
     prepareRow,
   } = tableInstance;
 
-  const { globalFilter, pageIndex } = state;
+  const { globalFilter, pageIndex, sortBy } = state;
+
+  useEffect(() => {
+    if (!isServerSort || !onSortChange) {
+      return;
+    }
+    if (sortBy.length > 0) {
+      const columnId = sortBy[0].id;
+      const direction = sortBy[0].desc ? "desc" : "asc";
+      onSortChange(columnId, direction);
+    }
+  }, [sortBy, isServerSort, onSortChange]);
 
   return (
     <Card noborder>
@@ -128,8 +149,8 @@ const DataTable = ({
                           <td key={`sk-${rIdx}-${cIdx}`} className="table-td">
                             <div
                               className={`h-4 rounded ${cIdx % 2 === 0
-                                  ? "bg-gray-100 dark:bg-gray-700 w-5/6"
-                                  : "bg-gray-100 dark:bg-gray-700 w-3/4"
+                                ? "bg-gray-100 dark:bg-gray-700 w-5/6"
+                                : "bg-gray-100 dark:bg-gray-700 w-3/4"
                                 }`}
                             />
                           </td>
