@@ -1,6 +1,6 @@
 // src/components/quote/quotelisting/ScheduleInstallationModal.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
@@ -23,6 +23,7 @@ const ScheduleInstallationModal = ({
   const [installers, setInstallers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingInstallers, setIsFetchingInstallers] = useState(false);
+  const originalInstallerIdsRef = useRef([]);
 
 
   useEffect(() => {
@@ -59,12 +60,16 @@ const ScheduleInstallationModal = ({
         try {
           // prefillInstallerId could be a JSON string from backend or an array
           const parsed = typeof prefillInstallerId === 'string' ? JSON.parse(prefillInstallerId) : prefillInstallerId;
-          setInstallerIds(Array.isArray(parsed) ? parsed : [parsed]);
+          const ids = Array.isArray(parsed) ? parsed.map(String) : [String(parsed)];
+          setInstallerIds(ids);
+          originalInstallerIdsRef.current = ids;
         } catch {
-          setInstallerIds([prefillInstallerId]);
+          setInstallerIds([String(prefillInstallerId)]);
+          originalInstallerIdsRef.current = [String(prefillInstallerId)];
         }
       } else {
         setInstallerIds([]);
+        originalInstallerIdsRef.current = [];
       }
     }
   }, [activeModal, prefillDate, prefillInstallerId]);
@@ -125,8 +130,9 @@ const ScheduleInstallationModal = ({
               !installationDate ||
               installerIds.length === 0 ||
               isLoading ||
-              // ✅ For reschedule: disable if user picked the same date as already scheduled
-              (prefillDate && installationDate === prefillDate.split("T")[0])
+              // ✅ For reschedule: disable only if both date AND installer are unchanged
+              (prefillDate && installationDate === prefillDate.split("T")[0] &&
+                JSON.stringify([...installerIds].sort()) === JSON.stringify([...originalInstallerIdsRef.current].sort()))
               || isPastDate(prefillDate)
             }
             isLoading={isLoading}

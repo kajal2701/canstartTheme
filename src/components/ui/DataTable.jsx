@@ -27,13 +27,12 @@ const DataTable = ({
 }) => {
   const isServerSort = serverSidePagination && typeof onSortChange === "function";
 
-
   const tableInstance = useTable(
     {
       columns,
       data,
       initialState: {
-        pageSize: serverSidePagination ? data.length || 10 : initialPageSize,
+        pageSize: serverSidePagination ? 9999 : initialPageSize,
         sortBy: initialSortBy,
       },
       manualSortBy: isServerSort,
@@ -58,8 +57,17 @@ const DataTable = ({
     state,
     setGlobalFilter,
     gotoPage,
+    setPageSize,
     prepareRow,
   } = tableInstance;
+
+  // Keep react-table's internal pageSize in sync with server data
+  // so it never clips rows that the server already paginated
+  useEffect(() => {
+    if (serverSidePagination && data.length > 0) {
+      setPageSize(data.length);
+    }
+  }, [serverSidePagination, data.length, setPageSize]);
 
   const { globalFilter, pageIndex, sortBy } = state;
 
@@ -182,18 +190,18 @@ const DataTable = ({
             </div>
           </div>
         </div>
-        {!loading && (
-          serverSidePagination ? (
-            <TablePagination
-              pageIndex={currentPage - 1}
-              totalPages={totalPages}
-              canPreviousPage={currentPage > 1}
-              canNextPage={currentPage < totalPages}
-              previousPage={() => onPageChange(currentPage - 1)}
-              nextPage={() => onPageChange(currentPage + 1)}
-              gotoPage={(p) => onPageChange(p + 1)}
-            />
-          ) : (
+        {serverSidePagination ? (
+          <TablePagination
+            pageIndex={currentPage - 1}
+            totalPages={totalPages}
+            canPreviousPage={currentPage > 1}
+            canNextPage={currentPage < totalPages}
+            previousPage={() => onPageChange(currentPage - 1)}
+            nextPage={() => onPageChange(currentPage + 1)}
+            gotoPage={(p) => onPageChange(p + 1)}
+          />
+        ) : (
+          !loading && (
             <TablePagination
               pageIndex={pageIndex}
               totalPages={pageOptions.length}

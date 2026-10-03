@@ -4,8 +4,10 @@ import { useSelector } from "react-redux";
 import LoadingIcon from "@/components/LoadingIcon";
 import CalendarComponent from "@/components/install/CalendarComponent";
 import CalendarHeader from "@/components/install/CalendarHeader";
+import Modal from "@/components/ui/Modal";
 import { getCalendarInstalls } from "@/services/installService";
-import { getDaysInMonth, getFirstDayOfMonth, formatDateKey } from "@/utils/formatters";
+import { getDaysInMonth, getFirstDayOfMonth, formatDateKey, formatDateLong } from "@/utils/formatters";
+import { STATUS_STYLES } from "@/utils/constants";
 
 // ── Helpers ──
 
@@ -24,6 +26,10 @@ const CalendarView = () => {
 
   const [allJobs, setAllJobs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // ── "+n more" popup state ──
+  const [moreModalOpen, setMoreModalOpen] = useState(false);
+  const [moreModalDateKey, setMoreModalDateKey] = useState("");
 
   // ── Fetch Installations ──
   useEffect(() => {
@@ -137,6 +143,19 @@ const CalendarView = () => {
     }
   };
 
+  // ── "+n more" popup helpers ──
+  const handleMoreClick = (dateKey) => {
+    setMoreModalDateKey(dateKey);
+    setMoreModalOpen(true);
+  };
+
+  const closeMoreModal = () => {
+    setMoreModalOpen(false);
+    setMoreModalDateKey("");
+  };
+
+  const moreModalJobs = moreModalDateKey ? (jobsByDate[moreModalDateKey] || []) : [];
+
 
   return (
     <div className="space-y-5">
@@ -160,11 +179,62 @@ const CalendarView = () => {
           calendarDays={calendarDays}
           jobsByDate={jobsByDate}
           onJobClick={(quoteId) => navigate(`/install/process/${quoteId}`)}
+          onMoreClick={handleMoreClick}
         />
       )}
+
+      <Modal
+        activeModal={moreModalOpen}
+        onClose={closeMoreModal}
+        title={`Installations — ${formatDateLong(moreModalDateKey)}`}
+        className="max-w-md"
+        disableBackdrop={false}
+      >
+        <div className="space-y-2 max-h-[360px] overflow-y-auto -mx-2 px-2">
+          {moreModalJobs.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-4">No installations found.</p>
+          ) : (
+            moreModalJobs.map((j) => {
+              const status = j.status || "upcoming";
+              const style = STATUS_STYLES[status] || STATUS_STYLES.upcoming;
+              const borderClass = {
+                upcoming: "border-l-indigo-500",
+                in_progress: "border-l-amber-500",
+                completed: "border-l-green-500"
+              }[status] || "border-l-indigo-500";
+
+              return (
+                <div
+                  key={j.quote_id}
+                  onClick={() => {
+                    closeMoreModal();
+                    navigate(`/install/process/${j.quote_id}`);
+                  }}
+                  className={`${style.bg} ${borderClass} rounded-lg px-4 py-3 cursor-pointer hover:scale-[1.01] hover:shadow-md transition-all duration-150 border-l-[4px]`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className={`text-sm font-semibold ${style.text}`}>
+                        {j.fname} {j.lname}
+                      </p>
+                      <p className={`text-xs ${style.text} opacity-60 mt-0.5`}>
+                        {j.installer_name || "⚠ Unassigned"}
+                      </p>
+                    </div>
+                    <span className={`text-[10px] font-medium capitalize px-2 py-0.5 rounded-full ${style.bg} ${style.text} ring-1 ring-current/10`}>
+                      {status.replace("_", " ")}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </Modal>
 
     </div>
   );
 };
 
 export default CalendarView;
+

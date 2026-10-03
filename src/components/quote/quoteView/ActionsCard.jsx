@@ -117,7 +117,7 @@ const ActionsCard = ({ quote, onSubmitSuccess, onlinePayments = [] }) => {
     Number(pd?.pending_payment_amount) > 0;
 
   // Inventory Hold logic
-  const showHoldInventory = quoteStatus === 3 && quote?.installation_date;
+  const showHoldInventory = quoteStatus === 3 && depositConfirmed;
 
   // Stage 7: invoice sent, awaiting full payment
   const showAwaitingFullPayment =

@@ -48,7 +48,8 @@ const InventoryHoldSection = ({ quote, showHoldInventory, hasActionAccess }) => 
                 if (item.inventory_category === 'TRACK') desc = `${item.details?.color} ${item.details?.size} Track`;
                 if (item.inventory_category === 'LIGHT') desc = `${item.details?.type} Light`;
                 if (item.inventory_category === 'CONTROLLER') desc = `${item.details?.type} Controller`;
-                return <li key={idx}>{item.held_quantity}x {desc}</li>;
+                const supplier = item.details?.supplier;
+                return <li key={idx}>{item.held_quantity}x {desc}{supplier ? ` — Supplier: ${supplier}` : ''}</li>;
               })}
             </ul>
           </div>

@@ -3,7 +3,7 @@ import Card from "@/components/ui/Card";
 import { DAY_NAMES, STATUS_STYLES } from "@/utils/constants";
 import { isToday } from "@/utils/formatters";
 
-const CalendarComponent = ({ calendarDays, jobsByDate, onJobClick }) => {
+const CalendarComponent = ({ calendarDays, jobsByDate, onJobClick, onMoreClick }) => {
   return (
     <Card className="!shadow-sm border border-gray-100 dark:border-gray-700 !p-0 overflow-hidden rounded-2xl">
       <div className="overflow-x-auto">
@@ -103,14 +103,17 @@ const CalendarComponent = ({ calendarDays, jobsByDate, onJobClick }) => {
                       );
                     })}
                     {dayJobs.length > 2 && (
-                      <div className="flex items-center gap-1 pl-1 pt-0.5">
+                      <div
+                        className="flex items-center gap-1 pl-1 pt-0.5 cursor-pointer"
+                        onClick={(e) => { e.stopPropagation(); onMoreClick && onMoreClick(cell.dateKey); }}
+                      >
                         <div className="flex -space-x-0.5">
                           {dayJobs.slice(2, 5).map((j) => {
                             const s = STATUS_STYLES[j.status] || STATUS_STYLES.upcoming;
                             return <div key={j.quote_id} className={`w-1.5 h-1.5 rounded-full ${s.dot} ring-1 ring-white dark:ring-gray-800`} />;
                           })}
                         </div>
-                        <span className="text-[9px] text-indigo-500 dark:text-indigo-400 font-semibold cursor-pointer hover:underline">
+                        <span className="text-[9px] text-indigo-500 dark:text-indigo-400 font-semibold hover:underline">
                           +{dayJobs.length - 2} more
                         </span>
                       </div>

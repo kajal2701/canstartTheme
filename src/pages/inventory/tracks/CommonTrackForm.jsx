@@ -54,6 +54,17 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
     loadColors();
   }, []);
 
+  // If the saved size doesn't match any current option, clear it so the
+  // placeholder is shown and the user must pick a valid value.
+  useEffect(() => {
+    if (formData.size) {
+      const validValues = TRACK_SIZES_OPTIONS.map((o) => o.value ?? o);
+      if (!validValues.includes(formData.size)) {
+        setFormData((prev) => ({ ...prev, size: "" }));
+      }
+    }
+  }, []);  // run once after mount
+
   // Auto-calculate total price
   useEffect(() => {
     const total = calculateTotalPrice(formData.totalFeet, formData.pricePerUnit);
@@ -85,6 +96,7 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
     if (!formData.color) newErrors.color = "Color is required";
     if (!formData.totalFeet || !String(formData.totalFeet).trim()) newErrors.totalFeet = "Total feet is required";
     else if (isNaN(formData.totalFeet) || parseFloat(formData.totalFeet) <= 0) newErrors.totalFeet = "Total feet must be greater than 0";
+    if (!formData.size) newErrors.size = "Size is required";
 
     if (!formData.pricePerUnit && isAdmin) newErrors.pricePerUnit = "Price per unit is required";
     else if (isAdmin && (isNaN(formData.pricePerUnit) || parseFloat(formData.pricePerUnit) <= 0)) newErrors.pricePerUnit = "Price per unit must be greater than 0";
@@ -185,7 +197,7 @@ const CommonTrackForm = ({ isEdit = false, initialData = {}, onSubmit, onCancel,
             {/* Size */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Size
+                Size <span className="text-red-500">*</span>
               </label>
               <Select
                 value={formData.size}

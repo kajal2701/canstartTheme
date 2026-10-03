@@ -222,7 +222,7 @@ const UpcomingInstallations = ({ jobs = [], loading, onRefresh }) => {
               columns={columns}
               data={mappedJobs} // ✅ use mappedJobs
               loading={loading}
-              initialPageSize={5}
+              initialPageSize={15}
               rowClassName="hover:bg-blue-50 dark:hover:bg-gray-700 hover:bg-opacity-50"
               tableWrapperClassName="card bg-blue-50/30"
             />

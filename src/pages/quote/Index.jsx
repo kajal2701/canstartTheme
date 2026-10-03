@@ -11,7 +11,7 @@ import { AddressCell } from "@/utils/mappers";
 import { formatDate } from "@/utils/formatters";
 import QuoteActionButtons from "@/components/quote/quotelisting/QuoteActionButtons";
 import FilterSection from "../../components/quote/quotelisting/FilterSection";
-import { addressAccessor, getQuoteStage } from "../../utils/mappers";
+import { addressAccessor, getQuoteStage, encodeId } from "../../utils/mappers";
 import { quoteStatusList, SANCTION_REASON_LABELS } from "../../utils/constants";
 import { exportQuotesToExcel } from "../../utils/exportUtils";
 import { toast } from "react-toastify";
@@ -235,8 +235,13 @@ const Quote = () => {
     {
       Header: "Sr.",
       accessor: "srNumber",
-      Cell: ({ cell: { value } }) => (
-        <span className="text-sm text-indigo-600 font-medium">{value}</span>
+      Cell: ({ cell: { value }, row }) => (
+        <span
+          className="text-sm text-indigo-600 font-medium cursor-pointer hover:underline"
+          onClick={() => navigate(`/users/quote_invoice/${encodeId(row.original.id)}`)}
+        >
+          {value}
+        </span>
       ),
     },
     {

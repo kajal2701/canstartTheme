@@ -200,11 +200,14 @@ const InventoryHoldModal = ({ activeModal, onClose, quote, onSuccess }) => {
                   className="max-w-full truncate"
                 >
                   <option value="" disabled>-- Select Light --</option>
-                  {options.lights.map((l) => (
-                    <option key={l.light_id} value={l.light_id} disabled={l.available < requiredLights}>
-                      {l.type} - Available: {l.available} {l.available < requiredLights ? '(Insufficient)' : ''}
-                    </option>
-                  ))}
+                  {options.lights.map((l) => {
+                    const sup = l.supplier?.length > 15 ? l.supplier.substring(0, 15) + '...' : (l.supplier || 'N/A');
+                    return (
+                      <option key={l.light_id} value={l.light_id} disabled={l.available < requiredLights}>
+                        {l.type} - Available: {l.available} - Sup: {sup} {l.available < requiredLights ? '(Insufficient)' : ''}
+                      </option>
+                    );
+                  })}
                 </Select>
               )}
 
@@ -224,11 +227,14 @@ const InventoryHoldModal = ({ activeModal, onClose, quote, onSuccess }) => {
                           required
                         >
                           <option value="" disabled>-- Select Controller --</option>
-                          {options.controllers.map((c) => (
-                            <option key={c.controller_id} value={c.controller_id} disabled={c.available < cHold.hold_quantity}>
-                              {c.type} - Available: {c.available} {c.available < cHold.hold_quantity ? '(Insufficient)' : ''}
-                            </option>
-                          ))}
+                          {options.controllers.map((c) => {
+                            const sup = c.supplier?.length > 15 ? c.supplier.substring(0, 15) + '...' : (c.supplier || 'N/A');
+                            return (
+                              <option key={c.controller_id} value={c.controller_id} disabled={c.available < cHold.hold_quantity}>
+                                {c.type} - Available: {c.available} - Sup: {sup} {c.available < cHold.hold_quantity ? '(Insufficient)' : ''}
+                              </option>
+                            );
+                          })}
                         </select>
                       </div>
                       <div className="w-24">

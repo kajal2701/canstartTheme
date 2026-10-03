@@ -267,19 +267,17 @@ function App() {
 
             />
 
+
             {/* Inventory Module */}
-            <Route
-              path="inventory"
-              element={
-                <ProtectedRoute allowedRoles={ALL_ROLES}>
-                  <Inventory />
-                </ProtectedRoute>
-              }
-            />
             <Route path="inventory">
-
-
-
+              <Route
+                index
+                element={
+                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                    <Inventory />
+                  </ProtectedRoute>
+                }
+              />
 
 
 

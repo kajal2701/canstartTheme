@@ -1,89 +1,106 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
 import { getDashboard } from "@/services/dashboardService";
 import DataTable from "@/components/ui/DataTable";
-import { AddressCell } from "@/utils/mappers";
+import { AddressCell, encodeId } from "@/utils/mappers";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import { STATUS_MAP } from "@/utils/constants";
 import { addressAccessor } from "../../utils/mappers";
 
-const COLUMNS = [
-  {
-    Header: "Sr.",
-    accessor: "quote_no",
-    Cell: ({ cell: { value } }) => (
-      <span className="text-sm text-indigo-600 font-medium">{value}</span>
-    ),
-  },
-  {
-    Header: "Salesman",
-    accessor: "salesman",
-    Cell: ({ cell: { value } }) => (
-      <span className="text-sm text-gray-700 dark:text-gray-300">{value}</span>
-    ),
-  },
-  {
-    Header: "Customer Name",
-    accessor: "fname",
-    Cell: ({ row }) => (
-      <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{`${row.original.fname} ${row.original.lname}`}</span>
-    ),
-  },
-  {
-    Header: "Phone",
-    accessor: "phone",
-    Cell: ({ cell: { value } }) => (
-      <span className="text-sm text-gray-600 dark:text-gray-400">{value}</span>
-    ),
-  },
-  {
-    Header: "Address",
-    accessor: addressAccessor,
-    Cell: ({ row }) => (
-      <div className="min-w-[200px]">
-        <AddressCell row={row} />
-      </div>
-    ),
-  },
-  {
-    Header: "Total",
-    accessor: "main_total",
-    Cell: ({ cell: { value } }) => (
-      <span className="text-sm font-semibold text-green-600">
-        {formatCurrency(value)}
-      </span>
-    ),
-  },
-  {
-    Header: "Status",
-    accessor: "statusLabel", // ✅ now searches "Created", "Sent" etc. instead of 1, 2, 3
-    Cell: ({ row }) => {
-      const s = STATUS_MAP[row.original.status] || {
-        label: "Unknown",
-        color: "bg-gray-400 text-white",
-      };
-
-      return (
-        <span
-          className={`inline-block ${s.color} text-xs px-3 py-1 rounded font-medium`}
-        >
-          {s.label}
-        </span>
-      );
-    },
-  },
-  {
-    Header: "Date",
-    accessor: "date",
-    Cell: ({ cell: { value } }) => (
-      <span className="text-sm text-gray-600 dark:text-gray-400">{value}</span>
-    ),
-  },
-];
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+
+  const COLUMNS = [
+    {
+      Header: "Sr.",
+      accessor: "quote_no",
+      Cell: ({ cell: { value }, row }) => {
+        const isDeleted = row.original.status === 5;
+        return (
+          <span
+            className={`text-sm text-indigo-600 font-medium ${
+              isDeleted ? "" : "cursor-pointer hover:underline"
+            }`}
+            onClick={() => {
+              if (!isDeleted) {
+                navigate(`/users/quote_invoice/${encodeId(row.original.quote_id)}`);
+              }
+            }}
+          >
+            {value}
+          </span>
+        );
+      },
+    },
+    {
+      Header: "Salesman",
+      accessor: "salesman",
+      Cell: ({ cell: { value } }) => (
+        <span className="text-sm text-gray-700 dark:text-gray-300">{value}</span>
+      ),
+    },
+    {
+      Header: "Customer Name",
+      accessor: "fname",
+      Cell: ({ row }) => (
+        <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{`${row.original.fname} ${row.original.lname}`}</span>
+      ),
+    },
+    {
+      Header: "Phone",
+      accessor: "phone",
+      Cell: ({ cell: { value } }) => (
+        <span className="text-sm text-gray-600 dark:text-gray-400">{value}</span>
+      ),
+    },
+    {
+      Header: "Address",
+      accessor: addressAccessor,
+      Cell: ({ row }) => (
+        <div className="min-w-[200px]">
+          <AddressCell row={row} />
+        </div>
+      ),
+    },
+    {
+      Header: "Total",
+      accessor: "main_total",
+      Cell: ({ cell: { value } }) => (
+        <span className="text-sm font-semibold text-green-600">
+          {formatCurrency(value)}
+        </span>
+      ),
+    },
+    {
+      Header: "Status",
+      accessor: "statusLabel", // ✅ now searches "Created", "Sent" etc. instead of 1, 2, 3
+      Cell: ({ row }) => {
+        const s = STATUS_MAP[row.original.status] || {
+          label: "Unknown",
+          color: "bg-gray-400 text-white",
+        };
+
+        return (
+          <span
+            className={`inline-block ${s.color} text-xs px-3 py-1 rounded font-medium`}
+          >
+            {s.label}
+          </span>
+        );
+      },
+    },
+    {
+      Header: "Date",
+      accessor: "date",
+      Cell: ({ cell: { value } }) => (
+        <span className="text-sm text-gray-600 dark:text-gray-400">{value}</span>
+      ),
+    },
+  ];
   const [stats, setStats] = useState({
     total_quotes: 0,
     total_approved_quotes: 0,
@@ -126,7 +143,7 @@ const Dashboard = () => {
       mounted = false;
     };
   }, [user]);
-  const columns = useMemo(() => COLUMNS, []);
+  const columns = useMemo(() => COLUMNS, [navigate]);
   return (
     <div className=" space-y-5">
       <div className="grid xl:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-4">

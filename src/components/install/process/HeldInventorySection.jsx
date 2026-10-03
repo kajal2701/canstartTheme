@@ -30,6 +30,7 @@ const DEFAULT_CONFIG = {
 const HeldItemCard = React.memo(({ item }) => {
   const config = CATEGORY_CONFIG[item.inventory_category] || DEFAULT_CONFIG;
   const desc = config.describe(item.details);
+  const supplier = item.details?.supplier;
 
   return (
     <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
@@ -38,6 +39,11 @@ const HeldItemCard = React.memo(({ item }) => {
       </div>
       <div>
         <p className="text-xs text-slate-500">{desc}</p>
+        {supplier && (
+          <p className="text-[11px] text-slate-400 dark:text-slate-500">
+            Supplier: <span className="font-medium text-slate-600 dark:text-slate-400">{supplier}</span>
+          </p>
+        )}
         <p className="text-sm font-bold text-slate-800 dark:text-white">Qty: {item.held_quantity}</p>
       </div>
     </div>
