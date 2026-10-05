@@ -2,19 +2,40 @@ import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 // ✅ Helper: Auto-reload on failed dynamic import (fixes stale chunk errors after deployment)
+// iPhone/iPad Safari often keeps an old index.html in memory. After a new deploy, the old
+// page asks for chunk files that no longer exist, so the import fails on navigation.
+const RELOAD_KEY = "retry-lazy-refreshed";
+const RELOAD_WINDOW_MS = 10000;
+
 const lazyRetry = (componentImport) => {
   return lazy(() =>
-    componentImport().catch((error) => {
-      // Check if we've already tried reloading to prevent infinite loops
-      const hasReloaded = sessionStorage.getItem("retry-lazy-refreshed");
-      if (!hasReloaded) {
-        sessionStorage.setItem("retry-lazy-refreshed", "true");
-        window.location.reload();
-        return; // will reload before this resolves
-      }
-      sessionStorage.removeItem("retry-lazy-refreshed");
-      throw error; // if reload didn't fix it, throw the original error
-    })
+    componentImport()
+      .then((module) => {
+        // Import worked, so allow a future reload if a later deploy breaks chunks again.
+        try {
+          sessionStorage.removeItem(RELOAD_KEY);
+        } catch (e) { }
+        return module;
+      })
+      .catch((error) => {
+        let lastReload = 0;
+        try {
+          lastReload = Number(sessionStorage.getItem(RELOAD_KEY)) || 0;
+        } catch (e) { }
+
+        // Only reload once within a short window to prevent an infinite reload loop.
+        if (Date.now() - lastReload > RELOAD_WINDOW_MS) {
+          try {
+            sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
+          } catch (e) { }
+          window.location.reload();
+          // Never resolve: keep the Suspense fallback on screen until the reload happens.
+          // Returning undefined here made React crash with "se is not an Object".
+          return new Promise(() => { });
+        }
+
+        throw error; // if reload didn't fix it, throw the original error
+      })
   );
 };
 

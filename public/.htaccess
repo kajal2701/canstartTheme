@@ -1,5 +1,25 @@
 Options -MultiViews
 RewriteEngine On
+
+# A missing file inside /assets must return a real 404.
+# Without this rule Apache sends index.html instead, and the browser fails with a confusing error.
+RewriteRule ^assets/ - [L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.html [QSA,L]
+
+<IfModule mod_headers.c>
+  # index.html must always be checked with the server, so iPhone/iPad Safari
+  # does not keep using an old copy that points to deleted chunk files after a deploy.
+  <FilesMatch "^(index\.html)?$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+
+  # Files in /assets have a hash in their name, so they can be cached for a long time.
+  <FilesMatch "\.[0-9a-f]{8}\.(js|css|svg|png|jpg|jpeg|gif|webp|woff2?)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
