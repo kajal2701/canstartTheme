@@ -20,11 +20,11 @@ const SummarySection = ({
       <SectionHeader icon="ph:calculator" title="Summary" />
       <div className="space-y-2.5">
         <PriceRow
-          label="Total Linear Feet"
+          label="Total Linear Feet Price"
           value={`$${quote.total_feet_price}`}
         />
         <PriceRow
-          label="Total Controller"
+          label="Total Controller Price"
           value={`$${quote.total_controller_price}`}
         />
         <PriceRow
