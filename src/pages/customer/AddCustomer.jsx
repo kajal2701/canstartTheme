@@ -1,21 +1,23 @@
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import CustomerForm from "./CustomerForm";
 import { addCustomer } from "@/services/customersService";
 import { toast } from "react-toastify";
 
 const AddCustomer = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const leadData = location.state?.leadData || {};
 
   const methods = useForm({
     defaultValues: {
-      firstName: "",
+      firstName: leadData.name || "",
       lastName: "",
       companyName: "",
       leadSource: "",
       email: "",
-      phoneNumber: "",
-      street: "",
+      phoneNumber: leadData.phone || "",
+      street: leadData.address || "",
       city: "",
       postCode: "",
       province: "",

@@ -67,6 +67,10 @@ const EditProduct = lazyRetry(() => import("./pages/product/EditProduct"));
 const Invoice = lazyRetry(() => import("./pages/invoice/Index"));
 const InvoiceView = lazyRetry(() => import("./pages/invoice/InvoiceView"));
 
+// Leads Module
+const ManageLeads = lazyRetry(() => import("./pages/lead/ManageLeads"));
+const PublicEnquiryForm = lazyRetry(() => import("./pages/lead/PublicEnquiryForm"));
+
 // Inventory Module
 const Inventory = lazyRetry(() => import("./pages/inventory/Index"));
 const TrackList = lazyRetry(() => import("./pages/inventory/tracks/TrackList"));
@@ -132,6 +136,9 @@ function App() {
             <Route path="/forgot-password2" element={<ForgotPass2 />} />
           </Route>
 
+          {/* ✅ Public Enquiry Route */}
+          <Route path="/enquiry" element={<PublicEnquiryForm />} />
+
           <Route path="/*" element={<Layout />}>
             <Route path="dashboard" element={<Dashboard />} />
 
@@ -184,6 +191,17 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
                     <EditCustomer />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
+
+            <Route path="leads">
+              <Route
+                index
+                element={
+                  <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
+                    <ManageLeads />
                   </ProtectedRoute>
                 }
               />

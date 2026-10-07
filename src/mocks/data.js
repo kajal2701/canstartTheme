@@ -29,6 +29,13 @@ export const menuItems = [
     ],
   },
   {
+    title: "Leads / Enquiries",
+    icon: "ph:users-three",
+    link: "leads",
+    isHide: true,
+    roles: [1, 4], // admin + sales
+  },
+  {
     title: "Quote",
     icon: "ph:chats",
     link: "#",

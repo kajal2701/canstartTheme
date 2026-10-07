@@ -2,19 +2,30 @@ import React from "react";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 
-const ConfirmModal = ({ activeModal, onClose, onConfirm, itemName, isLoading = false }) => {
+const ConfirmModal = ({ 
+  activeModal, 
+  onClose, 
+  onConfirm, 
+  itemName, 
+  isLoading = false,
+  title = "Delete Confirmation",
+  actionText = "delete",
+  confirmBtnText = "Delete",
+  confirmBtnLoadingText = "Deleting...",
+  confirmBtnClass = "btn-danger"
+}) => {
   return (
     <Modal
       activeModal={activeModal}
       onClose={onClose}
       className="max-w-sm"
-      title="Delete Confirmation"
+      title={title}
       centered
     >
       <div className="flex flex-col space-y-6">
         {/* Message */}
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Are you sure you want to delete{" "}
+          Are you sure you want to {actionText}{" "}
           {itemName ? (
             <span className="font-medium text-gray-700 dark:text-gray-200">
               "{itemName}"
@@ -34,8 +45,8 @@ const ConfirmModal = ({ activeModal, onClose, onConfirm, itemName, isLoading = f
             disabled={isLoading}
           />
           <Button
-            text={isLoading ? "Deleting..." : "Delete"}
-            className="btn-danger btn-sm"
+            text={isLoading ? confirmBtnLoadingText : confirmBtnText}
+            className={`${confirmBtnClass} btn-sm`}
             onClick={onConfirm}
             disabled={isLoading}
           />

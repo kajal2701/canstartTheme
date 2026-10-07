@@ -18,6 +18,20 @@ export const quoteStatusList = [
   { value: "Cancelled", label: "Cancelled" },
 ];
 
+export const LEAD_STATUS_OPTIONS = [
+  { value: "All", label: "All" },
+  { value: "New", label: "New" },
+  { value: "Contacted", label: "Contacted" },
+  { value: "Converted", label: "Converted" },
+  { value: "Closed", label: "Closed" },
+];
+
+export const LEAD_STATUS_COLORS = {
+  New: "bg-blue-100 text-blue-700",
+  Contacted: "bg-purple-100 text-purple-700",
+  Converted: "bg-green-100 text-green-700",
+  Closed: "bg-gray-100 text-gray-600",
+};
 
 export const REVIEW_DATA = [
   {
