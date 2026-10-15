@@ -525,6 +525,10 @@ export const getDefaultProcessState = (job) => {
       sent: false,
       etaMinutes: 15,
       sentAt: null,
+      arrivalDate: "",
+      arrivalTime: "",
+      arrivalNotifSent: false,
+      arrivalNotifSentAt: null,
     },
     // Step 3 — Controller Box
     controllerBox: {

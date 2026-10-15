@@ -100,6 +100,18 @@ export const sendOnTheWayNotification = async (quoteId, etaMinutes) => {
     return json;
 };
 
+// POST /install/:quote_id/installer-arrival — Send installer arrival date/time notification
+export const sendInstallerArrivalNotif = async (quoteId, arrivalDate, arrivalTime) => {
+    const res = await fetch(`${BASE_URL}/install/${quoteId}/installer-arrival`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ arrivalDate, arrivalTime }),
+    });
+    if (!res.ok) throw new Error("Failed to send installer arrival notification");
+    const json = await res.json();
+    return json;
+};
+
 // POST /install/:quote_id/controller-box-email — Send controller box confirmation
 export const sendControllerBoxEmailApi = async (quoteId, photo) => {
     const res = await fetch(`${BASE_URL}/install/${quoteId}/controller-box-email`, {

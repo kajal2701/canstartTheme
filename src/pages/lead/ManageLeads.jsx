@@ -262,7 +262,7 @@ const ManageLeads = () => {
   return (
     <>
       <DataTable
-        title="Lead / Enquiry List"
+        title="Lead / Inquiry List"
         columns={columns}
         data={filteredData}
         loading={loading}

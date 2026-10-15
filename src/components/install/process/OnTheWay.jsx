@@ -3,6 +3,7 @@ import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import StepHeader from "./StepHeader";
+import InstallerArrival from "./InstallerArrival";
 import { toast } from "react-toastify";
 import { sendOnTheWayNotification } from "@/services/installService";
 import { HOUR_OPTIONS, MINUTE_OPTIONS } from "@/utils/constants";
@@ -179,6 +180,9 @@ const OnTheWay = ({ data, onChange, job }) => {
           )}
         </>
       )}
+
+      {/* ── Installer Arrival Date/Time (Optional) ── */}
+      <InstallerArrival data={data} onChange={onChange} job={job} />
     </div>
   );
 };

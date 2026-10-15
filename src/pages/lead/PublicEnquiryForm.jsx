@@ -63,7 +63,7 @@ const PublicEnquiryForm = () => {
 
     if (result.success) {
       toast.success(
-        result.message || "Your enquiry has been submitted successfully."
+        result.message || "Your inquiry has been submitted successfully."
       );
       reset();
     } else {

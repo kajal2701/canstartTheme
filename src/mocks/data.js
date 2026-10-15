@@ -29,7 +29,7 @@ export const menuItems = [
     ],
   },
   {
-    title: "Leads / Enquiries",
+    title: "Leads / Inquiries",
     icon: "ph:users-three",
     link: "leads",
     isHide: true,
