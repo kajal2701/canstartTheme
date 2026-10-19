@@ -4,6 +4,7 @@ import DataTable from "@/components/ui/DataTable";
 import { getLeads, updateLeadStatus, deleteLead } from "@/services/leadService";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import EditLeadModal from "./EditLeadModal";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "@/utils/formatters";
 import { LEAD_STATUS_OPTIONS, LEAD_STATUS_COLORS } from "@/utils/constants";
@@ -30,6 +31,8 @@ const ManageLeads = () => {
     newStatus: "",
   });
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  const [editModal, setEditModal] = useState({ open: false, lead: null });
 
   const loadLeads = useCallback(async () => {
     try {
@@ -123,6 +126,13 @@ const ManageLeads = () => {
       setIsUpdatingStatus(false);
       handleCloseStatus();
     }
+  };
+
+  const handleEditClick = (lead) => {
+    setEditModal({ open: true, lead });
+  };
+  const handleCloseEdit = () => {
+    setEditModal({ open: false, lead: null });
   };
 
   const handleAddCustomer = (lead) => {
@@ -221,6 +231,15 @@ const ManageLeads = () => {
         return (
           <div className="flex space-x-1 rtl:space-x-reverse justify-center flex-wrap gap-1">
             <button
+              className="icon-btn hover:bg-blue-50"
+              type="button"
+              title="Edit"
+              onClick={() => handleEditClick(lead)}
+            >
+              <Icon icon="ph:pencil-simple" />
+            </button>
+
+            <button
               className="icon-btn hover:bg-green-50"
               type="button"
               title="Add Customer"
@@ -289,6 +308,13 @@ const ManageLeads = () => {
         confirmBtnText="Confirm"
         confirmBtnLoadingText="Saving..."
         confirmBtnClass="btn-primary"
+      />
+
+      <EditLeadModal
+        activeModal={editModal.open}
+        onClose={handleCloseEdit}
+        leadData={editModal.lead}
+        onSuccess={loadLeads}
       />
     </>
   );

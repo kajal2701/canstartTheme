@@ -52,6 +52,20 @@ export const updateLeadStatus = async (payload) => {
   }
 };
 
+export const updateLead = async (payload) => {
+  try {
+    const response = await fetch(`${BASE_URL}/lead/update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
+
 export const deleteLead = async (leadId) => {
   try {
     const response = await fetch(`${BASE_URL}/lead/delete`, {
