@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { formatCurrency } from "@/utils/formatters";
 import { getSalesByPerson } from "@/services/reportService";
 import { CHART_LIGHT_THEME, CHART_COLORS } from "@/utils/constants";
 
 const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
+  const { user } = useSelector((state) => state.auth);
+  const canViewRevenue = user?.email?.toLowerCase() === "admin@gmail.com";
+
   const [loading, setLoading] = useState(true);
   const [personData, setPersonData] = useState([]);
 
@@ -35,13 +39,13 @@ const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
     },
     dataLabels: {
       enabled: true,
-      formatter: (v) => `$${(v / 1000).toFixed(1)}k`,
+      formatter: (v) => (canViewRevenue ? `$${(v / 1000).toFixed(1)}k` : `${v}`),
       style: { fontSize: "11px", colors: ["#333"] },
     },
     colors: CHART_COLORS,
     xaxis: {
       labels: {
-        formatter: (v) => `$${(v / 1000).toFixed(0)}k`,
+        formatter: (v) => (canViewRevenue ? `$${(v / 1000).toFixed(0)}k` : Math.round(v)),
         style: { colors: "#64748b" },
       },
       axisBorder: { show: false },
@@ -49,17 +53,22 @@ const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
     yaxis: {
       labels: { style: { colors: "#475569", fontSize: "12px", fontWeight: 500 } }, // slate-600
     },
-    tooltip: { theme: "light", y: { formatter: (v) => formatCurrency(v) } },
+    tooltip: {
+      theme: "light",
+      y: {
+        formatter: (v) => (canViewRevenue ? formatCurrency(v) : `${v} quotes`),
+      },
+    },
     grid: { borderColor: "#e2e8f0", strokeDashArray: 4, xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } }, // slate-200
     legend: { show: false },
   };
 
   const personChartSeries = [
     {
-      name: "Revenue",
+      name: canViewRevenue ? "Revenue" : "Converted Quotes",
       data: personData.map((d) => ({
         x: d.salesperson,
-        y: d.total_revenue,
+        y: canViewRevenue ? d.total_revenue : d.converted_quotes,
       })),
     },
   ];
@@ -77,7 +86,9 @@ const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
       ) : (
         <>
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Sales by Person Overview</h3>
+            <h3 className="text-lg font-semibold text-slate-800 mb-4">
+              {canViewRevenue ? "Sales by Person Overview" : "Quotes by Person Overview"}
+            </h3>
             <ReactApexChart
               options={personChartOptions}
               series={personChartSeries}
@@ -90,7 +101,13 @@ const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
             <table className="w-full text-sm text-slate-600">
               <thead className="bg-slate-50 text-slate-500 text-xs uppercase border-b border-slate-200">
                 <tr>
-                  {["Rank", "Salesperson", "Total Quotes", "Converted Quotes", "Revenue"].map((h) => (
+                  {[
+                    "Rank",
+                    "Salesperson",
+                    "Total Quotes",
+                    "Converted Quotes",
+                    ...(canViewRevenue ? ["Revenue"] : []),
+                  ].map((h) => (
                     <th key={h} className="px-4 py-3 text-left font-semibold">{h}</th>
                   ))}
                 </tr>
@@ -127,9 +144,11 @@ const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
                         {row.converted_quotes}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-semibold text-emerald-600">
-                      {formatCurrency(row.total_revenue)}
-                    </td>
+                    {canViewRevenue && (
+                      <td className="px-4 py-3 font-semibold text-emerald-600">
+                        {formatCurrency(row.total_revenue)}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -142,9 +161,11 @@ const SalesByPersonTab = ({ selectedYear, selectedMonth }) => {
                   <td className="px-4 py-3 font-bold text-emerald-700">
                     {personData.reduce((s, d) => s + d.converted_quotes, 0)}
                   </td>
-                  <td className="px-4 py-3 font-bold text-emerald-600">
-                    {formatCurrency(personData.reduce((s, d) => s + d.total_revenue, 0))}
-                  </td>
+                  {canViewRevenue && (
+                    <td className="px-4 py-3 font-bold text-emerald-600">
+                      {formatCurrency(personData.reduce((s, d) => s + d.total_revenue, 0))}
+                    </td>
+                  )}
                 </tr>
               </tfoot>
             </table>
