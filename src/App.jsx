@@ -122,7 +122,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
 const ADMIN_ONLY = [1];
 const SALES_AND_ADMIN = [1, 4];
 const ADMIN_AND_INSTALLER = [1, 2];
+const INSTALL_ROLES = [1, 2, 4];
+const INVENTORY_ROLES = [1, 2, 3];
 const ALL_ROLES = [1, 2, 3, 4];
+
+
 
 function App() {
   return (
@@ -246,7 +250,7 @@ function App() {
               <Route
                 index
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                  <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
                     <Install />
                   </ProtectedRoute>
                 }
@@ -254,7 +258,7 @@ function App() {
               <Route
                 path="calendar"
                 element={
-                  <ProtectedRoute allowedRoles={ADMIN_AND_INSTALLER}>
+                  <ProtectedRoute allowedRoles={INSTALL_ROLES}>
                     <CalendarView />
                   </ProtectedRoute>
                 }
@@ -312,7 +316,7 @@ function App() {
               <Route
                 index
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <Inventory />
                   </ProtectedRoute>
                 }
@@ -323,7 +327,7 @@ function App() {
               <Route
                 path="tracks"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <TrackList />
                   </ProtectedRoute>
                 }
@@ -341,7 +345,7 @@ function App() {
               <Route
                 path="tracks/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditTrack />
                   </ProtectedRoute>
                 }
@@ -349,7 +353,7 @@ function App() {
               <Route
                 path="screws"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <ScrewList />
                   </ProtectedRoute>
                 }
@@ -365,7 +369,7 @@ function App() {
               <Route
                 path="screws/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditScrew />
                   </ProtectedRoute>
                 }
@@ -373,7 +377,7 @@ function App() {
               <Route
                 path="controllers"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <ControllerList />
                   </ProtectedRoute>
                 }
@@ -389,7 +393,7 @@ function App() {
               <Route
                 path="controllers/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditController />
                   </ProtectedRoute>
                 }
@@ -398,7 +402,7 @@ function App() {
               <Route
                 path="connectors"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <ConnectorList />
                   </ProtectedRoute>
                 }
@@ -414,7 +418,7 @@ function App() {
               <Route
                 path="connectors/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditConnector />
                   </ProtectedRoute>
                 }
@@ -422,7 +426,7 @@ function App() {
               <Route
                 path="lights"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <LightList />
                   </ProtectedRoute>
                 }
@@ -438,7 +442,7 @@ function App() {
               <Route
                 path="lights/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditLight />
                   </ProtectedRoute>
                 }
@@ -446,7 +450,7 @@ function App() {
               <Route
                 path="cables"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <CableList />
                   </ProtectedRoute>
                 }
@@ -462,7 +466,7 @@ function App() {
               <Route
                 path="cables/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditCable />
                   </ProtectedRoute>
                 }
@@ -470,7 +474,7 @@ function App() {
               <Route
                 path="jumpers"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <JumperList />
                   </ProtectedRoute>
                 }
@@ -487,7 +491,7 @@ function App() {
               <Route
                 path="jumpers/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditJumper />
                   </ProtectedRoute>
                 }
@@ -495,7 +499,7 @@ function App() {
               <Route
                 path="plugs"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <PlugList />
                   </ProtectedRoute>
                 }
@@ -511,7 +515,7 @@ function App() {
               <Route
                 path="plugs/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditPlug />
                   </ProtectedRoute>
                 }
@@ -519,7 +523,7 @@ function App() {
               <Route
                 path="powercord"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <PowerCordList />
                   </ProtectedRoute>
                 }
@@ -535,7 +539,7 @@ function App() {
               <Route
                 path="powercord/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditPowerCord />
                   </ProtectedRoute>
                 }
@@ -543,7 +547,7 @@ function App() {
               <Route
                 path="outercases"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <OutercaseList />
                   </ProtectedRoute>
                 }
@@ -559,7 +563,7 @@ function App() {
               <Route
                 path="outercases/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditOutercase />
                   </ProtectedRoute>
                 }
@@ -567,7 +571,7 @@ function App() {
               <Route
                 path="appcontrollers"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <AppcontrollerList />
                   </ProtectedRoute>
                 }
@@ -583,7 +587,7 @@ function App() {
               <Route
                 path="appcontrollers/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditAppcontroller />
                   </ProtectedRoute>
                 }
@@ -591,7 +595,7 @@ function App() {
               <Route
                 path="powersupplies"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <PowersupplyList />
                   </ProtectedRoute>
                 }
@@ -607,7 +611,7 @@ function App() {
               <Route
                 path="powersupplies/edit/:id"
                 element={
-                  <ProtectedRoute allowedRoles={ALL_ROLES}>
+                  <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
                     <EditPowersupply />
                   </ProtectedRoute>
                 }
@@ -618,7 +622,7 @@ function App() {
             <Route
               path="reports"
               element={
-                <ProtectedRoute allowedRoles={ADMIN_ONLY}>
+                <ProtectedRoute allowedRoles={SALES_AND_ADMIN}>
                   <Reports />
                 </ProtectedRoute>
               }

@@ -23,7 +23,7 @@ const validateExtraRows = (rows) => {
       rowErrors.description = "Description is required.";
     if (!row.quantity || isNaN(row.quantity) || Number(row.quantity) <= 0)
       rowErrors.quantity = "Valid quantity is required.";
-    if (!row.unitCost || isNaN(row.unitCost) || Number(row.unitCost) <= 0)
+    if (row.unitCost === "" || row.unitCost === "-" || isNaN(row.unitCost) || Number(row.unitCost) === 0)
       rowErrors.unitCost = "Valid unit price is required.";
     if (Object.keys(rowErrors).length > 0) errors[idx] = rowErrors;
   });
@@ -318,11 +318,11 @@ const LineItemsTable = ({
                           </span>
                         </td>
                         <td className="py-4 px-3 text-right text-sm text-slate-600 dark:text-slate-400">
-                          ${item.unitCost}
+                          {rowUnit < 0 ? `-$${Math.abs(rowUnit).toFixed(2)}` : `$${rowUnit.toFixed(2)}`}
                         </td>
                         <td className="py-4 px-5 text-right">
-                          <span className="text-sm font-bold text-slate-900 dark:text-white">
-                            ${rowTotal.toFixed(2)}
+                          <span className={`text-sm font-bold ${rowTotal < 0 ? "text-rose-600 dark:text-rose-400" : "text-slate-900 dark:text-white"}`}>
+                            {rowTotal < 0 ? `-$${Math.abs(rowTotal).toFixed(2)}` : `$${rowTotal.toFixed(2)}`}
                           </span>
                         </td>
                       </tr>
@@ -401,13 +401,13 @@ const LineItemsTable = ({
                     className="h-[42px]"
                     value={row.unitCost} // ← value not defaultValue
                     disabled={!canAddExtraWork}
-                    onChange={(e) =>
-                      handleExtraChange(
-                        idx,
-                        "unitCost",
-                        e.target.value.replace(/[^0-9.]/g, ""),
-                      )
-                    }
+                    onChange={(e) => {
+                      let val = e.target.value;
+                      const isNegative = val.startsWith("-");
+                      val = val.replace(/[^0-9.]/g, "");
+                      if (isNegative) val = "-" + val;
+                      handleExtraChange(idx, "unitCost", val);
+                    }}
                     error={
                       rowErrors[idx]?.unitCost
                         ? { message: rowErrors[idx].unitCost }

@@ -49,10 +49,15 @@ const SummarySection = ({
           value={summaryCalculations.discountAmountFormatted}
           red={true}
         />
-        {summaryCalculations.extraWorkTotal > 0 && (
+        {summaryCalculations.extraWorkTotal !== 0 && (
           <PriceRow
             label="Extra Work Total"
-            value={`$${Number(summaryCalculations.extraWorkTotal).toFixed(2)}`}
+            value={
+              summaryCalculations.extraWorkTotal < 0
+                ? `-$${Math.abs(Number(summaryCalculations.extraWorkTotal)).toFixed(2)}`
+                : `$${Number(summaryCalculations.extraWorkTotal).toFixed(2)}`
+            }
+            red={summaryCalculations.extraWorkTotal < 0}
           />
         )}
         <PriceRow

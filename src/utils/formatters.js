@@ -68,5 +68,14 @@ export const isPastDate = (dateStr) => {
   const todayKey = new Date().toISOString().split("T")[0]; // same pattern as isToday
   const datePart = dateStr.split("T")[0]; // handles ISO strings with time too
   return datePart < todayKey;
+};
 
+// Converts text like "BLACK" or "RM ANTIQUE BROW" into Title Case "Black" or "Rm Antique Brow"
+export const toTitleCase = (str) => {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };

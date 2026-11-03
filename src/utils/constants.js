@@ -26,6 +26,12 @@ export const LEAD_STATUS_OPTIONS = [
   { value: "Closed", label: "Closed" },
 ];
 
+export const PREFERRED_CONTACT_METHOD_OPTIONS = [
+  { value: "Call", label: "Call" },
+  { value: "Text", label: "Text" },
+  { value: "Email", label: "Email" },
+];
+
 export const LEAD_STATUS_COLORS = {
   New: "bg-blue-100 text-blue-700",
   Contacted: "bg-purple-100 text-purple-700",

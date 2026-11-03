@@ -1,7 +1,7 @@
 import React from "react";
 import Card from "@/components/ui/Card";
 import { DAY_NAMES, STATUS_STYLES } from "@/utils/constants";
-import { isToday } from "@/utils/formatters";
+import { isToday, toTitleCase } from "@/utils/formatters";
 
 const CalendarComponent = ({ calendarDays, jobsByDate, onJobClick, onMoreClick }) => {
   return (
@@ -80,24 +80,54 @@ const CalendarComponent = ({ calendarDays, jobsByDate, onJobClick, onMoreClick }
                   <div className="space-y-1">
                     {dayJobs.slice(0, 2).map((j) => {
                       const style = STATUS_STYLES[j.status] || STATUS_STYLES.upcoming;
+                      const customerName = `${j.fname || ""} ${j.lname || ""}`.trim();
+                      const feet = j.total_numerical_box || "";
+                      const color = j.colors || "";
+
+                      const specParts = [];
+                      if (feet) specParts.push(`${feet} ft`);
+                      if (color) specParts.push(color);
+                      const specsText = specParts.join(" - ");
+
                       return (
                         <div
                           key={j.quote_id}
                           onClick={() => onJobClick(j.quote_id)}
-                          className={`${style.bg} rounded-md px-2 py-1 cursor-pointer hover:scale-[1.02] hover:shadow-sm transition-all duration-150 border-l-[3px] ${j.status === "upcoming"
+                          title={`${customerName}${feet || color ? ` (${[feet ? `${feet} ft` : '', color].filter(Boolean).join(' • ')})` : ''} - ${j.installer_name || "Unassigned"}`}
+                          className={`${style.bg} rounded-lg p-1.5 cursor-pointer hover:scale-[1.01] hover:shadow-md transition-all duration-150 border-l-[3px] ${j.status === "upcoming"
                             ? "border-l-indigo-500"
                             : j.status === "in_progress"
                               ? "border-l-amber-500"
                               : "border-l-green-500"
                             }`}
                         >
-                          <div className="flex items-center gap-1">
-                            <span className={`text-[10px] font-semibold ${style.text} truncate leading-tight`}>
-                              {j.fname} {j.lname}
-                            </span>
+                          {/* Line 1: Customer Name */}
+                          <div className={`text-[11px] font-semibold ${style.text} truncate leading-tight`}>
+                            {customerName || "—"}
                           </div>
-                          <p className={`text-[8px] ${style.text} opacity-60 truncate leading-tight mt-0.5`}>
-                            {j.installer_name || "⚠ Unassigned"}
+
+                          {/* Line 2: Clean Pill Badges */}
+                          {(feet || color) && (
+                            <div className="flex items-center gap-1 mt-1 flex-wrap">
+                              {[
+                                feet && `${feet} ft`,
+                                color && toTitleCase(color),
+                              ]
+                                .filter(Boolean)
+                                .map((tag, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="inline-flex items-center px-1.5 py-0.2 text-[9px] font-medium rounded bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 border border-gray-200/60 dark:border-gray-600/50 shadow-xs truncate max-w-[90px]"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                            </div>
+                          )}
+
+                          {/* Line 3: Installer Name */}
+                          <p className={`text-[9px] ${style.text} opacity-70 truncate leading-tight mt-1 flex items-center gap-1`}>
+                            <span className="truncate">{j.installer_name || "⚠ Unassigned"}</span>
                           </p>
                         </div>
                       );

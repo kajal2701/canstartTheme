@@ -260,10 +260,10 @@ export default function InvoiceView() {
                 )}
               </span>
             </div>
-            {quote.extra_work_data?.length > 0 && quote.total_extra_work && (
+            {quote.extra_work_data?.length > 0 && Number(quote.total_extra_work || 0) !== 0 && (
               <div className="flex justify-between text-gray-600 font-medium text-xs md:text-base">
                 <span>Total Extra Work:</span>
-                <span>{formatCurrency(quote.total_extra_work)}</span>
+                <span className={Number(quote.total_extra_work) < 0 ? "text-rose-600" : ""}>{formatCurrency(quote.total_extra_work)}</span>
               </div>
             )}
             <div className="flex justify-between text-green-500 font-medium text-xs md:text-base">

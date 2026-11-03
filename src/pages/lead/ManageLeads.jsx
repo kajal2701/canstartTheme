@@ -45,6 +45,8 @@ const ManageLeads = () => {
           phone: l.phone || "-",
           note: l.note || "-",
           address: l.address || "-",
+          preferred_contact_method: l.preferred_contact_method || "-",
+          financing_option: l.financing_option || "No",
           status: l.status || "New",
           created_at_formatted: formatDate(l.created_at),
           _raw: l,
@@ -195,6 +197,39 @@ const ManageLeads = () => {
           {value}
         </span>
       ),
+    },
+    {
+      Header: "Contact Method",
+      accessor: "preferred_contact_method",
+      Cell: ({ cell: { value } }) => {
+        if (!value || value === "-") {
+          return <span className="text-sm text-gray-400">-</span>;
+        }
+        return (
+          <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+            {value}
+          </span>
+        );
+      },
+    },
+    {
+      Header: "Financing",
+      accessor: "financing_option",
+      Cell: ({ cell: { value } }) => {
+        const isYes = value === "Yes" || value === "yes" || value === true || value === 1;
+        return (
+          <span
+            className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+              isYes
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+            }`}
+          >
+            {isYes && <Icon icon="heroicons-outline:check" className="w-3 h-3 text-emerald-600" />}
+            {isYes ? "Yes" : "No"}
+          </span>
+        );
+      },
     },
     {
       Header: "Created",

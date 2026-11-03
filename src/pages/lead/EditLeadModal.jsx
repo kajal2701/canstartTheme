@@ -3,15 +3,20 @@ import { useForm } from "react-hook-form";
 import Modal from "@/components/ui/Modal";
 import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
+import Select from "@/components/ui/Select";
+import Checkbox from "@/components/ui/Checkbox";
 import Button from "@/components/ui/Button";
 import { updateLead } from "@/services/leadService";
 import { toast } from "react-toastify";
+import { PREFERRED_CONTACT_METHOD_OPTIONS } from "@/utils/constants";
 
 const EditLeadModal = ({ activeModal, onClose, leadData, onSuccess }) => {
   const {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -19,17 +24,24 @@ const EditLeadModal = ({ activeModal, onClose, leadData, onSuccess }) => {
       phone: "",
       address: "",
       note: "",
+      preferred_contact_method: "",
+      financing_option: false,
     },
   });
+
+  const financingOption = watch("financing_option");
 
   // Pre-fill form when modal opens with lead data
   useEffect(() => {
     if (activeModal && leadData) {
+      const raw = leadData._raw || {};
       reset({
         name: leadData.name !== "-" ? leadData.name : "",
         phone: leadData.phone !== "-" ? leadData.phone : "",
         address: leadData.address !== "-" ? leadData.address : "",
         note: leadData.note !== "-" ? leadData.note : "",
+        preferred_contact_method: (leadData.preferred_contact_method !== "-" ? leadData.preferred_contact_method : ""),
+        financing_option: leadData.financing_option === "Yes",
       });
     }
   }, [activeModal, leadData, reset]);
@@ -105,6 +117,22 @@ const EditLeadModal = ({ activeModal, onClose, leadData, onSuccess }) => {
           error={errors.note}
           row={2}
         />
+
+        <Select
+          label="Preferred Contact Method"
+          placeholder="Select Contact Method"
+          name="preferred_contact_method"
+          register={register}
+          options={PREFERRED_CONTACT_METHOD_OPTIONS}
+        />
+
+        <div className="pt-1">
+          <Checkbox
+            label="Would you like to use the financing option?"
+            value={financingOption}
+            onChange={(e) => setValue("financing_option", e.target.checked)}
+          />
+        </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button

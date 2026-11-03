@@ -2,9 +2,12 @@ import { useForm } from "react-hook-form";
 import { submitPublicLead } from "@/services/leadService";
 import { Icon } from "@iconify/react";
 import Button from "@/components/ui/Button";
+import Select from "@/components/ui/Select";
+import Checkbox from "@/components/ui/Checkbox";
 import { toast } from "react-toastify";
 import Logo from "@/assets/images/logo/canstar-logo.svg";
 import bgImage from "@/assets/images/enquiry-bg/background.webp";
+import { PREFERRED_CONTACT_METHOD_OPTIONS } from "@/utils/constants";
 
 /* ---------- Reusable pieces ---------- */
 
@@ -53,10 +56,21 @@ const PublicEnquiryForm = () => {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
-    defaultValues: { name: "", phone: "", note: "", address: "" },
+    defaultValues: {
+      name: "",
+      phone: "",
+      address: "",
+      note: "",
+      preferred_contact_method: "",
+      financing_option: false,
+    },
   });
+
+  const financingOption = watch("financing_option");
 
   const onSubmit = async (data) => {
     const result = await submitPublicLead(data);
@@ -193,7 +207,33 @@ const PublicEnquiryForm = () => {
                 </InputWithIcon>
               </Field>
 
+              <Field label="Preferred Contact Method">
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60 pointer-events-none z-10">
+                    <Icon icon="mdi:phone-message-outline" width="18" height="18" />
+                  </span>
+                  <Select
+                    name="preferred_contact_method"
+                    register={register}
+                    placeholder="Select Contact Method (Optional)"
+                    options={PREFERRED_CONTACT_METHOD_OPTIONS}
+                    className={`${inputClass} !text-white [&>option]:bg-[#1e1e24] [&>option]:text-white`}
+                  />
+                </div>
+              </Field>
 
+              {/* Financing Option Checkbox */}
+              <div className="pt-1">
+                <div className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 hover:border-white/25 transition-all duration-200 [&_span:last-child]:!text-white [&_span:last-child]:!font-medium [&_span:last-child]:text-sm">
+                  <Checkbox
+                    label="Would you like to use the financing option?"
+                    value={financingOption}
+                    onChange={(e) => setValue("financing_option", e.target.checked)}
+                    activeClass="!bg-[#f0795c] !border-[#f0795c]"
+                    className="!bg-white/10 !border-white/30"
+                  />
+                </div>
+              </div>
 
               <div className="pt-1.5 sm:pt-2">
                 <Button

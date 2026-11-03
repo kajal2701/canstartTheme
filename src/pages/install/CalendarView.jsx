@@ -6,7 +6,7 @@ import CalendarComponent from "@/components/install/CalendarComponent";
 import CalendarHeader from "@/components/install/CalendarHeader";
 import Modal from "@/components/ui/Modal";
 import { getCalendarInstalls } from "@/services/installService";
-import { getDaysInMonth, getFirstDayOfMonth, formatDateKey, formatDateLong } from "@/utils/formatters";
+import { getDaysInMonth, getFirstDayOfMonth, formatDateKey, formatDateLong, toTitleCase } from "@/utils/formatters";
 import { STATUS_STYLES } from "@/utils/constants";
 
 // ── Helpers ──
@@ -203,6 +203,15 @@ const CalendarView = () => {
                 completed: "border-l-green-500"
               }[status] || "border-l-indigo-500";
 
+              const customerName = `${j.fname || ""} ${j.lname || ""}`.trim();
+              const feet = j.total_numerical_box || "";
+              const color = j.colors || "";
+
+              const specParts = [];
+              if (feet) specParts.push(`${feet} ft`);
+              if (color) specParts.push(color);
+              const specsText = specParts.join(" - ");
+
               return (
                 <div
                   key={j.quote_id}
@@ -214,14 +223,42 @@ const CalendarView = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div>
+                      {/* Line 1: Customer Name */}
                       <p className={`text-sm font-semibold ${style.text}`}>
-                        {j.fname} {j.lname}
+                        {customerName || "—"}
                       </p>
-                      <p className={`text-xs ${style.text} opacity-60 mt-0.5`}>
+                      {/* Line 2: Clean Pill Badges */}
+                      {(feet || color) && (
+                        <div className="flex items-center gap-1.5 mt-1">
+                          {[
+                            feet && `${feet} ft`,
+                            color && toTitleCase(color),
+                          ]
+                            .filter(Boolean)
+                            .map((tag, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-md bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200 border border-gray-200/70 dark:border-gray-600/60 shadow-xs"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+                      {/* Line 3: Installer Name */}
+                      <p className={`text-xs ${style.text} opacity-70 mt-1.5`}>
                         {j.installer_name || "⚠ Unassigned"}
                       </p>
                     </div>
-                    <span className={`text-[10px] font-medium capitalize px-2 py-0.5 rounded-full ${style.bg} ${style.text} ring-1 ring-current/10`}>
+                    <span
+                      className={`text-[10px] font-medium capitalize px-2 py-0.5 rounded-full ${style.bg} ${style.text} border ${
+                        status === "in_progress"
+                          ? "border-amber-300 dark:border-amber-700"
+                          : status === "completed"
+                          ? "border-green-300 dark:border-green-700"
+                          : "border-indigo-300 dark:border-indigo-700"
+                      }`}
+                    >
                       {status.replace("_", " ")}
                     </span>
                   </div>

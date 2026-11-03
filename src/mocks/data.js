@@ -51,7 +51,7 @@ export const menuItems = [
     isHide: true,
     icon: "ph:calendar-plus",
     link: "#",
-    roles: [1], // admin only — sees Dashboard + Calendar
+    roles: [1, 4], // admin + sales — sees Dashboard + Calendar
     child: [
       { childtitle: "Dashboard", childlink: "install" },
       { childtitle: "Calendar", childlink: "install/calendar" },
@@ -87,14 +87,14 @@ export const menuItems = [
     isHide: true,
     icon: "ph:package",
     link: "inventory",
-    roles: [1, 2, 3, 4], // all roles
+    roles: [1, 2, 3], // admin, installer, operations (sales excluded)
   },
   {
     title: "Reports",
     isHide: true,
     icon: "ph:chart-bar",
     link: "reports",
-    roles: [1], // admin only
+    roles: [1, 4], // admin + sales
   },
 ];
 
