@@ -3,14 +3,14 @@ import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
 import { MONTH_NAMES } from "@/utils/constants";
 
-const CalendarHeader = ({ 
-  currentMonth, 
-  currentYear, 
-  jobCount, 
-  goToday, 
-  goPrev, 
-  goNext, 
-  onBack 
+const CalendarHeader = ({
+  currentMonth,
+  currentYear,
+  jobCount,
+  goToday,
+  goPrev,
+  goNext,
+  onBack
 }) => {
   return (
     <>
@@ -67,9 +67,14 @@ const CalendarHeader = ({
           { label: "Upcoming", color: "bg-indigo-500" },
           { label: "In Progress", color: "bg-amber-500" },
           { label: "Completed", color: "bg-green-500" },
+          { label: "Custom Note", color: "bg-blue-500", icon: "ph:note-pencil" },
         ].map((item) => (
           <div key={item.label} className="flex items-center gap-1.5">
-            <div className={`w-2.5 h-2.5 rounded-full ${item.color}`} />
+            {item.icon ? (
+              <Icon icon={item.icon} className="text-blue-500 text-sm" />
+            ) : (
+              <div className={`w-2.5 h-2.5 rounded-full ${item.color}`} />
+            )}
             <span className="text-gray-500 dark:text-gray-400">{item.label}</span>
           </div>
         ))}

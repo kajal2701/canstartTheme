@@ -135,3 +135,50 @@ export const sendPreAssessmentEmailApi = async (quoteId, images, notes) => {
     const json = await res.json();
     return json;
 };
+
+// ─── Calendar Notes API ──────────────────────────────────────────────────────
+
+// GET /calendar/notes?month=&year=&user_id=&role=
+export const getCalendarNotes = async (month, year, userId, role) => {
+    const params = new URLSearchParams();
+    if (month) params.append("month", month);
+    if (year) params.append("year", year);
+    if (userId) params.append("user_id", userId);
+    if (role) params.append("role", role);
+
+    const res = await fetch(`${BASE_URL}/calendar/notes?${params.toString()}`);
+    if (!res.ok) throw new Error("Failed to fetch calendar notes");
+    const json = await res.json();
+    return json.data || [];
+};
+
+// POST /calendar/notes
+export const createCalendarNote = async (data) => {
+    const res = await fetch(`${BASE_URL}/calendar/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to create note");
+    return await res.json();
+};
+
+// PUT /calendar/notes/:note_id
+export const updateCalendarNote = async (noteId, data) => {
+    const res = await fetch(`${BASE_URL}/calendar/notes/${noteId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to update note");
+    return await res.json();
+};
+
+// DELETE /calendar/notes/:note_id
+export const deleteCalendarNote = async (noteId) => {
+    const res = await fetch(`${BASE_URL}/calendar/notes/${noteId}`, {
+        method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Failed to delete note");
+    return await res.json();
+};

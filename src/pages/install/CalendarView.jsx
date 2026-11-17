@@ -1,15 +1,14 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import LoadingIcon from "@/components/LoadingIcon";
 import CalendarComponent from "@/components/install/CalendarComponent";
 import CalendarHeader from "@/components/install/CalendarHeader";
+import DayNotesModal from "@/components/install/DayNotesModal";
 import Modal from "@/components/ui/Modal";
-import { getCalendarInstalls } from "@/services/installService";
+import { getCalendarInstalls, getCalendarNotes } from "@/services/installService";
 import { getDaysInMonth, getFirstDayOfMonth, formatDateKey, formatDateLong, toTitleCase } from "@/utils/formatters";
 import { STATUS_STYLES } from "@/utils/constants";
-
-// ── Helpers ──
 
 const CalendarView = () => {
   const navigate = useNavigate();
@@ -25,49 +24,81 @@ const CalendarView = () => {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
 
   const [allJobs, setAllJobs] = useState([]);
+  const [allNotes, setAllNotes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // ── "+n more" popup state ──
   const [moreModalOpen, setMoreModalOpen] = useState(false);
   const [moreModalDateKey, setMoreModalDateKey] = useState("");
 
+  // ── Day Notes / Edit Modal State ──
+  const [dayNotesModalOpen, setDayNotesModalOpen] = useState(false);
+  const [selectedDateForNotes, setSelectedDateForNotes] = useState("");
+
   // ── Fetch Installations ──
-  useEffect(() => {
-    const fetchJobs = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getCalendarInstalls(userId || "", userRole || "");
-        // Use upcoming installations for the calendar
-        const upcoming = data?.upcoming_installations || [];
+  const fetchJobs = useCallback(async () => {
+    try {
+      const data = await getCalendarInstalls(userId || "", userRole || "");
+      const upcoming = data?.upcoming_installations || [];
 
-        // Ensure installation_date is just YYYY-MM-DD to match the calendar grid grouping
-        const formattedJobs = upcoming.map(job => {
-          let dateStr = job.installation_date || "";
-          // Strip time part if present (e.g. "2026-04-10 14:30:00" -> "2026-04-10")
-          if (dateStr.includes(" ")) dateStr = dateStr.split(" ")[0];
-          if (dateStr.includes("T")) dateStr = dateStr.split("T")[0];
+      // Ensure installation_date is just YYYY-MM-DD
+      const formattedJobs = upcoming.map((job) => {
+        let dateStr = job.installation_date || "";
+        if (dateStr.includes(" ")) dateStr = dateStr.split(" ")[0];
+        if (dateStr.includes("T")) dateStr = dateStr.split("T")[0];
 
-          return {
-            ...job,
-            installation_date: dateStr,
-            status: job.install_status || "upcoming" // Use install_status from backend
-          };
-        });
+        return {
+          ...job,
+          installation_date: dateStr,
+          status: job.install_status || "upcoming",
+        };
+      });
 
-        setAllJobs(formattedJobs);
-      } catch (error) {
-        console.error("Failed to load jobs", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchJobs();
+      setAllJobs(formattedJobs);
+    } catch (error) {
+      console.error("Failed to load jobs", error);
+    }
   }, [userId, userRole]);
 
-  // ── Backend already filters by user role, so jobs is just allJobs ──
-  const jobs = allJobs;
+  // ── Fetch Custom Notes for Current Month & Year ──
+  const fetchNotes = useCallback(async () => {
+    try {
+      // Month is 1-indexed for backend query: currentMonth + 1
+      const notesData = await getCalendarNotes(
+        currentMonth + 1,
+        currentYear,
+        userId || "",
+        userRole || ""
+      );
 
+      // Normalize date to YYYY-MM-DD
+      const formattedNotes = (notesData || []).map((n) => {
+        let d = n.date || "";
+        if (d.includes(" ")) d = d.split(" ")[0];
+        if (d.includes("T")) d = d.split("T")[0];
+        return {
+          ...n,
+          date: d,
+        };
+      });
+
+      setAllNotes(formattedNotes);
+    } catch (error) {
+      console.error("Failed to load calendar notes", error);
+    }
+  }, [currentMonth, currentYear, userId, userRole]);
+
+  useEffect(() => {
+    const loadAll = async () => {
+      setIsLoading(true);
+      await Promise.all([fetchJobs(), fetchNotes()]);
+      setIsLoading(false);
+    };
+
+    loadAll();
+  }, [fetchJobs, fetchNotes]);
+
+  const jobs = allJobs;
 
   // ── Build calendar grid ──
   const calendarDays = useMemo(() => {
@@ -113,6 +144,17 @@ const CalendarView = () => {
     return map;
   }, [jobs]);
 
+  // ── Notes grouped by date ──
+  const notesByDate = useMemo(() => {
+    const map = {};
+    allNotes.forEach((note) => {
+      const key = note.date;
+      if (!map[key]) map[key] = [];
+      map[key].push(note);
+    });
+    return map;
+  }, [allNotes]);
+
   // ── Jobs for current month (list view) ──
   const monthJobs = useMemo(() => {
     return calendarDays
@@ -156,6 +198,16 @@ const CalendarView = () => {
 
   const moreModalJobs = moreModalDateKey ? (jobsByDate[moreModalDateKey] || []) : [];
 
+  // ── Day Cell Click (Notes / Edit Modal) ──
+  const handleDayClick = (dateKey) => {
+    setSelectedDateForNotes(dateKey);
+    setDayNotesModalOpen(true);
+  };
+
+  const closeDayNotesModal = () => {
+    setDayNotesModalOpen(false);
+    setSelectedDateForNotes("");
+  };
 
   return (
     <div className="space-y-5">
@@ -163,7 +215,6 @@ const CalendarView = () => {
         currentMonth={currentMonth}
         currentYear={currentYear}
         jobCount={monthJobs.length}
-
         goToday={goToday}
         goPrev={goPrev}
         goNext={goNext}
@@ -178,11 +229,25 @@ const CalendarView = () => {
         <CalendarComponent
           calendarDays={calendarDays}
           jobsByDate={jobsByDate}
+          notesByDate={notesByDate}
           onJobClick={(quoteId) => navigate(`/install/process/${quoteId}`)}
           onMoreClick={handleMoreClick}
+          onDayClick={handleDayClick}
         />
       )}
 
+      {/* ── Day Notes / Edit Modal ── */}
+      <DayNotesModal
+        activeModal={dayNotesModalOpen}
+        onClose={closeDayNotesModal}
+        selectedDate={selectedDateForNotes}
+        notes={selectedDateForNotes ? notesByDate[selectedDateForNotes] || [] : []}
+        jobs={selectedDateForNotes ? jobsByDate[selectedDateForNotes] || [] : []}
+        currentUser={user}
+        onNotesChanged={fetchNotes}
+      />
+
+      {/* ── "+n more" Installations Modal ── */}
       <Modal
         activeModal={moreModalOpen}
         onClose={closeMoreModal}
@@ -200,17 +265,12 @@ const CalendarView = () => {
               const borderClass = {
                 upcoming: "border-l-indigo-500",
                 in_progress: "border-l-amber-500",
-                completed: "border-l-green-500"
+                completed: "border-l-green-500",
               }[status] || "border-l-indigo-500";
 
               const customerName = `${j.fname || ""} ${j.lname || ""}`.trim();
               const feet = j.total_numerical_box || "";
               const color = j.colors || "";
-
-              const specParts = [];
-              if (feet) specParts.push(`${feet} ft`);
-              if (color) specParts.push(color);
-              const specsText = specParts.join(" - ");
 
               return (
                 <div
@@ -268,10 +328,8 @@ const CalendarView = () => {
           )}
         </div>
       </Modal>
-
     </div>
   );
 };
 
 export default CalendarView;
-

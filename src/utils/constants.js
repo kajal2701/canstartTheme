@@ -106,6 +106,22 @@ export const STATUS_STYLES = {
   completed: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300", dot: "bg-green-500" },
 };
 
+export const NOTE_COLOR_STYLES = {
+  blue: { bg: "bg-blue-50 dark:bg-blue-900/20", border: "border-blue-400", dot: "bg-blue-500", text: "text-blue-700 dark:text-blue-300" },
+  green: { bg: "bg-emerald-50 dark:bg-emerald-900/20", border: "border-emerald-400", dot: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-300" },
+  yellow: { bg: "bg-amber-50 dark:bg-amber-900/20", border: "border-amber-400", dot: "bg-amber-500", text: "text-amber-700 dark:text-amber-300" },
+  red: { bg: "bg-rose-50 dark:bg-rose-900/20", border: "border-rose-400", dot: "bg-rose-500", text: "text-rose-700 dark:text-rose-300" },
+  purple: { bg: "bg-purple-50 dark:bg-purple-900/20", border: "border-purple-400", dot: "bg-purple-500", text: "text-purple-700 dark:text-purple-300" },
+};
+
+export const NOTE_COLOR_OPTIONS = [
+  { value: "blue", label: "Blue", colorClass: "bg-blue-500" },
+  { value: "green", label: "Green", colorClass: "bg-emerald-500" },
+  { value: "yellow", label: "Yellow", colorClass: "bg-amber-500" },
+  { value: "red", label: "Red", colorClass: "bg-rose-500" },
+  { value: "purple", label: "Purple", colorClass: "bg-purple-500" },
+];
+
 export const HOUR_OPTIONS = [0, 1, 2, 3, 4, 5];
 export const MINUTE_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
