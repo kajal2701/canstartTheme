@@ -566,3 +566,17 @@ export const calculateAvailableInventory = (quantity, heldQuantity, usedQuantity
   const used = Number(usedQuantity) || 0;
   return Math.max(0, total - held - used);
 };
+
+export const getSalesmanRowClassName = (row) => {
+  const salesmanName = row?.original?.salesman || row?.salesman;
+  const salesman = salesmanName?.trim().toLowerCase();
+  if (!salesman) return "";
+
+  if (salesman === "jigar bulchandani") {
+    return "!bg-blue-100 dark:!bg-blue-900/60 border-l-4 border-blue-500";
+  }
+  if (salesman === "rohan patel") {
+    return "!bg-amber-100 dark:!bg-amber-900/60 border-l-4 border-amber-500";
+  }
+  return "";
+};

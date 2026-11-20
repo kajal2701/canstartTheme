@@ -8,6 +8,7 @@ import { encodeId, getQuoteStage } from "../../utils/mappers";
 import ScheduleInstallationModal from "@/components/quote/quotelisting/ScheduleInstallationModal"; // ✅ added
 import { toast } from "react-toastify";
 import { sendFinalQuote } from "../../services/quoteService";
+import { getSalesmanRowClassName } from "@/utils/helperFunctions";
 
 const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
   const navigate = useNavigate();
@@ -272,7 +273,7 @@ const PastInstallations = ({ jobs = [], loading, onRefresh }) => {
           data={mappedJobs}
           loading={loading}
           initialPageSize={5}
-          rowClassName="hover:bg-red-50 dark:hover:bg-gray-700 hover:bg-opacity-50"
+          getRowClassName={getSalesmanRowClassName}
         />
       </div>
 

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { encodeId, getQuoteStage } from "../../utils/mappers"; // ✅ added encodeId, getQuoteStage
 import ScheduleInstallationModal from "@/components/quote/quotelisting/ScheduleInstallationModal"; // ✅ added
 import { toast } from "react-toastify"; // ✅ added
+import { getSalesmanRowClassName } from "@/utils/helperFunctions";
 
 const UpcomingInstallations = ({ jobs = [], loading, onRefresh }) => {
   // ✅ added onRefresh
@@ -223,7 +224,7 @@ const UpcomingInstallations = ({ jobs = [], loading, onRefresh }) => {
               data={mappedJobs} // ✅ use mappedJobs
               loading={loading}
               initialPageSize={15}
-              rowClassName="hover:bg-blue-50 dark:hover:bg-gray-700 hover:bg-opacity-50"
+              getRowClassName={getSalesmanRowClassName}
               tableWrapperClassName="card bg-blue-50/30"
             />
           )}

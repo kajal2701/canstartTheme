@@ -24,6 +24,8 @@ const DataTable = ({
   onPageChange = () => { },
   onSortChange,
   initialSortBy = [],
+  getRowClassName,
+  rowClassName,
 }) => {
   const isServerSort = serverSidePagination && typeof onSortChange === "function";
 
@@ -167,10 +169,17 @@ const DataTable = ({
                     ))
                     : page.map((row) => {
                       prepareRow(row);
+                      const customRowClass =
+                        typeof getRowClassName === "function"
+                          ? getRowClassName(row)
+                          : typeof rowClassName === "function"
+                            ? rowClassName(row)
+                            : (rowClassName || "");
+
                       return (
                         <tr
                           {...row.getRowProps()}
-                          className="hover:bg-gray-100 dark:hover:bg-gray-700 hover:bg-opacity-30"
+                          className={`hover:bg-gray-100 dark:hover:bg-gray-700 hover:bg-opacity-30 ${customRowClass}`}
                         >
                           {row.cells.map((cell) => {
                             return (

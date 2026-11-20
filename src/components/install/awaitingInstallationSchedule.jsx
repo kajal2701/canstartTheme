@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { getQuoteStage } from "../../utils/mappers";
 import ScheduleInstallationModal from "@/components/quote/quotelisting/ScheduleInstallationModal";
 import { toast } from "react-toastify";
+import { getSalesmanRowClassName } from "@/utils/helperFunctions";
 
 const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
   const navigate = useNavigate();
@@ -196,6 +197,7 @@ const AwaitingInstallationSchedule = ({ jobs = [], loading, onRefresh }) => {
           data={mappedJobs}
           loading={loading}
           initialPageSize={5}
+          getRowClassName={getSalesmanRowClassName}
         />
       </div>
 

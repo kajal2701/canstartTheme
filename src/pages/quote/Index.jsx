@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import FutureReferenceModal from "../../components/quote/quoteListing/FutureReferenceModal";
 import FollowUpModal from "../../components/quote/quoteListing/FollowUpModal";
 import { useCallback } from "react";
+import { getSalesmanRowClassName } from "@/utils/helperFunctions";
 
 const mapQuoteData = (quote) => {
   const stage = getQuoteStage(quote);
@@ -525,6 +526,7 @@ const Quote = () => {
           onPageChange={setPage}
           onSortChange={handleSortChange}
           initialSortBy={[]}
+          getRowClassName={getSalesmanRowClassName}
         />
       </div>
 

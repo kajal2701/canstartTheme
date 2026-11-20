@@ -9,6 +9,7 @@ import { AddressCell, encodeId } from "@/utils/mappers";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import { STATUS_MAP } from "@/utils/constants";
 import { addressAccessor } from "../../utils/mappers";
+import { getSalesmanRowClassName } from "@/utils/helperFunctions";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -22,9 +23,8 @@ const Dashboard = () => {
         const isDeleted = row.original.status === 5;
         return (
           <span
-            className={`text-sm text-indigo-600 font-medium ${
-              isDeleted ? "" : "cursor-pointer hover:underline"
-            }`}
+            className={`text-sm text-indigo-600 font-medium ${isDeleted ? "" : "cursor-pointer hover:underline"
+              }`}
             onClick={() => {
               if (!isDeleted) {
                 navigate(`/users/quote_invoice/${encodeId(row.original.quote_id)}`);
@@ -199,6 +199,7 @@ const Dashboard = () => {
           columns={columns}
           data={stats.quotes}
           loading={loadingData}
+          getRowClassName={getSalesmanRowClassName}
         />
       </div>
     </div>

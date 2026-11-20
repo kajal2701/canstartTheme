@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { formatDate } from "@/utils/formatters";
 import { useNavigate } from "react-router-dom";
 import { encodeId } from "../../utils/mappers";
+import { getSalesmanRowClassName } from "@/utils/helperFunctions";
 
 const Invoice = () => {
   const { user } = useSelector((state) => state.auth);
@@ -20,6 +21,13 @@ const Invoice = () => {
     {
       Header: "Invoice No.",
       accessor: "invoiceNo",
+      Cell: ({ cell: { value } }) => (
+        <span className={TEXT_CLASSES.primary}>{value}</span>
+      ),
+    },
+    {
+      Header: "Salesman",
+      accessor: "salesman",
       Cell: ({ cell: { value } }) => (
         <span className={TEXT_CLASSES.primary}>{value}</span>
       ),
@@ -94,13 +102,14 @@ const Invoice = () => {
         if (!mounted) return;
         const mapped = Array.isArray(list)
           ? list.map((p, idx) => ({
-              invoiceNo: p.payment_id,
-              quoteId: p.quote_id,
-              customerName: p.customer_name || "-",
-              paymentType: p.payment_method || "-",
-              paymentAmount: p.amount || "-",
-              date: formatDate(p.created_at),
-            }))
+            invoiceNo: p.payment_id,
+            quoteId: p.quote_id,
+            salesman: p.salesman || "-",
+            customerName: p.customer_name || "-",
+            paymentType: p.payment_method || "-",
+            paymentAmount: p.amount || "-",
+            date: formatDate(p.created_at),
+          }))
           : [];
         setRows(mapped);
       } catch (err) {
@@ -127,6 +136,7 @@ const Invoice = () => {
       data={data}
       loading={loading}
       initialPageSize={10}
+      getRowClassName={getSalesmanRowClassName}
     />
   );
 };
