@@ -202,14 +202,71 @@ export default function QuoteView() {
     }
   ) : [];
 
+  const filteredCustomProducts = quote.custom_product_data ? quote.custom_product_data.filter(
+    (_, idx) => {
+      const itemIdx = items.findIndex(i => i.source === "custom_product" && i.sourceIndex === idx);
+      if (itemIdx === -1) return true;
+      return items[itemIdx].required !== "no" || checkedItems.has(itemIdx);
+    }
+  ) : [];
+
+  // Snapshot of unchecked items to store in quote_tbl.unchecked_items_data
+  const uncheckedAnnotations = excludedItems
+    .filter(({ item }) => item.source === "annotation")
+    .map(({ item }) => {
+      const raw = (quote.annotation_image || []).find(a => a.annotation_image_id === item.annotation_image_id);
+      return raw ? {
+        annotation_image_id: raw.annotation_image_id,
+        identify_image_name: raw.identify_image_name || "",
+        color: raw.color || "",
+        sft_count: raw.sft_count || 0,
+        divide: raw.divide || 0,
+        total_numerical_box: raw.total_numerical_box || 0,
+        unit_price: raw.unit_price || 0,
+        total_amount: raw.total_amount || 0,
+        no_peaks: raw.no_peaks || 0,
+        no_jumper: raw.no_jumper || 0,
+        required: raw.required || "no",
+        images: (raw.images || []).map(img => ({
+          image_url: img.image_url,
+          type: img.type,
+        })),
+      } : null;
+    })
+    .filter(Boolean);
+
+  const uncheckedProducts = (quote.products || []).filter((_, idx) => {
+    const itemIdx = items.findIndex(i => i.source === "product" && i.sourceIndex === idx);
+    return itemIdx !== -1 && items[itemIdx].required === "no" && !checkedItems.has(itemIdx);
+  });
+
+  const uncheckedCustomProducts = (quote.custom_product_data || []).filter((_, idx) => {
+    const itemIdx = items.findIndex(i => i.source === "custom_product" && i.sourceIndex === idx);
+    return itemIdx !== -1 && items[itemIdx].required === "no" && !checkedItems.has(itemIdx);
+  });
+
+  const hasUncheckedItems = (
+    uncheckedAnnotations.length > 0 ||
+    uncheckedProducts.length > 0 ||
+    uncheckedCustomProducts.length > 0
+  );
+
+  const uncheckedItemsPayload = hasUncheckedItems ? {
+    unchecked_at: new Date().toISOString(),
+    annotations: uncheckedAnnotations,
+    products: uncheckedProducts,
+    custom_products: uncheckedCustomProducts,
+  } : null;
+
   const adjustedPayload = {
     annotation_image_ids_to_delete: uncheckedAnnotationIds,
     products: filteredProducts,
-    custom_product_data: quote.custom_product_data || [],
+    custom_product_data: filteredCustomProducts,
     total_feet_price: dynamicFeetPrice.toFixed(2),
     total_controller_price: dynamicControllerPrice.toFixed(2),
     gst: dynamicGst.toFixed(2),
     main_total: dynamicTotal.toFixed(2),
+    unchecked_items: uncheckedItemsPayload,
   };
 
   return (

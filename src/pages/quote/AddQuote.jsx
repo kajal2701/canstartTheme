@@ -16,8 +16,9 @@ import { getCustomers } from "../../services/customersService";
 import { getProductsData, addQuote, getColors } from "../../services/quoteService";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { scrollToFirstError } from "../../utils/mappers";
+import { useUncheckedQuotePrefill } from "@/hooks/useUncheckedQuotePrefill";
 
 const AddQuote = () => {
   const [customers, setCustomers] = useState([]);
@@ -28,6 +29,7 @@ const AddQuote = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fasciaAlignWithSoffit, setFasciaAlignWithSoffit] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     // Customer
@@ -137,6 +139,19 @@ const AddQuote = () => {
     };
     fetchColors();
   }, []);
+
+  // ==================== PREFILL FROM UNCHECKED ITEMS ====================
+  useUncheckedQuotePrefill({
+    prefill: location.state?.prefillFromUnchecked,
+    customers,
+    setSelectedCustomer,
+    setAnnotationSections,
+    setCustomProducts,
+    setAdminNotes,
+    productsLoading,
+    products,
+    setProducts,
+  });
 
   // ==================== CUSTOMER HANDLER ====================
   const handleCustomerChange = (e) => {

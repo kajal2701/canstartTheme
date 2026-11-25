@@ -24,3 +24,16 @@ export const BUTTON_ICONS = {
 export const PAYMENT_OPTIONS = {
   deposit: "Deposit Payment"
 };
+
+export const UNCHECKED_ITEMS_TABLE_COLUMNS = [
+  { label: "No.", align: "text-left", width: "w-10" },
+  { label: "Item Description", align: "text-left" },
+  { label: "Type", align: "text-left", width: "w-24" },
+  { label: "Images", align: "text-center" },
+  { label: "Qty", align: "text-center" },
+  { label: "Unit Cost", align: "text-right" },
+  { label: "Total", align: "text-right" },
+];
+
+export const TABLE_COLUMNS = UNCHECKED_ITEMS_TABLE_COLUMNS;
+

@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import CompanyInfo from "../../components/quote/quoteView/CompanyInfo";
 import { normalizeRequired } from "../../utils/helperFunctions";
 import LineItemsTable from "../../components/quote/quoteView/LineItemsTable";
+import UncheckedItemsSection from "../../components/quote/quoteView/UncheckedItemsSection";
 import NotesSection from "../../components/quote/quoteView/NotesSection";
 import SummarySection from "../../components/quote/quoteView/SummarySection";
 import ActionsCard from "../../components/quote/quoteView/ActionsCard";
@@ -204,6 +205,9 @@ const ViewQuoteAdmin = () => {
         existingExtraWork={quote?.extra_work_data || []}
         onSubmitSuccess={fetchQuoteData} // ← refetch after submit
       />
+
+      {/* ── Unchecked / Customer Declined Items ── */}
+      <UncheckedItemsSection quote={quote} />
 
       {/* ── Notes + Totals Row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

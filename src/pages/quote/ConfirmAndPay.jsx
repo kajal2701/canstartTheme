@@ -100,6 +100,12 @@ export default function ConfirmAndPay({ isOpen, onClose, quote, adjustedPayload,
       formData.append("gst-input", adjustedPayload?.gst ?? quote.gst ?? 0);
       formData.append("total-input", adjustedPayload?.main_total ?? quote.main_total ?? 0);
       formData.append("annotation_image_ids", adjustedPayload?.annotation_image_ids_to_delete || "");
+      if (adjustedPayload?.unchecked_items) {
+        formData.append(
+          "unchecked_items_json",
+          JSON.stringify(adjustedPayload.unchecked_items)
+        );
+      }
 
       // ── Credit card fields ───────────────────────────────────────────────
       if (activeTab === "credit_card") {

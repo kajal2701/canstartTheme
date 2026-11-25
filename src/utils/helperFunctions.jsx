@@ -367,6 +367,11 @@ export const normalizeRequired = (val) => {
   return null;
 };
 
+export const getTypeLabel = (val) => {
+  const n = normalizeRequired(val);
+  return n === "yes" ? "Mandatory" : "Optional";
+};
+
 export const buildQuoteItems = (quote, options = {}) => {
   const { descriptionStyle = "php" } = options;
 
